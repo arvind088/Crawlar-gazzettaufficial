@@ -5,80 +5,149 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
-import java.io.FileWriter;
 import java.io.IOException;
-import java.time.LocalDate;
 import java.util.*;
 
 public class GazzettaMetadataScraper {
 
     public static void main(String[] args) throws IOException {
-        List<LocalDate> allDates = getAllDatesIn2024();
-        FileWriter csvWriter = new FileWriter("output/gazzetta_2024_metadata.csv");
-        csvWriter.append("URL,eli:title,eli:date_publication,eli:type_document,eli:id_local\n");
+        String archiveUrl = "https://www.gazzettaufficiale.it/ricercaArchivioCompleto/serie_generale/2024";
 
-        for (LocalDate date : allDates) {
-            String dateStr = date.toString();  // yyyy-MM-dd
-            String formatted = dateStr.replace("-", "/");  // yyyy/MM/dd
-            System.out.println("Processing date: " + formatted);
+        System.out.println("\uD83D\uDD0D Crawling archive: " + archiveUrl);
+        List<Issue> issues = getIssueLinks(archiveUrl);
 
-            try {
-                List<String> links = getEliLinksForDate(formatted);
+        for (Issue issue : issues) {
+            System.out.println("\uD83D\uDCC5 Issue: " + issue.publicationDate + " (n." + issue.number + ")");
 
-                for (String link : links) {
-                	Map<String, String> meta = extractEliMetadata(link);
-                    csvWriter.append(link).append(",");
-                    csvWriter.append(meta.getOrDefault("eli:title", "")).append(",");
-                    csvWriter.append(meta.getOrDefault("eli:date_publication", "")).append(",");
-                    csvWriter.append(meta.getOrDefault("eli:type_document", "")).append(",");
-                    csvWriter.append(meta.getOrDefault("eli:id_local", "")).append("\n");
+            List<String> actUrls = getActLinks(issue);
+
+            for (String actUrl : actUrls) {
+                System.out.println("\uD83D\uDD17 Visiting act: " + actUrl);
+                Map<String, String> meta = extractEliMetadata(actUrl);
+
+                if (meta.isEmpty()) {
+                    System.out.println("\u26A0\uFE0F  No metadata found.");
+                } else {
+                    System.out.println("\uD83D\uDCC4 Metadata:");
+                    for (Map.Entry<String, String> entry : meta.entrySet()) {
+                        System.out.println("   " + entry.getKey() + " = " + entry.getValue());
+                    }
                 }
-            } catch (Exception e) {
-                System.err.println("Error processing " + formatted + ": " + e.getMessage());
+
+                System.out.println("--------------------------------------------------");
             }
         }
 
-        csvWriter.flush();
-        csvWriter.close();
-        System.out.println("Scraping completed!");
+        System.out.println("\u2705 Done.");
     }
 
-    private static List<LocalDate> getAllDatesIn2024() {
-        LocalDate start = LocalDate.of(2024, 1, 1);
-        LocalDate end = LocalDate.of(2024, 12, 31);
-        List<LocalDate> dates = new ArrayList<>();
-        while (!start.isAfter(end)) {
-            dates.add(start);
-            start = start.plusDays(1);
-        }
-        return dates;
-    }
+    private static List<Issue> getIssueLinks(String archiveUrl) throws IOException {
+        List<Issue> issues = new ArrayList<>();
 
-    private static List<String> getEliLinksForDate(String formattedDate) throws IOException {
-        String baseUrl = "https://www.gazzettaufficiale.it/eli/gu/" + formattedDate + "/1/sg/html";
-        Document doc = Jsoup.connect(baseUrl).userAgent("Mozilla/5.0").get();
+        Document doc = Jsoup.connect(archiveUrl).userAgent("Mozilla/5.0").timeout(10000).get();
+        Elements issueElements = doc.select("a[href*=/gazzetta/serie_generale/caricaDettaglio?]");
 
-        List<String> links = new ArrayList<>();
-        for (Element aTag : doc.select("a[href*=/eli/id/]")) {
-            String href = aTag.absUrl("href");
-            if (href.contains("/eli/id/")) {
-                links.add(href);
+        for (Element el : issueElements) {
+            String href = el.absUrl("href");
+            String[] params = href.split("\\?");
+            if (params.length < 2) continue;
+
+            Map<String, String> query = parseQueryParams(params[1]);
+            String date = query.get("dataPubblicazioneGazzetta");
+            String number = query.get("numeroGazzetta");
+
+            if (date != null && number != null) {
+                issues.add(new Issue(date, number));
             }
         }
-        return links;
+
+        return issues;
+    }
+
+    private static List<String> getActLinks(Issue issue) throws IOException {
+        List<String> actUrls = new ArrayList<>();
+
+        String issueUrl = "https://www.gazzettaufficiale.it/gazzetta/serie_generale/caricaDettaglio"
+                + "?dataPubblicazioneGazzetta=" + issue.publicationDate
+                + "&numeroGazzetta=" + issue.number;
+
+        Document doc = Jsoup.connect(issueUrl).userAgent("Mozilla/5.0").timeout(10000).get();
+
+        Elements links = doc.select("a[href*=/atto/serie_generale/caricaDettaglioAtto/originario?]");
+
+        for (Element el : links) {
+            String href = el.absUrl("href");
+            String[] parts = href.split("\\?");
+            if (parts.length < 2) continue;
+
+            Map<String, String> query = parseQueryParams(parts[1]);
+            String codice = query.get("atto.codiceRedazionale");
+
+            if (codice != null) {
+                String actUrl = "https://www.gazzettaufficiale.it/atto/serie_generale/caricaDettaglioAtto/originario"
+                        + "?atto.dataPubblicazioneGazzetta=" + issue.publicationDate
+                        + "&atto.codiceRedazionale=" + codice
+                        + "&elenco30giorni=false";
+
+                actUrls.add(actUrl);
+            }
+        }
+
+        return actUrls;
     }
 
     private static Map<String, String> extractEliMetadata(String url) {
         Map<String, String> data = new HashMap<>();
         try {
-            Document doc = Jsoup.connect(url).userAgent("Mozilla/5.0").get();
-            Elements metas = doc.select("meta[property^=eli:]");
-            for (Element meta : metas) {
-                data.put(meta.attr("property"), meta.attr("content"));
+            Document doc = Jsoup.connect(url).userAgent("Mozilla/5.0").timeout(10000).get();
+            Elements metaTags = doc.select("meta[property^=eli:], meta[name^=eli:]");
+
+            for (Element meta : metaTags) {
+                String property = meta.hasAttr("property") ? meta.attr("property") : meta.attr("name");
+                String content = meta.hasAttr("content") ? meta.attr("content") : meta.attr("resource");
+                data.put(property, content);
             }
+
+            if (!data.containsKey("eli:title")) {
+                String visibleTitle = doc.select("h1.titoloatto").text();
+                if (!visibleTitle.isEmpty()) {
+                    data.put("eli:title", visibleTitle);
+                }
+            }
+
+            if (!data.containsKey("eli:id_local") && url.contains("codiceRedazionale=")) {
+                String[] parts = url.split("codiceRedazionale=");
+                if (parts.length > 1) {
+                    data.put("eli:id_local", parts[1].split("&")[0]);
+                }
+            }
+
         } catch (IOException e) {
-            System.err.println("Failed to fetch metadata from: " + url);
+            System.err.println("\u274C Failed to extract metadata from: " + url);
         }
+
         return data;
+    }
+
+    private static Map<String, String> parseQueryParams(String queryString) {
+        Map<String, String> map = new HashMap<>();
+        String[] pairs = queryString.split("&");
+        for (String pair : pairs) {
+            String[] kv = pair.split("=");
+            if (kv.length == 2) {
+                map.put(kv[0], kv[1]);
+            }
+        }
+        return map;
+    }
+
+    private static class Issue {
+        String publicationDate;
+        String number;
+
+        public Issue(String publicationDate, String number) {
+            this.publicationDate = publicationDate;
+            this.number = number;
+        }
     }
 }
