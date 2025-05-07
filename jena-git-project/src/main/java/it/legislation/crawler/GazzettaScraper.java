@@ -37,7 +37,7 @@ public class GazzettaScraper {
             Document doc = fetchDocument(url);
             Map<String, String> data = extractEliMetadata(doc, url);
             printToConsole(data);
-            writeToCsv(data, "eli_metadata.csv");
+            writeToCsv(data, "eli_metadata.ttl");
         } catch (IOException e) {
             System.err.println("Error processing URL: " + url);
             e.printStackTrace();
@@ -80,14 +80,36 @@ public class GazzettaScraper {
         data.forEach((key, value) -> System.out.println(key + ": " + value));
     }
 
+    // This now writes TTL instead of CSV
     public static void writeToCsv(Map<String, String> data, String fileName) {
         try (PrintWriter writer = new PrintWriter(new FileWriter(fileName))) {
-            writer.println(String.join(",", data.keySet()));
-            writer.println(String.join(",", data.values()));
-            System.out.println("CSV file '" + fileName + "' created successfully.");
+            writer.println("@prefix eli: <http://data.europa.eu/eli/ontology#> .");
+            writer.println("@prefix dct: <http://purl.org/dc/terms/> .");
+            writer.println();
+
+            String subject = "<" + data.get("Act URL") + ">";
+            for (Map.Entry<String, String> entry : data.entrySet()) {
+                String key = entry.getKey();
+                if (key.equals("Act URL")) continue;
+                String value = entry.getValue();
+                if (value.equals("NOT FOUND")) continue;
+
+                if (value.startsWith("http://") || value.startsWith("https://")) {
+                    writer.println(subject + " eli:" + key.substring(4) + " <" + value + "> ;");
+                } else {
+                    writer.println(subject + " eli:" + key.substring(4) + " \"" + escape(value) + "\" ;");
+                }
+            }
+
+            writer.println(".");
+            System.out.println("TTL file '" + fileName + "' created successfully.");
         } catch (IOException e) {
-            System.err.println("Error writing CSV file: " + fileName);
+            System.err.println("Error writing TTL file: " + fileName);
             e.printStackTrace();
         }
+    }
+
+    private static String escape(String value) {
+        return value.replace("\"", "\\\"").replace("\n", "\\n");
     }
 }
