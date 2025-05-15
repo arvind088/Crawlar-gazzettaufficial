@@ -24,12 +24,41 @@ public class GazzettaScraper {
     };
 
     public static void main(String[] args) {
-        List<String[]> issues = Arrays.asList(
-                new String[]{"2025-01-02", "1"},
-                new String[]{"2025-01-03", "2"}
-        );
+        try {
+            List<String[]> issues = getIssuesList("2025");
+            System.out.println("Total issues found: " + issues.size());
 
-        crawlGazzettaIssues(issues);
+            crawlGazzettaIssues(issues);
+        } catch (IOException e) {
+            System.err.println("Fatal error:");
+            e.printStackTrace();
+        }
+    }
+
+    public static List<String[]> getIssuesList(String year) throws IOException {
+        List<String[]> issues = new ArrayList<>();
+        String archiveUrl = "https://www.gazzettaufficiale.it/ricercaArchivioCompleto/serie_generale/" + year;
+
+        Document doc = Jsoup.connect(archiveUrl).userAgent("Mozilla").get();
+        Elements items = doc.select("a:containsOwn(n°)");
+
+        for (Element item : items) {
+            String text = item.text(); // e.g., "n° 4 del 09-01-2025"
+
+            if (text.contains("del")) {
+                String numero = text.substring(2, text.indexOf("del")).replaceAll("\\D+", "").trim();
+                String date = text.substring(text.indexOf("del") + 4).trim(); // dd-mm-yyyy
+
+                // Convert to yyyy-MM-dd
+                String[] parts = date.split("-");
+                if (parts.length == 3) {
+                    String formattedDate = parts[2] + "-" + parts[1] + "-" + parts[0];
+                    issues.add(new String[]{formattedDate, numero});
+                }
+            }
+        }
+
+        return issues;
     }
 
     public static void crawlGazzettaIssues(List<String[]> issues) {
@@ -51,6 +80,15 @@ public class GazzettaScraper {
                 e.printStackTrace();
             }
         }
+    }
+
+    private static Document fetchDocument(String url) throws IOException {
+        return Jsoup.connect(url)
+                .userAgent("Mozilla/5.0")
+                .referrer("https://www.google.com/")
+                .timeout(15000)
+                .followRedirects(true)
+                .get();
     }
 
     private static Set<String> extractCodiceRedazionale(Document doc) {
@@ -79,15 +117,6 @@ public class GazzettaScraper {
             System.err.println("Error processing URL: " + url);
             e.printStackTrace();
         }
-    }
-
-    private static Document fetchDocument(String url) throws IOException {
-        return Jsoup.connect(url)
-                .userAgent("Mozilla/5.0")
-                .referrer("https://www.google.com/")
-                .timeout(15000)
-                .followRedirects(true)
-                .get();
     }
 
     private static Map<String, String> extractEliMetadata(Document doc, String url) {
