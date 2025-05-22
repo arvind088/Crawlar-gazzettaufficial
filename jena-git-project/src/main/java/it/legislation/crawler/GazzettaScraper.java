@@ -147,31 +147,55 @@ public class GazzettaScraper {
     }
 
     private static void writeToTurtle(Map<String, String> data, String fileName) {
-        try (PrintWriter writer = new PrintWriter(new FileWriter(fileName, true))) {
-            writer.println("@prefix eli: <http://data.europa.eu/eli/ontology#> .");
-            writer.println("@prefix dct: <http://purl.org/dc/terms/> .");
-            writer.println();
+        String subject = data.get("Act URL");
 
-            String subject = "<" + data.get("Act URL") + ">";
-            for (Map.Entry<String, String> entry : data.entrySet()) {
-                String key = entry.getKey();
-                String value = entry.getValue();
-                if (key.equals("Act URL") || value.equals("NOT FOUND")) continue;
+        // Skip if subject is missing or empty
+        if (subject == null || subject.isBlank()) return;
 
-                String predicate = "eli:" + key.substring(4);
-                if (value.startsWith("http://") || value.startsWith("https://")) {
-                    writer.println(subject + " " + predicate + " <" + value + "> ;");
-                } else {
-                    writer.println(subject + " " + predicate + " \"" + escape(value) + "\" ;");
-                }
+        StringBuilder buffer = new StringBuilder();
+        buffer.append("@prefix eli: <http://data.europa.eu/eli/ontology#> .\n");
+        buffer.append("@prefix dct: <http://purl.org/dc/terms/> .\n\n");
+
+        buffer.append("<").append(subject).append(">\n");
+
+        boolean hasValidTriples = false;
+
+        for (Map.Entry<String, String> entry : data.entrySet()) {
+            String key = entry.getKey();
+            String value = entry.getValue();
+
+            if (key.equals("Act URL") || value.equals("NOT FOUND") || value.isBlank())
+                continue;
+
+            String predicate = "eli:" + key.substring(4);
+
+            String triple;
+            if (value.startsWith("http://") || value.startsWith("https://")) {
+                triple = "  " + predicate + " <" + value + "> ;\n";
+            } else {
+                triple = "  " + predicate + " \"" + escape(value) + "\" ;\n";
             }
-            writer.println(".");
-            System.out.println("TTL file '" + fileName + "' updated successfully.");
-        } catch (IOException e) {
-            System.err.println("Error writing TTL file: " + fileName);
-            e.printStackTrace();
+
+            hasValidTriples = true;
+            buffer.append(triple);
+        }
+
+        if (hasValidTriples) {
+            buffer.setLength(buffer.length() - 2); // Replace last `;` with `.` safely
+            buffer.append(".\n\n");
+
+            try (PrintWriter writer = new PrintWriter(new FileWriter(fileName, true))) {
+                writer.write(buffer.toString());
+                System.out.println("✅ TTL file updated for act: " + subject);
+            } catch (IOException e) {
+                System.err.println("❌ Error writing TTL file: " + fileName);
+                e.printStackTrace();
+            }
+        } else {
+            System.out.println("⚠️ Skipped writing act (no valid metadata): " + subject);
         }
     }
+
 
     private static String escape(String value) {
         return value.replace("\"", "\\\"").replace("\n", "\\n");
