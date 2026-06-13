@@ -1,0 +1,18 @@
+PREFIX eli: <http://data.europa.eu/eli/ontology#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+
+SELECT ?sourceAct ?sourceLabel ?relation ?targetAct ?targetLabel
+WHERE {
+  {
+    ?sourceAct eli:commences ?targetAct .
+    BIND("commences" AS ?relation)
+  }
+  UNION
+  {
+    ?sourceAct eli:commenced_by ?targetAct .
+    BIND("commenced_by" AS ?relation)
+  }
+  OPTIONAL { ?sourceAct rdfs:label ?sourceLabel . }
+  OPTIONAL { ?targetAct rdfs:label ?targetLabel . }
+}
+ORDER BY ?sourceAct ?relation ?targetAct

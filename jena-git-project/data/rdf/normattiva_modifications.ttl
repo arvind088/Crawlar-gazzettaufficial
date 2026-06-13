@@ -1,0 +1,53 @@
+@prefix eli:  <http://data.europa.eu/eli/ontology#> .
+@prefix ilg:  <http://example.org/italian-legislation/ontology#> .
+@prefix rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd:  <http://www.w3.org/2001/XMLSchema#> .
+
+<http://www.gazzettaufficiale.it/eli/id/2025/04/29/25G00068/sg>
+        rdf:type       eli:LegalResource;
+        eli:commences  <http://www.gazzettaufficiale.it/eli/id/2025/02/28/25G00030/sg>;
+        ilg:modifies   <http://www.gazzettaufficiale.it/eli/id/2025/02/28/25G00030/sg> .
+
+<http://www.gazzettaufficiale.it/eli/id/2025/04/16/25A02362/sg>
+        rdf:type      eli:LegalResource;
+        ilg:modifies  <http://www.gazzettaufficiale.it/eli/id/2025/03/26/25G00044/sg> .
+
+<http://www.gazzettaufficiale.it/eli/id/2025/01/24/25G00010/sg>
+        rdf:type          eli:LegalResource;
+        eli:commenced_by  <http://www.gazzettaufficiale.it/eli/id/2025/03/24/25G00041/sg>;
+        ilg:modifiedBy    <http://www.gazzettaufficiale.it/eli/id/2025/03/24/25G00041/sg> .
+
+<http://www.gazzettaufficiale.it/eli/id/2025/03/01/25G00028/sg>
+        rdf:type      eli:LegalResource;
+        ilg:modifies  <http://www.gazzettaufficiale.it/eli/id/2025/01/16/25G00006/sg> .
+
+<http://www.gazzettaufficiale.it/eli/id/2025/03/26/25G00044/sg>
+        rdf:type        eli:LegalResource;
+        ilg:modifiedBy  <http://www.gazzettaufficiale.it/eli/id/2025/04/16/25A02362/sg> .
+
+<http://www.gazzettaufficiale.it/eli/id/2025/03/24/25G00041/sg>
+        rdf:type       eli:LegalResource;
+        eli:commences  <http://www.gazzettaufficiale.it/eli/id/2025/01/24/25G00010/sg>;
+        ilg:modifies   <http://www.gazzettaufficiale.it/eli/id/2025/01/24/25G00010/sg> , <http://www.gazzettaufficiale.it/eli/id/2025/01/30/25G00013/sg> .
+
+<http://www.gazzettaufficiale.it/eli/id/2025/01/16/25G00006/sg>
+        rdf:type        eli:LegalResource;
+        ilg:modifiedBy  <http://www.gazzettaufficiale.it/eli/id/2025/03/01/25G00028/sg> .
+
+<http://www.gazzettaufficiale.it/eli/id/2025/04/09/25A02283/sg>
+        rdf:type      eli:LegalResource;
+        ilg:modifies  <http://www.gazzettaufficiale.it/eli/id/2025/04/08/25G00054/sg> .
+
+<http://www.gazzettaufficiale.it/eli/id/2025/04/08/25G00054/sg>
+        rdf:type        eli:LegalResource;
+        ilg:modifiedBy  <http://www.gazzettaufficiale.it/eli/id/2025/04/09/25A02283/sg> .
+
+<http://www.gazzettaufficiale.it/eli/id/2025/01/30/25G00013/sg>
+        rdf:type        eli:LegalResource;
+        ilg:modifiedBy  <http://www.gazzettaufficiale.it/eli/id/2025/03/24/25G00041/sg> .
+
+<http://www.gazzettaufficiale.it/eli/id/2025/02/28/25G00030/sg>
+        rdf:type          eli:LegalResource;
+        eli:commenced_by  <http://www.gazzettaufficiale.it/eli/id/2025/04/29/25G00068/sg>;
+        ilg:modifiedBy    <http://www.gazzettaufficiale.it/eli/id/2025/04/29/25G00068/sg> .
