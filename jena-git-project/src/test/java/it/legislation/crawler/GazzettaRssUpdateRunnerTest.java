@@ -71,4 +71,17 @@ class GazzettaRssUpdateRunnerTest {
         assertTrue(lines.get(1).contains("https://example.test/one"));
         assertTrue(lines.get(2).contains("https://example.test/two"));
     }
+
+    @Test
+    void readsLinksFromUpdateFile() throws Exception {
+        Path output = tempDir.resolve("gazzetta_rss_updates.tsv");
+        OffsetDateTime fetchDate = OffsetDateTime.parse("2026-06-13T10:15:30+02:00");
+
+        GazzettaRssUpdateRunner.appendNewEntries(List.of(
+                new GazzettaRssUpdateRunner.RssEntry("First title", "https://example.test/one", "published", "description"),
+                new GazzettaRssUpdateRunner.RssEntry("Second title", "https://example.test/two", "published", "description")
+        ), output, fetchDate);
+
+        assertEquals(List.of("https://example.test/one", "https://example.test/two"), GazzettaRssUpdateRunner.readLinks(output));
+    }
 }

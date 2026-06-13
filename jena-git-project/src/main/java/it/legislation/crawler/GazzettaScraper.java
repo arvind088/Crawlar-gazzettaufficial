@@ -117,6 +117,29 @@ public class GazzettaScraper {
         writeRecordsToTurtle(records, TTL_OUTPUT_PATH);
     }
 
+    public static int crawlGazzettaActUrls(List<String> actUrls) {
+        List<CleanLegalActRecord> records = new ArrayList<>();
+        CrawlRegistry registry = new CrawlRegistry(REGISTRY_FILE);
+
+        try {
+            registry.ensureExists();
+        } catch (IOException e) {
+            System.err.println("Unable to initialize crawl registry: " + REGISTRY_FILE);
+            e.printStackTrace();
+            return 0;
+        }
+
+        for (String actUrl : actUrls) {
+            if (actUrl == null || actUrl.isBlank()) {
+                continue;
+            }
+            processAct(actUrl.trim(), registry).ifPresent(records::add);
+        }
+
+        writeRecordsToTurtle(records, TTL_OUTPUT_PATH);
+        return records.size();
+    }
+
     private static String fetchHtml(String url) throws IOException {
         return Jsoup.connect(url)
                 .userAgent("Mozilla/5.0")
@@ -150,33 +173,37 @@ public class GazzettaScraper {
     private static Optional<CleanLegalActRecord> processAct(String url, CrawlRegistry registry) {
         try {
             String html = fetchHtml(url);
-            Document doc = Jsoup.parse(html, url);
-            Map<String, String> data = extractEliMetadata(doc, url);
-            printToConsole(data);
-            Optional<CleanLegalActRecord> maybeRecord = extractCleanLegalActRecord(doc, url);
-
-            if (maybeRecord.isEmpty()) {
-                System.out.println("Skipped act because no canonical ELI URI could be extracted: " + url);
-                return Optional.empty();
-            }
-
-            CleanLegalActRecord record = maybeRecord.get();
-            String contentHash = sha256(html);
-            cacheRawHtml(record, html, RAW_GAZZETTA_DIR);
-
-            CrawlRegistry.UpdateStatus status = registry.upsertSuccess(record, url, contentHash, OffsetDateTime.now());
-            System.out.println("Registry status for " + record.getEliUri() + ": " + status);
-
-            if (status == CrawlRegistry.UpdateStatus.UNCHANGED) {
-                return Optional.empty();
-            }
-
-            return Optional.of(record);
+            return processActHtml(url, html, registry, RAW_GAZZETTA_DIR);
         } catch (IOException e) {
             System.err.println("Error processing URL: " + url);
             e.printStackTrace();
             return Optional.empty();
         }
+    }
+
+    static Optional<CleanLegalActRecord> processActHtml(String url, String html, CrawlRegistry registry, Path rawRoot) throws IOException {
+        Document doc = Jsoup.parse(html, url);
+        Map<String, String> data = extractEliMetadata(doc, url);
+        printToConsole(data);
+        Optional<CleanLegalActRecord> maybeRecord = extractCleanLegalActRecord(doc, url);
+
+        if (maybeRecord.isEmpty()) {
+            System.out.println("Skipped act because no canonical ELI URI could be extracted: " + url);
+            return Optional.empty();
+        }
+
+        CleanLegalActRecord record = maybeRecord.get();
+        String contentHash = sha256(html);
+        cacheRawHtml(record, html, rawRoot);
+
+        CrawlRegistry.UpdateStatus status = registry.upsertSuccess(record, url, contentHash, OffsetDateTime.now());
+        System.out.println("Registry status for " + record.getEliUri() + ": " + status);
+
+        if (status == CrawlRegistry.UpdateStatus.UNCHANGED) {
+            return Optional.empty();
+        }
+
+        return Optional.of(record);
     }
 
     private static Map<String, String> extractEliMetadata(Document doc, String url) {

@@ -3,14 +3,19 @@ package it.legislation.crawler;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.LocalDate;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 class GazzettaScraperTest {
+
+    @TempDir
+    Path tempDir;
 
     @Test
     void extractsCleanRecordFromEmbeddedEliMetadata() {
@@ -76,5 +81,37 @@ class GazzettaScraperTest {
 
         assertEquals(Path.of("data", "raw", "gazzetta", "2025_01_02_24A06897_sg.html"), cachePath);
         assertEquals(GazzettaScraper.sha256("same content"), GazzettaScraper.sha256("same content"));
+    }
+
+    @Test
+    void repairsCommonGazzettaQuoteMojibakeInTitles() {
+        CleanLegalActRecord record = CleanLegalActRecord
+                .builder("http://www.gazzettaufficiale.it/eli/id/2026/06/12/26A02945/sg")
+                .title("Portale \u00C2\u00ABTrovaNormeFarmaco\u00C2\u00BB e \u0164test\u0165")
+                .build();
+
+        assertEquals("Portale \u00ABTrovaNormeFarmaco\u00BB e \u00ABtest\u00BB", record.getTitle().orElseThrow());
+    }
+
+    @Test
+    void processesActHtmlThroughRegistryAndSkipsUnchanged() throws Exception {
+        CrawlRegistry registry = new CrawlRegistry(tempDir.resolve("crawl_registry.tsv"));
+        Path rawRoot = tempDir.resolve("raw");
+        String sourceUrl = "https://www.gazzettaufficiale.it/eli/id/2025/01/02/24A06897/sg";
+        String html = """
+                <html>
+                  <head>
+                    <meta about="gu:id/2025/01/02/24A06897/sg" typeof="eli:LegalResource">
+                    <meta about="gu:id/2025/01/02/24A06897/sg" property="eli:title" content="Riclassificazione del medicinale">
+                    <meta about="gu:id/2025/01/02/24A06897/sg" property="eli:date_publication" content="2025-01-02">
+                    <meta about="gu:id/2025/01/02/24A06897/sg" property="eli:id_local" content="24A06897">
+                  </head>
+                </html>
+                """;
+
+        assertTrue(GazzettaScraper.processActHtml(sourceUrl, html, registry, rawRoot).isPresent());
+        assertTrue(GazzettaScraper.processActHtml(sourceUrl, html, registry, rawRoot).isEmpty());
+        assertTrue(Files.exists(rawRoot.resolve("2025_01_02_24A06897_sg.html")));
+        assertEquals(1, registry.countRecords());
     }
 }
