@@ -1,0 +1,12 @@
+PREFIX eli: <http://data.europa.eu/eli/ontology#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX dcterms: <http://purl.org/dc/terms/>
+
+SELECT ?predicate ?object
+WHERE {
+  VALUES ?act {
+    <http://www.gazzettaufficiale.it/eli/id/2020/05/23/20G00057/sg>
+  }
+  ?act ?predicate ?object .
+}
+ORDER BY ?predicate ?object

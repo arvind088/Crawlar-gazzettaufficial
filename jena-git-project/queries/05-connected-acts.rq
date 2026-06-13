@@ -1,0 +1,31 @@
+PREFIX eli: <http://data.europa.eu/eli/ontology#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+
+SELECT ?selectedAct ?selectedLabel ?relation ?connectedAct ?connectedLabel
+WHERE {
+  VALUES ?selectedAct {
+    <http://www.gazzettaufficiale.it/eli/id/2020/03/25/20G00035/sg>
+  }
+  OPTIONAL { ?selectedAct rdfs:label ?selectedLabel . }
+  {
+    ?selectedAct eli:commenced_by ?connectedAct .
+    BIND("commenced_by" AS ?relation)
+  }
+  UNION
+  {
+    ?connectedAct eli:commences ?selectedAct .
+    BIND("commenced_by_inverse" AS ?relation)
+  }
+  UNION
+  {
+    ?selectedAct eli:commences ?connectedAct .
+    BIND("commences" AS ?relation)
+  }
+  UNION
+  {
+    ?connectedAct eli:commenced_by ?selectedAct .
+    BIND("commences_inverse" AS ?relation)
+  }
+  OPTIONAL { ?connectedAct rdfs:label ?connectedLabel . }
+}
+ORDER BY ?relation ?connectedAct

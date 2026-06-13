@@ -1,0 +1,14 @@
+PREFIX eli: <http://data.europa.eu/eli/ontology#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX schema: <http://schema.org/>
+
+SELECT ?issue ?label ?datePublished ?issueNumber ?pdfUrl ?act
+WHERE {
+  ?issue a schema:PublicationIssue .
+  OPTIONAL { ?issue rdfs:label ?label . }
+  OPTIONAL { ?issue schema:datePublished ?datePublished . }
+  OPTIONAL { ?issue schema:issueNumber ?issueNumber . }
+  OPTIONAL { ?issue schema:contentUrl ?pdfUrl . }
+  OPTIONAL { ?issue eli:has_part ?act . }
+}
+ORDER BY ?datePublished ?issueNumber ?act
