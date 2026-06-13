@@ -134,7 +134,15 @@ public final class CleanLegalActRecord {
         if (!hasValue(value)) {
             return null;
         }
-        return value.trim().replaceAll("\\s+", " ");
+        return repairKnownMojibake(value).trim().replaceAll("\\s+", " ");
+    }
+
+    private static String repairKnownMojibake(String value) {
+        return value
+                .replace("\u00C2\u00AB", "\u00AB")
+                .replace("\u00C2\u00BB", "\u00BB")
+                .replace("\u0164", "\u00AB")
+                .replace("\u0165", "\u00BB");
     }
 
     private static String requireValue(String value, String fieldName) {
