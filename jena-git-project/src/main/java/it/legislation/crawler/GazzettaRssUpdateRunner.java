@@ -117,6 +117,24 @@ public class GazzettaRssUpdateRunner {
         return Math.max(0, linesToAppend.size() - headerOffset);
     }
 
+    static List<String> readLinks(Path output) throws IOException {
+        if (!Files.exists(output) || Files.size(output) == 0) {
+            return List.of();
+        }
+
+        List<String> links = new ArrayList<>();
+        List<String> lines = Files.readAllLines(output, StandardCharsets.UTF_8);
+
+        for (int i = 1; i < lines.size(); i++) {
+            String[] values = lines.get(i).split("\t", -1);
+            if (values.length > 1 && !values[1].isBlank()) {
+                links.add(values[1].trim());
+            }
+        }
+
+        return links;
+    }
+
     private static Set<String> readExistingLinks(Path output) throws IOException {
         Set<String> links = new HashSet<>();
         List<String> lines = Files.readAllLines(output, StandardCharsets.UTF_8);
