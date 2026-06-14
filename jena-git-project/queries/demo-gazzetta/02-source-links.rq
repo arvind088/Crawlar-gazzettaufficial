@@ -1,0 +1,11 @@
+PREFIX eli: <http://data.europa.eu/eli/ontology#>
+PREFIX dcterms: <http://purl.org/dc/terms/>
+
+SELECT ?act ?localId ?source
+WHERE {
+  ?act a eli:LegalResource .
+  OPTIONAL { ?act eli:id_local ?localId . }
+  OPTIONAL { ?act dcterms:source ?source . }
+}
+ORDER BY ?localId
+LIMIT 20
