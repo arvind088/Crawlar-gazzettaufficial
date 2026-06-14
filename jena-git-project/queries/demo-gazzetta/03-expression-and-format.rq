@@ -1,0 +1,12 @@
+PREFIX eli: <http://data.europa.eu/eli/ontology#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+
+SELECT ?act ?expression ?format ?label
+WHERE {
+  ?act a eli:LegalResource ;
+       eli:is_realized_by ?expression .
+  OPTIONAL { ?act rdfs:label ?label . }
+  OPTIONAL { ?expression eli:is_embodied_by ?format . }
+}
+ORDER BY ?act
+LIMIT 20
