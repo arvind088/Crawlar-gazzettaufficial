@@ -42,14 +42,14 @@ public class GazzettaRssUpdateRunner {
         System.out.println("RSS update file: " + output.toAbsolutePath().normalize());
     }
 
-    static List<RssEntry> fetchEntries(String rssUrl, int maxEntries) throws IOException {
+    public static List<RssEntry> fetchEntries(String rssUrl, int maxEntries) throws IOException {
         URI uri = URI.create(rssUrl);
         try (InputStream inputStream = uri.toURL().openStream()) {
             return parseEntries(inputStream, maxEntries);
         }
     }
 
-    static List<RssEntry> parseEntries(InputStream inputStream, int maxEntries) throws IOException {
+    public static List<RssEntry> parseEntries(InputStream inputStream, int maxEntries) throws IOException {
         try {
             DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
             factory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
@@ -79,7 +79,7 @@ public class GazzettaRssUpdateRunner {
         }
     }
 
-    static int appendNewEntries(List<RssEntry> entries, Path output, OffsetDateTime fetchDate) throws IOException {
+    public static int appendNewEntries(List<RssEntry> entries, Path output, OffsetDateTime fetchDate) throws IOException {
         Path parent = output.getParent();
         if (parent != null) {
             Files.createDirectories(parent);
@@ -117,7 +117,7 @@ public class GazzettaRssUpdateRunner {
         return Math.max(0, linesToAppend.size() - headerOffset);
     }
 
-    static List<String> readLinks(Path output) throws IOException {
+    public static List<String> readLinks(Path output) throws IOException {
         if (!Files.exists(output) || Files.size(output) == 0) {
             return List.of();
         }
@@ -180,6 +180,6 @@ public class GazzettaRssUpdateRunner {
         }
     }
 
-    record RssEntry(String title, String link, String published, String description) {
+    public record RssEntry(String title, String link, String published, String description) {
     }
 }
