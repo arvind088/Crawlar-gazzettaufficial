@@ -1,0 +1,27 @@
+# Build output
+target/
+*.class
+
+# IDE and local editor metadata
+.classpath
+.project
+.settings/
+.idea/
+*.iml
+
+# Local notes and planning artifacts
+docs/
+context/
+IMPLEMENTATION_PLAN.md
+.github/
+
+# Accidental command/output artifacts
+h origin master
+
+# Generated crawler snapshots and runtime outputs
+jena-git-project/data/raw/**/*.html
+jena-git-project/data/rdf/gazzetta_metadata_delta.ttl
+jena-git-project/src/eli_metadata_generated.ttl
+
+# Generated local reports/output
+jena-git-project/output/
