@@ -89,6 +89,7 @@ function App() {
   const [activeTab, setActiveTab] = useState("search");
   const [status, setStatus] = useState(null);
   const [crawlStatus, setCrawlStatus] = useState(null);
+  const [automationStatus, setAutomationStatus] = useState(null);
   const [updateResult, setUpdateResult] = useState(null);
   const [updateRunning, setUpdateRunning] = useState(false);
   const [updateError, setUpdateError] = useState("");
@@ -128,6 +129,14 @@ function App() {
       throw new Error("Latest update result request failed");
     }
     setUpdateResult(await response.json());
+  }, []);
+
+  const loadAutomationStatus = useCallback(async () => {
+    const response = await fetch("/api/crawl/automation");
+    if (!response.ok) {
+      throw new Error("Crawler automation request failed");
+    }
+    setAutomationStatus(await response.json());
   }, []);
 
   const loadModifications = useCallback(async () => {
@@ -185,6 +194,7 @@ function App() {
       }
       await loadStatus();
       await loadCrawlStatus();
+      await loadAutomationStatus();
       await loadRdfSources();
       await runSearch(search);
     } catch (err) {
@@ -192,16 +202,17 @@ function App() {
     } finally {
       setUpdateRunning(false);
     }
-  }, [loadCrawlStatus, loadRdfSources, loadStatus, runSearch, search]);
+  }, [loadAutomationStatus, loadCrawlStatus, loadRdfSources, loadStatus, runSearch, search]);
 
   useEffect(() => {
     loadStatus().catch((err) => setError(err.message || "Status request failed"));
     loadCrawlStatus().catch((err) => setError(err.message || "Crawler status request failed"));
+    loadAutomationStatus().catch((err) => setError(err.message || "Crawler automation request failed"));
     loadLatestUpdate().catch(() => {});
     loadModifications().catch((err) => setError(err.message || "Normattiva request failed"));
     loadRdfSources().catch((err) => setError(err.message || "RDF sources request failed"));
     runSearch("");
-  }, [loadCrawlStatus, loadLatestUpdate, loadModifications, loadRdfSources, loadStatus, runSearch]);
+  }, [loadAutomationStatus, loadCrawlStatus, loadLatestUpdate, loadModifications, loadRdfSources, loadStatus, runSearch]);
 
   const filteredActs = useMemo(() => acts.filter((act) => {
     const yearMatch = !yearFilter || String(act.publicationDate || "").startsWith(yearFilter);
@@ -241,6 +252,7 @@ function App() {
     : activeTab === "sparql" ? e(SparqlPage)
       : e(TechnicalPage, {
           crawlStatus,
+          automationStatus,
           loadedFileCount,
           missingFileCount,
           rdfSources,
@@ -632,7 +644,7 @@ function SparqlPage() {
   );
 }
 
-function TechnicalPage({ crawlStatus, loadedFileCount, missingFileCount, rdfSources, status, updateError, updateResult, updateRunning, onRunUpdate }) {
+function TechnicalPage({ automationStatus, crawlStatus, loadedFileCount, missingFileCount, rdfSources, status, updateError, updateResult, updateRunning, onRunUpdate }) {
   return e(React.Fragment, null,
     e("section", { className: "metric-grid", "aria-label": "Technical status" },
       e(MetricTile, { icon: "database", label: "Triples", value: status?.triples ?? "...", note: "legal RDF facts loaded in Jena" }),
@@ -641,7 +653,7 @@ function TechnicalPage({ crawlStatus, loadedFileCount, missingFileCount, rdfSour
       e(MetricTile, { icon: "registry", label: "Registry Records", value: crawlStatus?.registryRecords ?? "...", note: "tracked acts" })
     ),
     e(WorkflowPanel, { status }),
-    e(CrawlerStatusPanel, { crawlStatus, updateError, updateResult, updateRunning, onRunUpdate }),
+    e(CrawlerStatusPanel, { automationStatus, crawlStatus, updateError, updateResult, updateRunning, onRunUpdate }),
     e(SourcePanel, { rdfSources })
   );
 }
@@ -680,7 +692,7 @@ function WorkflowPanel({ status }) {
   );
 }
 
-function CrawlerStatusPanel({ crawlStatus, updateError, updateResult, updateRunning, onRunUpdate }) {
+function CrawlerStatusPanel({ automationStatus, crawlStatus, updateError, updateResult, updateRunning, onRunUpdate }) {
   const statusCounts = crawlStatus?.registryStatusCounts || {};
   const countEntries = Object.entries(statusCounts);
 
@@ -709,6 +721,17 @@ function CrawlerStatusPanel({ crawlStatus, updateError, updateResult, updateRunn
             e("span", { key: name, className: "count-chip" }, name, ": ", e("strong", null, count))
           )
         : e("span", { className: "muted-line" }, "No registry status counts available")
+    ),
+    e("div", { className: "automation-summary" },
+      e("div", { className: automationStatus?.enabled ? "automation-badge" : "automation-badge muted" },
+        automationStatus ? (automationStatus.enabled ? "Automatic updates enabled" : "Automatic updates disabled") : "Loading automation schedule"
+      ),
+      e("div", { className: "automation-details" },
+        e("span", null, "Schedule: ", e("strong", null, automationStatus?.cron || "...")),
+        e("span", null, "Zone: ", e("strong", null, automationStatus?.zone || "...")),
+        e("span", null, "RSS entries: ", e("strong", null, automationStatus?.maxEntries ?? "...")),
+        e("span", null, "Last scheduled run: ", e("strong", null, formatShortDate(automationStatus?.lastTriggeredAt) || "not run yet"))
+      )
     ),
     e("div", { className: "update-result" },
       updateError
