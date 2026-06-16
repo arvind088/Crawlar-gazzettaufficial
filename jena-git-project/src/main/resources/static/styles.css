@@ -693,6 +693,7 @@ button:focus,
 
 .status-counts,
 .crawler-footer,
+.automation-summary,
 .update-result {
   border-top: 1px solid var(--line);
   padding: 12px 16px;
@@ -711,6 +712,34 @@ button:focus,
   color: var(--accent-dark);
   font-size: 13px;
   padding: 7px 9px;
+}
+
+.automation-summary {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 14px;
+}
+
+.automation-badge {
+  background: var(--accent);
+  border-radius: 999px;
+  color: #ffffff;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 7px 11px;
+}
+
+.automation-badge.muted {
+  background: var(--muted);
+}
+
+.automation-details {
+  color: var(--muted);
+  display: flex;
+  flex-wrap: wrap;
+  font-size: 13px;
+  gap: 8px 14px;
 }
 
 .source-list {

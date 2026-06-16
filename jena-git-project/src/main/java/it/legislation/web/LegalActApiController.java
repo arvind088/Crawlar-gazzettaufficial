@@ -43,17 +43,20 @@ public class LegalActApiController {
     private final LegalActQueryService queryService;
     private final CrawlerStatusService crawlerStatusService;
     private final CrawlerUpdateService crawlerUpdateService;
+    private final ScheduledCrawlerUpdateJob scheduledCrawlerUpdateJob;
     private final NormattivaQueryService normattivaQueryService;
 
     public LegalActApiController(
             LegalActQueryService queryService,
             CrawlerStatusService crawlerStatusService,
             CrawlerUpdateService crawlerUpdateService,
+            ScheduledCrawlerUpdateJob scheduledCrawlerUpdateJob,
             NormattivaQueryService normattivaQueryService
     ) {
         this.queryService = queryService;
         this.crawlerStatusService = crawlerStatusService;
         this.crawlerUpdateService = crawlerUpdateService;
+        this.scheduledCrawlerUpdateJob = scheduledCrawlerUpdateJob;
         this.normattivaQueryService = normattivaQueryService;
     }
 
@@ -82,6 +85,11 @@ public class LegalActApiController {
             return ResponseEntity.noContent().build();
         }
         return ResponseEntity.ok(result);
+    }
+
+    @GetMapping("/crawl/automation")
+    public CrawlerAutomationStatus crawlAutomation() {
+        return scheduledCrawlerUpdateJob.status();
     }
 
     @GetMapping("/normattiva/modifications")
