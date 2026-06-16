@@ -20,6 +20,7 @@ h origin master
 
 # Generated crawler snapshots and runtime outputs
 jena-git-project/data/clean/gazzetta_rss_updates.tsv
+jena-git-project/data/clean/gazzetta_archive_links.tsv
 jena-git-project/data/registry/crawl_registry.tsv
 jena-git-project/data/raw/**/*.html
 jena-git-project/data/rdf/gazzetta_metadata_delta.ttl
