@@ -13,7 +13,6 @@ target/
 docs/
 context/
 IMPLEMENTATION_PLAN.md
-.github/
 
 # Accidental command/output artifacts
 h origin master

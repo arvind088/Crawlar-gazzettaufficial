@@ -82,4 +82,28 @@ class LegalActQueryServiceTest {
         assertEquals("Liquidazione coatta amministrativa", result.rows().get(0).get("title"));
         assertEquals("2026-06-15", result.rows().get(0).get("date"));
     }
+
+    @Test
+    void exportsRdfForOneLegalAct() throws Exception {
+        Path turtle = tempDir.resolve("gazzetta_metadata_delta.ttl");
+        Files.writeString(turtle, """
+                @prefix eli: <http://data.europa.eu/eli/ontology#> .
+                @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+                @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+                <http://www.gazzettaufficiale.it/eli/id/2026/06/15/26A02811/sg>
+                  a eli:LegalResource ;
+                  rdfs:label "Liquidazione coatta amministrativa" ;
+                  eli:date_publication "2026-06-15"^^xsd:date ;
+                  eli:id_local "26A02811" .
+                """, StandardCharsets.UTF_8);
+
+        LegalActQueryService service = new LegalActQueryService(List.of(turtle));
+
+        String rdf = service.rdfForLocalId("26A02811").orElseThrow();
+
+        assertTrue(rdf.contains("26A02811"));
+        assertTrue(rdf.contains("Liquidazione coatta amministrativa"));
+        assertTrue(service.rdfForLocalId("missing").isEmpty());
+    }
 }

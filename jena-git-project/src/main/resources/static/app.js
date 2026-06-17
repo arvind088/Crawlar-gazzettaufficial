@@ -93,6 +93,12 @@ function App() {
   const [updateResult, setUpdateResult] = useState(null);
   const [updateRunning, setUpdateRunning] = useState(false);
   const [updateError, setUpdateError] = useState("");
+  const [archiveResult, setArchiveResult] = useState(null);
+  const [archiveRunning, setArchiveRunning] = useState(false);
+  const [archiveError, setArchiveError] = useState("");
+  const [archiveStartDate, setArchiveStartDate] = useState("2026-06-01");
+  const [archiveEndDate, setArchiveEndDate] = useState("2026-06-16");
+  const [archiveLimit, setArchiveLimit] = useState("10");
   const [modifications, setModifications] = useState([]);
   const [rdfSources, setRdfSources] = useState([]);
   const [acts, setActs] = useState([]);
@@ -103,6 +109,7 @@ function App() {
   const [sourceFilter, setSourceFilter] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [actSparqlQuery, setActSparqlQuery] = useState("");
 
   const loadStatus = useCallback(async () => {
     const response = await fetch("/api/health");
@@ -137,6 +144,17 @@ function App() {
       throw new Error("Crawler automation request failed");
     }
     setAutomationStatus(await response.json());
+  }, []);
+
+  const loadLatestArchiveRun = useCallback(async () => {
+    const response = await fetch("/api/archive/run/latest");
+    if (response.status === 204) {
+      return;
+    }
+    if (!response.ok) {
+      throw new Error("Latest archive run request failed");
+    }
+    setArchiveResult(await response.json());
   }, []);
 
   const loadModifications = useCallback(async () => {
@@ -204,15 +222,78 @@ function App() {
     }
   }, [loadAutomationStatus, loadCrawlStatus, loadRdfSources, loadStatus, runSearch, search]);
 
+  const runArchiveDiscover = useCallback(async () => {
+    setArchiveRunning(true);
+    setArchiveError("");
+    try {
+      const params = new URLSearchParams({
+        startDate: archiveStartDate,
+        endDate: archiveEndDate
+      });
+      const response = await fetch(`/api/archive/discover?${params.toString()}`, { method: "POST" });
+      if (!response.ok) {
+        throw new Error("Archive discovery request failed");
+      }
+      const result = await response.json();
+      setArchiveResult(result);
+      if (result.state === "FAILED") {
+        setArchiveError(result.message || "Archive discovery failed");
+      }
+      await loadCrawlStatus();
+      await loadStatus();
+    } catch (err) {
+      setArchiveError(err.message || "Archive discovery failed");
+    } finally {
+      setArchiveRunning(false);
+    }
+  }, [archiveEndDate, archiveStartDate, loadCrawlStatus, loadStatus]);
+
+  const runArchiveCrawl = useCallback(async () => {
+    setArchiveRunning(true);
+    setArchiveError("");
+    try {
+      const availableLinks = Number(archiveResult?.linksAvailable || 0);
+      const requestedLimit = Number(archiveLimit || "10");
+      const safeLimit = availableLinks > 0 && requestedLimit > availableLinks ? availableLinks : requestedLimit;
+      if (String(safeLimit) !== String(archiveLimit)) {
+        setArchiveLimit(String(safeLimit));
+      }
+      const params = new URLSearchParams({ limit: String(safeLimit) });
+      const response = await fetch(`/api/archive/crawl?${params.toString()}`, { method: "POST" });
+      if (!response.ok) {
+        throw new Error("Archive crawl request failed");
+      }
+      const result = await response.json();
+      setArchiveResult(result);
+      if (result.state === "FAILED") {
+        setArchiveError(result.message || "Archive crawl failed");
+      }
+      await loadStatus();
+      await loadCrawlStatus();
+      await loadRdfSources();
+      await runSearch(search);
+    } catch (err) {
+      setArchiveError(err.message || "Archive crawl failed");
+    } finally {
+      setArchiveRunning(false);
+    }
+  }, [archiveLimit, archiveResult, loadCrawlStatus, loadRdfSources, loadStatus, runSearch, search]);
+
+  const runSparqlForAct = useCallback((act) => {
+    setActSparqlQuery(createActSparqlQuery(act));
+    setActiveTab("sparql");
+  }, []);
+
   useEffect(() => {
     loadStatus().catch((err) => setError(err.message || "Status request failed"));
     loadCrawlStatus().catch((err) => setError(err.message || "Crawler status request failed"));
     loadAutomationStatus().catch((err) => setError(err.message || "Crawler automation request failed"));
     loadLatestUpdate().catch(() => {});
+    loadLatestArchiveRun().catch(() => {});
     loadModifications().catch((err) => setError(err.message || "Normattiva request failed"));
     loadRdfSources().catch((err) => setError(err.message || "RDF sources request failed"));
     runSearch("");
-  }, [loadAutomationStatus, loadCrawlStatus, loadLatestUpdate, loadModifications, loadRdfSources, loadStatus, runSearch]);
+  }, [loadAutomationStatus, loadCrawlStatus, loadLatestArchiveRun, loadLatestUpdate, loadModifications, loadRdfSources, loadStatus, runSearch]);
 
   const filteredActs = useMemo(() => acts.filter((act) => {
     const yearMatch = !yearFilter || String(act.publicationDate || "").startsWith(yearFilter);
@@ -244,13 +325,20 @@ function App() {
     years,
     onSearchChange: setSearch,
     onRunSearch: runSearch,
+    onRunSparqlForAct: runSparqlForAct,
     onSelect: setSelected,
     onSourceFilterChange: setSourceFilter,
     onTypeFilterChange: setTypeFilter,
     onYearFilterChange: setYearFilter
   }) : activeTab === "normattiva" ? e(NormattivaPage, { modifications })
-    : activeTab === "sparql" ? e(SparqlPage)
+    : activeTab === "sparql" ? e(SparqlPage, { initialQuery: actSparqlQuery })
       : e(TechnicalPage, {
+          archiveEndDate,
+          archiveError,
+          archiveLimit,
+          archiveResult,
+          archiveRunning,
+          archiveStartDate,
           crawlStatus,
           automationStatus,
           loadedFileCount,
@@ -260,6 +348,11 @@ function App() {
           updateError,
           updateResult,
           updateRunning,
+          onArchiveEndDateChange: setArchiveEndDate,
+          onArchiveLimitChange: setArchiveLimit,
+          onArchiveStartDateChange: setArchiveStartDate,
+          onRunArchiveCrawl: runArchiveCrawl,
+          onRunArchiveDiscover: runArchiveDiscover,
           onRunUpdate: runCrawlerUpdate
         });
 
@@ -312,7 +405,7 @@ function SearchPage(props) {
     ),
     e("div", { className: "content-grid" },
       e(SearchPanel, props),
-      e(DetailPanel, { act: props.selected, modifications: props.modifications })
+      e(DetailPanel, { act: props.selected, modifications: props.modifications, onRunSparqlForAct: props.onRunSparqlForAct })
     )
   );
 }
@@ -444,7 +537,7 @@ function ResultTable({ acts, selected, onSelect }) {
   );
 }
 
-function DetailPanel({ act, modifications }) {
+function DetailPanel({ act, modifications, onRunSparqlForAct }) {
   return e("aside", { className: "panel detail-panel" },
     e("div", { className: "panel-heading" },
       e("div", { className: "heading-lockup" },
@@ -455,11 +548,11 @@ function DetailPanel({ act, modifications }) {
         )
       )
     ),
-    act ? e(DetailView, { act, modifications }) : e("div", { className: "empty-state" }, "Select a record from the results")
+    act ? e(DetailView, { act, modifications, onRunSparqlForAct }) : e("div", { className: "empty-state" }, "Select a record from the results")
   );
 }
 
-function DetailView({ act, modifications }) {
+function DetailView({ act, modifications, onRunSparqlForAct }) {
   const fields = [
     ["Title", displayTitle(act)],
     ["Publication Date", act.publicationDate],
@@ -491,9 +584,16 @@ function DetailView({ act, modifications }) {
     ),
     e("div", { className: "detail-actions" },
       e(LinkButton, { href: act.source || act.uri, icon: "external", label: "Open Gazzetta" }),
-      e(LinkButton, { href: act.uri, icon: "link", label: "View RDF" }),
-      e("button", { className: "secondary-button", type: "button" }, e(Icon, { name: "download" }), e("span", null, "Download TTL")),
-      e("button", { className: "secondary-button", type: "button" }, e(Icon, { name: "code" }), e("span", null, "Run SPARQL"))
+      e(LinkButton, { href: actRdfUrl(act), icon: "link", label: "View RDF" }),
+      e("a", { className: "action-link secondary-link-inline", href: `${actRdfUrl(act)}?download=true` },
+        e(Icon, { name: "download" }),
+        e("span", null, "Download TTL")
+      ),
+      e("button", {
+        className: "secondary-button",
+        onClick: () => onRunSparqlForAct(act),
+        type: "button"
+      }, e(Icon, { name: "code" }), e("span", null, "Run SPARQL"))
     )
   );
 }
@@ -543,7 +643,7 @@ function NormattivaPage({ modifications }) {
   );
 }
 
-function SparqlPage() {
+function SparqlPage({ initialQuery }) {
   const [activeExample, setActiveExample] = useState(SPARQL_EXAMPLES[0].id);
   const [queryText, setQueryText] = useState(SPARQL_EXAMPLES[0].query);
   const [queryResult, setQueryResult] = useState(null);
@@ -555,6 +655,15 @@ function SparqlPage() {
     setQueryText(example.query);
     setQueryError("");
   };
+
+  useEffect(() => {
+    if (initialQuery) {
+      setActiveExample("");
+      setQueryText(initialQuery);
+      setQueryError("");
+      setQueryResult(null);
+    }
+  }, [initialQuery]);
 
   const runQuery = async () => {
     setQueryRunning(true);
@@ -644,7 +753,29 @@ function SparqlPage() {
   );
 }
 
-function TechnicalPage({ automationStatus, crawlStatus, loadedFileCount, missingFileCount, rdfSources, status, updateError, updateResult, updateRunning, onRunUpdate }) {
+function TechnicalPage({
+  archiveEndDate,
+  archiveError,
+  archiveLimit,
+  archiveResult,
+  archiveRunning,
+  archiveStartDate,
+  automationStatus,
+  crawlStatus,
+  loadedFileCount,
+  missingFileCount,
+  rdfSources,
+  status,
+  updateError,
+  updateResult,
+  updateRunning,
+  onArchiveEndDateChange,
+  onArchiveLimitChange,
+  onArchiveStartDateChange,
+  onRunArchiveCrawl,
+  onRunArchiveDiscover,
+  onRunUpdate
+}) {
   return e(React.Fragment, null,
     e("section", { className: "metric-grid", "aria-label": "Technical status" },
       e(MetricTile, { icon: "database", label: "Triples", value: status?.triples ?? "...", note: "legal RDF facts loaded in Jena" }),
@@ -654,6 +785,19 @@ function TechnicalPage({ automationStatus, crawlStatus, loadedFileCount, missing
     ),
     e(WorkflowPanel, { status }),
     e(CrawlerStatusPanel, { automationStatus, crawlStatus, updateError, updateResult, updateRunning, onRunUpdate }),
+    e(ArchiveStatusPanel, {
+      archiveEndDate,
+      archiveError,
+      archiveLimit,
+      archiveResult,
+      archiveRunning,
+      archiveStartDate,
+      onArchiveEndDateChange,
+      onArchiveLimitChange,
+      onArchiveStartDateChange,
+      onRunArchiveCrawl,
+      onRunArchiveDiscover
+    }),
     e(SourcePanel, { rdfSources })
   );
 }
@@ -745,6 +889,97 @@ function CrawlerStatusPanel({ automationStatus, crawlStatus, updateError, update
               e("span", null, "changed: ", e("strong", null, updateResult.changedRecords))
             )
           : e("span", { className: "muted-line" }, "Manual update check has not been run from this screen yet.")
+    )
+  );
+}
+
+function ArchiveStatusPanel({
+  archiveEndDate,
+  archiveError,
+  archiveLimit,
+  archiveResult,
+  archiveRunning,
+  archiveStartDate,
+  onArchiveEndDateChange,
+  onArchiveLimitChange,
+  onArchiveStartDateChange,
+  onRunArchiveCrawl,
+  onRunArchiveDiscover
+}) {
+  const availableLinks = Number(archiveResult?.linksAvailable || 0);
+  const limitHint = availableLinks > 0 ? `Available pending links: ${availableLinks}` : "Run discovery to load archive links.";
+  const updateArchiveLimit = (value) => {
+    const numericValue = Number(value);
+    if (!Number.isFinite(numericValue)) {
+      onArchiveLimitChange(value);
+      return;
+    }
+    if (availableLinks > 0 && numericValue > availableLinks) {
+      onArchiveLimitChange(String(availableLinks));
+      return;
+    }
+    onArchiveLimitChange(value);
+  };
+
+  return e("section", { className: "panel archive-panel" },
+    e("div", { className: "panel-heading" },
+      e("div", null,
+        e("p", { className: "section-label" }, "Historical archive"),
+        e("h2", null, "Backfill older Gazzetta acts"),
+        e("p", { className: "panel-subtitle" }, "Discover archive links first, then crawl a controlled batch into the existing RDF pipeline.")
+      )
+    ),
+    e("div", { className: "archive-controls" },
+      e("label", null, "Start Date",
+        e("input", {
+          type: "date",
+          value: archiveStartDate,
+          onChange: (event) => onArchiveStartDateChange(event.target.value)
+        })
+      ),
+      e("label", null, "End Date",
+        e("input", {
+          type: "date",
+          value: archiveEndDate,
+          onChange: (event) => onArchiveEndDateChange(event.target.value)
+        })
+      ),
+      e("button", {
+        disabled: archiveRunning,
+        onClick: onRunArchiveDiscover,
+        type: "button"
+      }, e(Icon, { name: "search" }), e("span", null, archiveRunning ? "Running..." : "Discover Archive Links")),
+      e("label", null, "Batch Limit",
+        e("input", {
+          max: availableLinks > 0 ? String(availableLinks) : undefined,
+          min: "0",
+          type: "number",
+          value: archiveLimit,
+          onChange: (event) => updateArchiveLimit(event.target.value)
+        }),
+        e("span", { className: "field-hint" }, limitHint)
+      ),
+      e("button", {
+        className: "secondary-button",
+        disabled: archiveRunning,
+        onClick: onRunArchiveCrawl,
+        type: "button"
+      }, e(Icon, { name: "cloud" }), e("span", null, archiveRunning ? "Running..." : "Crawl Archive Batch"))
+    ),
+    e("div", { className: "archive-result" },
+      archiveError
+        ? e("span", { className: "update-error" }, archiveError)
+        : archiveResult
+          ? e("div", { className: "run-summary" },
+              e("span", null, "Last action: ", e("strong", null, archiveResult.action)),
+              e("span", null, "state: ", e("strong", null, archiveResult.state)),
+              archiveResult.startDate ? e("span", null, "range: ", e("strong", null, `${archiveResult.startDate} to ${archiveResult.endDate}`)) : null,
+              e("span", null, "discovered: ", e("strong", null, archiveResult.discoveredLinks)),
+              e("span", null, "available: ", e("strong", null, archiveResult.linksAvailable)),
+              e("span", null, "crawled: ", e("strong", null, archiveResult.linksCrawled)),
+              e("span", null, "changed: ", e("strong", null, archiveResult.changedRecords))
+            )
+          : e("span", { className: "muted-line" }, "No archive action has been run from this screen yet.")
     )
   );
 }
@@ -909,6 +1144,33 @@ function normattivaStatus(act, modifications) {
     row.targetUri === uri
   );
   return linked ? "Linked in loaded Normattiva relations" : "No loaded Normattiva relation";
+}
+
+function actRdfUrl(act) {
+  return `/api/acts/${encodeURIComponent(displayLocalId(act))}/rdf`;
+}
+
+function createActSparqlQuery(act) {
+  const uri = act?.uri || "";
+  const localId = displayLocalId(act);
+  if (uri) {
+    return `PREFIX eli: <http://data.europa.eu/eli/ontology#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX dcterms: <http://purl.org/dc/terms/>
+
+SELECT ?property ?value WHERE {
+  <${uri}> ?property ?value .
+}
+LIMIT 50`;
+  }
+  return `PREFIX eli: <http://data.europa.eu/eli/ontology#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+
+SELECT ?act ?property ?value WHERE {
+  ?act eli:id_local "${escapeQuery(localId)}" ;
+       ?property ?value .
+}
+LIMIT 50`;
 }
 
 function copyText(value) {

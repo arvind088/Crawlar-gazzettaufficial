@@ -31,7 +31,7 @@ public class GazzettaArchiveCrawlRunner {
         System.out.println("Archive link file: " + input.toAbsolutePath().normalize());
     }
 
-    static List<String> readActUrls(Path input, int limit) throws IOException {
+    public static List<String> readActUrls(Path input, int limit) throws IOException {
         if (!Files.exists(input) || Files.size(input) == 0) {
             return List.of();
         }

@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -43,6 +44,7 @@ public class LegalActApiController {
     private final LegalActQueryService queryService;
     private final CrawlerStatusService crawlerStatusService;
     private final CrawlerUpdateService crawlerUpdateService;
+    private final ArchiveCrawlerService archiveCrawlerService;
     private final ScheduledCrawlerUpdateJob scheduledCrawlerUpdateJob;
     private final NormattivaQueryService normattivaQueryService;
 
@@ -50,12 +52,14 @@ public class LegalActApiController {
             LegalActQueryService queryService,
             CrawlerStatusService crawlerStatusService,
             CrawlerUpdateService crawlerUpdateService,
+            ArchiveCrawlerService archiveCrawlerService,
             ScheduledCrawlerUpdateJob scheduledCrawlerUpdateJob,
             NormattivaQueryService normattivaQueryService
     ) {
         this.queryService = queryService;
         this.crawlerStatusService = crawlerStatusService;
         this.crawlerUpdateService = crawlerUpdateService;
+        this.archiveCrawlerService = archiveCrawlerService;
         this.scheduledCrawlerUpdateJob = scheduledCrawlerUpdateJob;
         this.normattivaQueryService = normattivaQueryService;
     }
@@ -92,6 +96,30 @@ public class LegalActApiController {
         return scheduledCrawlerUpdateJob.status();
     }
 
+    @PostMapping("/archive/discover")
+    public ArchiveCrawlerResult discoverArchiveLinks(
+            @RequestParam(defaultValue = "2026-06-01") String startDate,
+            @RequestParam(defaultValue = "2026-06-16") String endDate
+    ) throws IOException {
+        return archiveCrawlerService.discover(LocalDate.parse(startDate), LocalDate.parse(endDate));
+    }
+
+    @PostMapping("/archive/crawl")
+    public ArchiveCrawlerResult crawlArchiveLinks(
+            @RequestParam(defaultValue = "10") int limit
+    ) throws IOException {
+        return archiveCrawlerService.crawl(limit);
+    }
+
+    @GetMapping("/archive/run/latest")
+    public ResponseEntity<ArchiveCrawlerResult> latestArchiveRun() {
+        ArchiveCrawlerResult result = archiveCrawlerService.lastResult();
+        if (result == null) {
+            return ResponseEntity.noContent().build();
+        }
+        return ResponseEntity.ok(result);
+    }
+
     @GetMapping("/normattiva/modifications")
     public List<NormattivaModificationSummary> normattivaModifications(
             @RequestParam(defaultValue = "20") int limit
@@ -111,6 +139,26 @@ public class LegalActApiController {
     public ResponseEntity<LegalActSummary> findByLocalId(@PathVariable String localId) throws IOException {
         return queryService.findByLocalId(localId)
                 .map(ResponseEntity::ok)
+                .orElseGet(() -> ResponseEntity.notFound().build());
+    }
+
+    @GetMapping("/acts/{localId}/rdf")
+    public ResponseEntity<String> rdfForAct(
+            @PathVariable String localId,
+            @RequestParam(defaultValue = "false") boolean download
+    ) throws IOException {
+        return queryService.rdfForLocalId(localId)
+                .map(turtle -> {
+                    ResponseEntity.BodyBuilder response = ResponseEntity.ok()
+                            .contentType(MediaType.parseMediaType("text/turtle; charset=UTF-8"));
+                    if (download) {
+                        response.header(HttpHeaders.CONTENT_DISPOSITION, ContentDisposition.attachment()
+                                .filename(localId + ".ttl")
+                                .build()
+                                .toString());
+                    }
+                    return response.body(turtle);
+                })
                 .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
