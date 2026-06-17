@@ -1,0 +1,73 @@
+name: Legal Data Pipeline
+
+on:
+  workflow_dispatch:
+    inputs:
+      rss_entries:
+        description: "Maximum RSS entries to read"
+        required: false
+        default: "50"
+      archive_start:
+        description: "Archive discovery start date"
+        required: false
+        default: "2026-06-16"
+      archive_end:
+        description: "Archive discovery end date"
+        required: false
+        default: "2026-06-16"
+
+permissions:
+  contents: read
+
+jobs:
+  validate-pipeline:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: jena-git-project
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+          cache: maven
+
+      - name: Run tests
+        run: mvn -B test
+
+      - name: Discover latest RSS entries
+        run: mvn -B "-Dexec.mainClass=it.legislation.crawler.GazzettaRssUpdateRunner" exec:java
+        env:
+          GAZZETTA_RSS_URL: "https://www.gazzettaufficiale.it/rss/SG"
+          GAZZETTA_RSS_OUTPUT: "data/clean/gazzetta_rss_updates.tsv"
+          GAZZETTA_RSS_MAX_ENTRIES: ${{ inputs.rss_entries }}
+
+      - name: Discover archive links
+        run: mvn -B "-Dexec.mainClass=it.legislation.crawler.GazzettaArchiveDiscoveryRunner" exec:java
+        env:
+          GAZZETTA_ARCHIVE_START: ${{ inputs.archive_start }}
+          GAZZETTA_ARCHIVE_END: ${{ inputs.archive_end }}
+          GAZZETTA_ARCHIVE_OUTPUT: "data/clean/gazzetta_archive_links.tsv"
+
+      - name: Generate Normattiva RDF
+        run: |
+          if [ -f "../context/TSV_MOD_2025-aggiornamenti.tsv" ]; then
+            mvn -B "-Dexec.mainClass=it.legislation.crawler.NormattivaModTsvRunner" exec:java
+          else
+            echo "Skipping Normattiva RDF generation because the local context TSV is not tracked in Git."
+          fi
+
+      - name: Run SPARQL smoke queries
+        run: |
+          if [ -f "data/rdf/gazzetta_metadata_delta.ttl" ]; then
+            mvn -B "-Dexec.mainClass=it.legislation.crawler.SampleRdfQueryRunner" "-Dexec.args=data/rdf/gazzetta_metadata_delta.ttl queries" exec:java
+          elif [ -f "data/rdf/normattiva_modifications.ttl" ]; then
+            mvn -B "-Dexec.mainClass=it.legislation.crawler.SampleRdfQueryRunner" "-Dexec.args=data/rdf/normattiva_modifications.ttl queries" exec:java
+          else
+            echo "Skipping SPARQL smoke queries because no tracked RDF file is available."
+          fi

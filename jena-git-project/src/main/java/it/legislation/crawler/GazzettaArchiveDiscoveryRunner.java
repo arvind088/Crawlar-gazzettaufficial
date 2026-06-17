@@ -97,7 +97,7 @@ public class GazzettaArchiveDiscoveryRunner {
         return List.copyOf(links.values());
     }
 
-    static void writeLinks(List<ArchiveActLink> links, Path output, OffsetDateTime discoveredAt) throws IOException {
+    public static void writeLinks(List<ArchiveActLink> links, Path output, OffsetDateTime discoveredAt) throws IOException {
         Path parent = output.getParent();
         if (parent != null) {
             Files.createDirectories(parent);

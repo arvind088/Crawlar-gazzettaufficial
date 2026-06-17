@@ -2,6 +2,7 @@ package it.legislation.web;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.StringWriter;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -20,8 +21,10 @@ import org.apache.jena.query.ResultSet;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.RDFNode;
+import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.riot.Lang;
 import org.apache.jena.riot.RDFDataMgr;
+import org.apache.jena.riot.RDFFormat;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -157,6 +160,35 @@ public class LegalActQueryService {
         }
 
         return new SparqlQueryResult(columns, rows, null);
+    }
+
+    public Optional<String> rdfForLocalId(String localId) throws IOException {
+        Optional<LegalActSummary> maybeAct = findByLocalId(localId);
+        if (maybeAct.isEmpty() || maybeAct.get().uri() == null || maybeAct.get().uri().isBlank()) {
+            return Optional.empty();
+        }
+
+        Model source = loadData().model();
+        Model selected = ModelFactory.createDefaultModel();
+        selected.setNsPrefixes(source.getNsPrefixMap());
+
+        Resource act = source.createResource(maybeAct.get().uri());
+        source.listStatements(act, null, (RDFNode) null).forEachRemaining(statement -> {
+            selected.add(statement);
+            if (statement.getObject().isResource()) {
+                Resource linkedResource = statement.getObject().asResource();
+                source.listStatements(linkedResource, null, (RDFNode) null).forEachRemaining(selected::add);
+            }
+        });
+        source.listStatements(null, null, act).forEachRemaining(selected::add);
+
+        if (selected.isEmpty()) {
+            return Optional.empty();
+        }
+
+        StringWriter writer = new StringWriter();
+        RDFDataMgr.write(writer, selected, RDFFormat.TURTLE_PRETTY);
+        return Optional.of(writer.toString());
     }
 
     private LoadResult loadData() throws IOException {
