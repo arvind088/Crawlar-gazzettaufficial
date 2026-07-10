@@ -1,0 +1,8 @@
+services:
+  - type: web
+    name: italian-legislative-kg-demo
+    runtime: docker
+    plan: free
+    dockerfilePath: ./jena-git-project/Dockerfile
+    dockerContext: ./jena-git-project
+    healthCheckPath: /api/health
