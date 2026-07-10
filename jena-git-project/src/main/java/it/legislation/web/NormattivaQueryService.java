@@ -23,19 +23,24 @@ import it.legislation.crawler.RdfModelBuilder;
 public class NormattivaQueryService {
 
     private static final Path NORMATTIVA_MODIFICATIONS = Path.of("data", "rdf", "normattiva_modifications.ttl");
+    private static final Path NORMATTIVA_AUTO_MODIFICATIONS = Path.of("data", "rdf", "normattiva_modifications_auto.ttl");
 
-    private final Path modificationsPath;
+    private final List<Path> modificationPaths;
 
     public NormattivaQueryService() {
-        this(NORMATTIVA_MODIFICATIONS);
+        this(List.of(NORMATTIVA_MODIFICATIONS, NORMATTIVA_AUTO_MODIFICATIONS));
     }
 
     NormattivaQueryService(Path modificationsPath) {
-        this.modificationsPath = modificationsPath;
+        this(List.of(modificationsPath));
+    }
+
+    NormattivaQueryService(List<Path> modificationPaths) {
+        this.modificationPaths = List.copyOf(modificationPaths);
     }
 
     public List<NormattivaModificationSummary> listModifications(int limit) throws IOException {
-        if (!Files.exists(modificationsPath)) {
+        if (modificationPaths.stream().noneMatch(Files::exists)) {
             return List.of();
         }
 
@@ -66,8 +71,13 @@ public class NormattivaQueryService {
 
     private Model loadModel() throws IOException {
         Model model = ModelFactory.createDefaultModel();
-        try (InputStream inputStream = Files.newInputStream(modificationsPath)) {
-            RDFDataMgr.read(model, inputStream, Lang.TURTLE);
+        for (Path modificationsPath : modificationPaths) {
+            if (!Files.exists(modificationsPath)) {
+                continue;
+            }
+            try (InputStream inputStream = Files.newInputStream(modificationsPath)) {
+                RDFDataMgr.read(model, inputStream, Lang.TURTLE);
+            }
         }
         return model;
     }

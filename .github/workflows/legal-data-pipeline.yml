@@ -54,18 +54,23 @@ jobs:
           GAZZETTA_ARCHIVE_END: ${{ inputs.archive_end }}
           GAZZETTA_ARCHIVE_OUTPUT: "data/clean/gazzetta_archive_links.tsv"
 
-      - name: Generate Normattiva RDF
-        run: |
-          if [ -f "../context/TSV_MOD_2025-aggiornamenti.tsv" ]; then
-            mvn -B "-Dexec.mainClass=it.legislation.crawler.NormattivaModTsvRunner" exec:java
-          else
-            echo "Skipping Normattiva RDF generation because the local context TSV is not tracked in Git."
-          fi
+      - name: Download Normattiva updates and generate RDF
+        run: mvn -B "-Dexec.mainClass=it.legislation.crawler.NormattivaUpdateRunner" exec:java
+        env:
+          NORMATTIVA_SOURCE_URL: "https://www.normattiva.it/"
+          NORMATTIVA_UPDATES_OUTPUT: "data/clean/normattiva_updates.tsv"
+          NORMATTIVA_RELATIONS_OUTPUT: "data/clean/normattiva_modifications_auto.tsv"
+          NORMATTIVA_RDF_OUTPUT: "data/rdf/normattiva_modifications_auto.ttl"
+
+      - name: Backfill Gazzetta metadata for Normattiva relation acts
+        run: mvn -B "-Dexec.mainClass=it.legislation.crawler.NormattivaGazzettaMetadataBackfillRunner" exec:java
 
       - name: Run SPARQL smoke queries
         run: |
           if [ -f "data/rdf/gazzetta_metadata_delta.ttl" ]; then
             mvn -B "-Dexec.mainClass=it.legislation.crawler.SampleRdfQueryRunner" "-Dexec.args=data/rdf/gazzetta_metadata_delta.ttl queries" exec:java
+          elif [ -f "data/rdf/normattiva_modifications_auto.ttl" ]; then
+            mvn -B "-Dexec.mainClass=it.legislation.crawler.SampleRdfQueryRunner" "-Dexec.args=data/rdf/normattiva_modifications_auto.ttl queries" exec:java
           elif [ -f "data/rdf/normattiva_modifications.ttl" ]; then
             mvn -B "-Dexec.mainClass=it.legislation.crawler.SampleRdfQueryRunner" "-Dexec.args=data/rdf/normattiva_modifications.ttl queries" exec:java
           else

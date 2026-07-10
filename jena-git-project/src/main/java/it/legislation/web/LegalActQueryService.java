@@ -32,11 +32,12 @@ public class LegalActQueryService {
 
     private static final Path GAZZETTA_DELTA = Path.of("data", "rdf", "gazzetta_metadata_delta.ttl");
     private static final Path NORMATTIVA_MODIFICATIONS = Path.of("data", "rdf", "normattiva_modifications.ttl");
+    private static final Path NORMATTIVA_AUTO_MODIFICATIONS = Path.of("data", "rdf", "normattiva_modifications_auto.ttl");
 
     private final List<Path> rdfPaths;
 
     public LegalActQueryService() {
-        this(List.of(GAZZETTA_DELTA, NORMATTIVA_MODIFICATIONS));
+        this(List.of(GAZZETTA_DELTA, NORMATTIVA_MODIFICATIONS, NORMATTIVA_AUTO_MODIFICATIONS));
     }
 
     LegalActQueryService(List<Path> rdfPaths) {
@@ -58,24 +59,32 @@ public class LegalActQueryService {
 
         String queryText = """
                 PREFIX eli: <http://data.europa.eu/eli/ontology#>
+                PREFIX ilg: <http://example.org/italian-legislation/ontology#>
                 PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
                 PREFIX dcterms: <http://purl.org/dc/terms/>
 
-                SELECT ?act ?label ?publicationDate ?documentDate ?type ?localId ?source
+                SELECT DISTINCT ?act ?label ?publicationDate ?documentDate ?type ?localId ?source
                 WHERE {
-                  ?act a eli:LegalResource .
+                  {
+                    ?act a eli:LegalResource .
+                  } UNION {
+                    ?act (ilg:modifies|ilg:modifiedBy|eli:commences|eli:commenced_by) ?related .
+                  } UNION {
+                    ?related (ilg:modifies|ilg:modifiedBy|eli:commences|eli:commenced_by) ?act .
+                  }
                   OPTIONAL { ?act rdfs:label ?label . }
                   OPTIONAL { ?act eli:date_publication ?publicationDate . }
                   OPTIONAL { ?act eli:date_document ?documentDate . }
                   OPTIONAL { ?act eli:type_document ?type . }
                   OPTIONAL { ?act eli:id_local ?localId . }
                   OPTIONAL { ?act dcterms:source ?source . }
-                  FILTER (BOUND(?label) || BOUND(?localId) || BOUND(?publicationDate) || BOUND(?source))
                   FILTER (
-                    ?needle = "" ||
-                    (BOUND(?label) && CONTAINS(LCASE(STR(?label)), LCASE(STR(?needle)))) ||
-                    (BOUND(?localId) && CONTAINS(LCASE(STR(?localId)), LCASE(STR(?needle)))) ||
-                    CONTAINS(LCASE(STR(?act)), LCASE(STR(?needle)))
+                    (?needle = "" && (BOUND(?label) || BOUND(?localId) || BOUND(?publicationDate) || BOUND(?source))) ||
+                    (?needle != "" && (
+                      (BOUND(?label) && CONTAINS(LCASE(STR(?label)), LCASE(STR(?needle)))) ||
+                      (BOUND(?localId) && CONTAINS(LCASE(STR(?localId)), LCASE(STR(?needle)))) ||
+                      CONTAINS(LCASE(STR(?act)), LCASE(STR(?needle)))
+                    ))
                   )
                 }
                 ORDER BY DESC(?publicationDate) ?act
@@ -103,19 +112,29 @@ public class LegalActQueryService {
         Model model = loadData().model();
         String queryText = """
                 PREFIX eli: <http://data.europa.eu/eli/ontology#>
+                PREFIX ilg: <http://example.org/italian-legislation/ontology#>
                 PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
                 PREFIX dcterms: <http://purl.org/dc/terms/>
 
                 SELECT ?act ?label ?publicationDate ?documentDate ?type ?localId ?source
                 WHERE {
-                  ?act a eli:LegalResource ;
-                       eli:id_local ?localId .
+                  {
+                    ?act a eli:LegalResource .
+                  } UNION {
+                    ?act (ilg:modifies|ilg:modifiedBy|eli:commences|eli:commenced_by) ?related .
+                  } UNION {
+                    ?related (ilg:modifies|ilg:modifiedBy|eli:commences|eli:commenced_by) ?act .
+                  }
+                  OPTIONAL { ?act eli:id_local ?localId . }
                   OPTIONAL { ?act rdfs:label ?label . }
                   OPTIONAL { ?act eli:date_publication ?publicationDate . }
                   OPTIONAL { ?act eli:date_document ?documentDate . }
                   OPTIONAL { ?act eli:type_document ?type . }
                   OPTIONAL { ?act dcterms:source ?source . }
-                  FILTER (?localId = ?requestedLocalId)
+                  FILTER (
+                    (BOUND(?localId) && ?localId = ?requestedLocalId) ||
+                    CONTAINS(LCASE(STR(?act)), LCASE(CONCAT("/", STR(?requestedLocalId), "/")))
+                  )
                 }
                 LIMIT 1
                 """;

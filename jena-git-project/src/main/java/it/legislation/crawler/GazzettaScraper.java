@@ -1,6 +1,8 @@
 package it.legislation.crawler;
 
 import org.apache.jena.rdf.model.Model;
+import org.apache.jena.rdf.model.ModelFactory;
+import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.riot.RDFDataMgr;
 import org.apache.jena.riot.RDFFormat;
 import org.jsoup.Jsoup;
@@ -258,7 +260,7 @@ public class GazzettaScraper {
         data.forEach((key, value) -> System.out.println(key + ": " + value));
     }
 
-    private static void writeRecordsToTurtle(List<CleanLegalActRecord> records, Path outputPath) {
+    static void writeRecordsToTurtle(List<CleanLegalActRecord> records, Path outputPath) {
         if (records.isEmpty()) {
             System.out.println("No new or changed legal act records; Turtle delta output was not written.");
             return;
@@ -270,12 +272,25 @@ public class GazzettaScraper {
                 Files.createDirectories(parent);
             }
 
-            Model model = new RdfModelBuilder().buildLegalActs(records);
+            Model model = ModelFactory.createDefaultModel();
+            if (Files.exists(outputPath)) {
+                try (var inputStream = Files.newInputStream(outputPath)) {
+                    RDFDataMgr.read(model, inputStream, org.apache.jena.riot.Lang.TURTLE);
+                }
+            }
+
+            Model newRecords = new RdfModelBuilder().buildLegalActs(records);
+            for (CleanLegalActRecord record : records) {
+                Resource act = model.createResource(record.getEliUri());
+                model.removeAll(act, null, null);
+            }
+            model.add(newRecords);
+
             try (OutputStream outputStream = Files.newOutputStream(outputPath)) {
                 RDFDataMgr.write(outputStream, model, RDFFormat.TURTLE_PRETTY);
             }
 
-            System.out.println("Wrote " + records.size() + " new/changed legal act records to " + outputPath.toAbsolutePath().normalize());
+            System.out.println("Merged " + records.size() + " new/changed legal act records into " + outputPath.toAbsolutePath().normalize());
         } catch (IOException e) {
             System.err.println("Error writing Turtle output: " + outputPath);
             e.printStackTrace();

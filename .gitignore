@@ -10,7 +10,10 @@ target/
 *.iml
 
 # Local notes and planning artifacts
-docs/
+docs/*
+!docs/PROGRESS_LOG.md
+!docs/diagrams/
+!docs/diagrams/**
 context/
 IMPLEMENTATION_PLAN.md
 
@@ -20,11 +23,17 @@ h origin master
 # Generated crawler snapshots and runtime outputs
 jena-git-project/data/clean/gazzetta_rss_updates.tsv
 jena-git-project/data/clean/gazzetta_archive_links.tsv
+jena-git-project/data/clean/normattiva_updates.tsv
+jena-git-project/data/clean/normattiva_modifications_auto.tsv
 jena-git-project/data/registry/crawl_registry.tsv
 jena-git-project/data/raw/**/*.html
 jena-git-project/data/rdf/gazzetta_metadata_delta.ttl
+jena-git-project/data/rdf/normattiva_modifications_auto.ttl
 jena-git-project/eli_metadata.ttl
+jena-git-project/eli_metadata_cleaned.ttl
 jena-git-project/src/eli_metadata_generated.ttl
 
 # Generated local reports/output
 jena-git-project/output/
+jena-git-project/data/reports/
+jena-git-project/data/registry/reports/
