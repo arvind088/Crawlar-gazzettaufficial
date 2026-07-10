@@ -1,11 +1,12 @@
 const { useCallback, useEffect, useMemo, useState } = React;
 const e = React.createElement;
+const SEARCH_PAGE_SIZE = 20;
 
 const TABS = [
-  ["search", "Dashboard", "grid"],
-  ["normattiva", "Normattiva", "link"],
+  ["search", "Legal Acts", "grid"],
+  ["normattiva", "Relationships", "link"],
   ["sparql", "SPARQL", "code"],
-  ["technical", "Technical Status", "pulse"]
+  ["technical", "Status", "pulse"]
 ];
 
 const SPARQL_EXAMPLES = [
@@ -90,6 +91,10 @@ function App() {
   const [status, setStatus] = useState(null);
   const [crawlStatus, setCrawlStatus] = useState(null);
   const [automationStatus, setAutomationStatus] = useState(null);
+  const [normattivaAutomationStatus, setNormattivaAutomationStatus] = useState(null);
+  const [normattivaUpdateResult, setNormattivaUpdateResult] = useState(null);
+  const [normattivaRunning, setNormattivaRunning] = useState(false);
+  const [normattivaError, setNormattivaError] = useState("");
   const [updateResult, setUpdateResult] = useState(null);
   const [updateRunning, setUpdateRunning] = useState(false);
   const [updateError, setUpdateError] = useState("");
@@ -166,6 +171,25 @@ function App() {
     setModifications(Array.isArray(rows) ? rows : []);
   }, []);
 
+  const loadNormattivaAutomationStatus = useCallback(async () => {
+    const response = await fetch("/api/normattiva/automation");
+    if (!response.ok) {
+      throw new Error("Normattiva automation request failed");
+    }
+    setNormattivaAutomationStatus(await response.json());
+  }, []);
+
+  const loadLatestNormattivaUpdate = useCallback(async () => {
+    const response = await fetch("/api/normattiva/run/latest");
+    if (response.status === 204) {
+      return;
+    }
+    if (!response.ok) {
+      throw new Error("Latest Normattiva update request failed");
+    }
+    setNormattivaUpdateResult(await response.json());
+  }, []);
+
   const loadRdfSources = useCallback(async () => {
     const response = await fetch("/api/rdf/sources");
     if (!response.ok) {
@@ -175,9 +199,14 @@ function App() {
     setRdfSources(Array.isArray(rows) ? rows : []);
   }, []);
 
-  const runSearch = useCallback(async (query) => {
+  const runSearch = useCallback(async (query, options = {}) => {
     setLoading(true);
     setError("");
+    if (options.resetFilters) {
+      setYearFilter("");
+      setTypeFilter("");
+      setSourceFilter("");
+    }
     try {
       const params = new URLSearchParams({ search: query ?? search, limit: "100" });
       const response = await fetch(`/api/acts?${params.toString()}`);
@@ -279,6 +308,30 @@ function App() {
     }
   }, [archiveLimit, archiveResult, loadCrawlStatus, loadRdfSources, loadStatus, runSearch, search]);
 
+  const runNormattivaUpdate = useCallback(async () => {
+    setNormattivaRunning(true);
+    setNormattivaError("");
+    try {
+      const response = await fetch("/api/normattiva/run", { method: "POST" });
+      if (!response.ok) {
+        throw new Error("Normattiva update request failed");
+      }
+      const result = await response.json();
+      setNormattivaUpdateResult(result);
+      if (result.state === "FAILED") {
+        setNormattivaError(result.message || "Normattiva update failed");
+      }
+      await loadStatus();
+      await loadModifications();
+      await loadRdfSources();
+      await loadNormattivaAutomationStatus();
+    } catch (err) {
+      setNormattivaError(err.message || "Normattiva update failed");
+    } finally {
+      setNormattivaRunning(false);
+    }
+  }, [loadModifications, loadNormattivaAutomationStatus, loadRdfSources, loadStatus]);
+
   const runSparqlForAct = useCallback((act) => {
     setActSparqlQuery(createActSparqlQuery(act));
     setActiveTab("sparql");
@@ -288,12 +341,14 @@ function App() {
     loadStatus().catch((err) => setError(err.message || "Status request failed"));
     loadCrawlStatus().catch((err) => setError(err.message || "Crawler status request failed"));
     loadAutomationStatus().catch((err) => setError(err.message || "Crawler automation request failed"));
+    loadNormattivaAutomationStatus().catch((err) => setError(err.message || "Normattiva automation request failed"));
     loadLatestUpdate().catch(() => {});
+    loadLatestNormattivaUpdate().catch(() => {});
     loadLatestArchiveRun().catch(() => {});
     loadModifications().catch((err) => setError(err.message || "Normattiva request failed"));
     loadRdfSources().catch((err) => setError(err.message || "RDF sources request failed"));
     runSearch("");
-  }, [loadAutomationStatus, loadCrawlStatus, loadLatestArchiveRun, loadLatestUpdate, loadModifications, loadRdfSources, loadStatus, runSearch]);
+  }, [loadAutomationStatus, loadCrawlStatus, loadLatestArchiveRun, loadLatestNormattivaUpdate, loadLatestUpdate, loadModifications, loadNormattivaAutomationStatus, loadRdfSources, loadStatus, runSearch]);
 
   const filteredActs = useMemo(() => acts.filter((act) => {
     const yearMatch = !yearFilter || String(act.publicationDate || "").startsWith(yearFilter);
@@ -343,6 +398,10 @@ function App() {
           automationStatus,
           loadedFileCount,
           missingFileCount,
+          normattivaAutomationStatus,
+          normattivaError,
+          normattivaRunning,
+          normattivaUpdateResult,
           rdfSources,
           status,
           updateError,
@@ -353,6 +412,7 @@ function App() {
           onArchiveStartDateChange: setArchiveStartDate,
           onRunArchiveCrawl: runArchiveCrawl,
           onRunArchiveDiscover: runArchiveDiscover,
+          onRunNormattivaUpdate: runNormattivaUpdate,
           onRunUpdate: runCrawlerUpdate
         });
 
@@ -365,7 +425,7 @@ function App() {
               e("div", { className: "brand-mark", "aria-hidden": "true" }, e(Icon, { name: "building" })),
               e("div", { className: "hero-copy" },
                 e("h1", null, "Legal RDF Explorer"),
-                e("p", { className: "hero-text" }, "Search Gazzetta acts, inspect Normattiva relationships, and validate the RDF pipeline.")
+                e("p", { className: "hero-text" }, "A lightweight explorer for Gazzetta metadata, Normattiva relationships, and RDF queries.")
               )
             ),
             e("div", { className: "hero-status", "aria-label": "API status" },
@@ -392,16 +452,13 @@ function App() {
 
 function SearchPage(props) {
   const totalActs = props.allActs.length;
-  const currentYear = new Date().getFullYear().toString();
-  const actsThisYear = props.allActs.filter((act) => String(act.publicationDate || "").startsWith(currentYear)).length;
   const lastUpdate = props.allActs.map((act) => act.publicationDate).filter(Boolean).sort().pop() || "unknown";
 
   return e(React.Fragment, null,
-    e("section", { className: "metric-grid", "aria-label": "Search overview" },
-      e(MetricTile, { icon: "file", label: "Total Acts", value: totalActs, note: "with searchable metadata" }),
-      e(MetricTile, { icon: "calendar", label: "Acts This Year", value: actsThisYear, note: `Year ${currentYear}` }),
-      e(MetricTile, { icon: "link", label: "Normattiva Links", value: props.modifications.length, note: "relationship rows" }),
-      e(MetricTile, { icon: "clock", label: "Last Update", value: formatDisplayDate(lastUpdate), note: "latest publication date" })
+    e("section", { className: "metric-grid compact-metrics", "aria-label": "Dataset overview" },
+      e(MetricTile, { icon: "file", label: "Legal Acts", value: totalActs, note: "from Gazzetta RDF" }),
+      e(MetricTile, { icon: "link", label: "Relationships", value: props.modifications.length, note: "from Normattiva RDF" }),
+      e(MetricTile, { icon: "clock", label: "Latest Date", value: formatDisplayDate(lastUpdate), note: "publication date" })
     ),
     e("div", { className: "content-grid" },
       e(SearchPanel, props),
@@ -427,26 +484,28 @@ function SearchPanel({
   loading,
   search,
   selected,
-  sourceFilter,
-  sources,
-  typeFilter,
-  types,
-  yearFilter,
-  years,
   onSearchChange,
   onRunSearch,
-  onSelect,
-  onSourceFilterChange,
-  onTypeFilterChange,
-  onYearFilterChange
+  onSelect
 }) {
+  const [page, setPage] = useState(1);
+  const pageCount = Math.max(1, Math.ceil(acts.length / SEARCH_PAGE_SIZE));
+  const safePage = Math.min(page, pageCount);
+  const pageStart = acts.length ? (safePage - 1) * SEARCH_PAGE_SIZE : 0;
+  const pageEnd = Math.min(pageStart + SEARCH_PAGE_SIZE, acts.length);
+  const visibleActs = acts.slice(pageStart, pageEnd);
+
+  useEffect(() => {
+    setPage(1);
+  }, [acts]);
+
   return e("section", { className: "panel search-panel" },
     e("div", { className: "panel-heading" },
       e("div", { className: "heading-lockup" },
         e("span", { className: "heading-icon", "aria-hidden": "true" }, e(Icon, { name: "search" })),
         e("div", null,
-          e("h2", null, "Search Legal Acts"),
-          e("p", { className: "panel-subtitle" }, "Find acts by title, local ID, year, type, or source.")
+          e("h2", null, "Legal acts"),
+          e("p", { className: "panel-subtitle" }, "Gazzetta metadata loaded from RDF.")
         )
       ),
       e("span", { className: "result-count" }, loading ? "Loading" : `${acts.length} result${acts.length === 1 ? "" : "s"}`)
@@ -455,7 +514,7 @@ function SearchPanel({
       className: "filter-grid",
       onSubmit: (event) => {
         event.preventDefault();
-        onRunSearch(search);
+        onRunSearch(search, { resetFilters: true });
       }
     },
       e("label", null, "Keyword / Act ID",
@@ -469,16 +528,34 @@ function SearchPanel({
           e("span", { className: "input-icon", "aria-hidden": "true" }, e(Icon, { name: "search" }))
         )
       ),
-      e(SelectFilter, { label: "Year", value: yearFilter, options: years, onChange: onYearFilterChange }),
-      e(SelectFilter, { label: "Type", value: typeFilter, options: types, onChange: onTypeFilterChange }),
-      e(SelectFilter, { label: "Source", value: sourceFilter, options: sources, onChange: onSourceFilterChange }),
       e("button", { type: "submit", disabled: loading }, "Search")
     ),
     error ? e("p", { className: "error-message" }, error) : null,
     e("div", { className: "table-meta" },
-      e("span", null, e(Icon, { name: "file" }), " ", acts.length, " results found")
+      e("span", null, e(Icon, { name: "file" }), " ",
+        acts.length
+          ? `Showing ${pageStart + 1}-${pageEnd} of ${acts.length}`
+          : "0 results found"
+      )
     ),
-    e(ResultTable, { acts, selected, onSelect })
+    e(ResultTable, { acts: visibleActs, selected, onSelect }),
+    acts.length > SEARCH_PAGE_SIZE
+      ? e("div", { className: "pagination-controls" },
+          e("button", {
+            className: "secondary-button",
+            disabled: safePage <= 1,
+            onClick: () => setPage((current) => Math.max(1, current - 1)),
+            type: "button"
+          }, "Previous"),
+          e("span", { className: "page-range" }, `Page ${safePage} of ${pageCount}`),
+          e("button", {
+            className: "secondary-button",
+            disabled: safePage >= pageCount,
+            onClick: () => setPage((current) => Math.min(pageCount, current + 1)),
+            type: "button"
+          }, "Next")
+        )
+      : null
   );
 }
 
@@ -505,8 +582,7 @@ function ResultTable({ acts, selected, onSelect }) {
         e("tr", null,
           e("th", null, "ID"),
           e("th", null, "Title"),
-          e("th", null, "Publication Date"),
-          e("th", null, "Type"),
+          e("th", null, "Date"),
           e("th", null, "Source")
         )
       ),
@@ -528,7 +604,6 @@ function ResultTable({ acts, selected, onSelect }) {
             e("td", { className: "mono strong-cell" }, displayLocalId(act)),
             e("td", null, e("span", { className: "table-title" }, displayTitle(act))),
             e("td", { className: "mono" }, act.publicationDate || ""),
-            e("td", null, shortType(act.type) || ""),
             e("td", null, sourceLabel(act.source))
           )
         )
@@ -553,11 +628,10 @@ function DetailPanel({ act, modifications, onRunSparqlForAct }) {
 }
 
 function DetailView({ act, modifications, onRunSparqlForAct }) {
+  const relations = relatedModifications(act, modifications);
   const fields = [
     ["Title", displayTitle(act)],
     ["Publication Date", act.publicationDate],
-    ["Document Date", act.documentDate],
-    ["Normattiva Status", normattivaStatus(act, modifications)],
     ["Type", shortType(act.type)],
     ["Source", sourceLabel(act.source)]
   ];
@@ -579,8 +653,20 @@ function DetailView({ act, modifications, onRunSparqlForAct }) {
     fields.map(([label, value]) =>
       e("div", { key: label, className: "detail-item" },
         e("div", { className: "detail-label" }, label),
-        e("div", { className: label === "Normattiva Status" ? "detail-value status-text" : "detail-value" }, value || "Missing data")
+        e("div", { className: "detail-value" }, value || "Missing data")
       )
+    ),
+    e("div", { className: "detail-item" },
+      e("div", { className: "detail-label" }, "Normattiva Relations"),
+      relations.length
+        ? e("div", { className: "relation-list" },
+            relations.map((row) =>
+              e("div", { key: `${row.sourceUri}-${row.relationship}-${row.targetUri}`, className: "relation-chip" },
+                e("span", null, relationSentence(act, row))
+              )
+            )
+          )
+        : e("div", { className: "detail-value muted-line" }, "No loaded relationship")
     ),
     e("div", { className: "detail-actions" },
       e(LinkButton, { href: act.source || act.uri, icon: "external", label: "Open Gazzetta" }),
@@ -609,8 +695,8 @@ function NormattivaPage({ modifications }) {
   return e("section", { className: "panel normattiva-panel" },
     e("div", { className: "panel-heading" },
       e("div", null,
-        e("p", { className: "section-label" }, "Normattiva relations"),
-        e("h2", null, "Modification relationships")
+        e("p", { className: "section-label" }, "Normattiva RDF"),
+        e("h2", null, "Legal relationships")
       ),
       e("span", { className: "result-count" }, `${modifications.length} link${modifications.length === 1 ? "" : "s"}`)
     ),
@@ -621,19 +707,15 @@ function NormattivaPage({ modifications }) {
               e("tr", null,
                 e("th", null, "Source Act"),
                 e("th", null, "Relation"),
-                e("th", null, "Target Act"),
-                e("th", null, "Source URI"),
-                e("th", null, "Target URI")
+                e("th", null, "Target Act")
               )
             ),
             e("tbody", null,
               modifications.map((row) =>
                 e("tr", { key: `${row.sourceUri}-${row.relationship}-${row.targetUri}` },
-                  e("td", { className: "mono strong-cell" }, row.sourceLocalId),
+                  e("td", { className: "mono relation-id-cell" }, displayRelationId(row.sourceLocalId, row.sourceUri)),
                   e("td", null, relationshipLabel(row.relationship)),
-                  e("td", { className: "mono strong-cell" }, row.targetLocalId),
-                  e("td", { className: "mono small-uri" }, row.sourceUri),
-                  e("td", { className: "mono small-uri" }, row.targetUri)
+                  e("td", { className: "mono relation-id-cell" }, displayRelationId(row.targetLocalId, row.targetUri))
                 )
               )
             )
@@ -690,9 +772,9 @@ function SparqlPage({ initialQuery }) {
   return e("section", { className: "panel sparql-panel" },
     e("div", { className: "panel-heading sparql-heading" },
       e("div", null,
-        e("p", { className: "section-label" }, "SPARQL Explorer"),
-        e("h2", null, "Run queries on the RDF dataset."),
-        e("p", { className: "panel-subtitle" }, "Run predefined or custom SPARQL queries against the RDF dataset loaded in Jena/Fuseki.")
+        e("p", { className: "section-label" }, "RDF query"),
+        e("h2", null, "SPARQL queries"),
+        e("p", { className: "panel-subtitle" }, "Queries run against the RDF files loaded in Jena.")
       )
     ),
     e("div", { className: "query-layout" },
@@ -741,12 +823,6 @@ function SparqlPage({ initialQuery }) {
           onClick: () => copyText(queryText),
           type: "button"
         }, e(Icon, { name: "copy" }), e("span", null, "Copy Query")),
-        e("a", {
-          className: "action-link secondary-link",
-          href: "http://localhost:3030/",
-          rel: "noreferrer",
-          target: "_blank"
-        }, e("span", null, "Open Fuseki Endpoint"), e(Icon, { name: "external" }))
       ),
       e(QueryResults, { result: queryResult })
     )
@@ -764,6 +840,10 @@ function TechnicalPage({
   crawlStatus,
   loadedFileCount,
   missingFileCount,
+  normattivaAutomationStatus,
+  normattivaError,
+  normattivaRunning,
+  normattivaUpdateResult,
   rdfSources,
   status,
   updateError,
@@ -774,31 +854,65 @@ function TechnicalPage({
   onArchiveStartDateChange,
   onRunArchiveCrawl,
   onRunArchiveDiscover,
+  onRunNormattivaUpdate,
   onRunUpdate
 }) {
   return e(React.Fragment, null,
-    e("section", { className: "metric-grid", "aria-label": "Technical status" },
+    e("section", { className: "metric-grid compact-metrics", "aria-label": "System status" },
       e(MetricTile, { icon: "database", label: "Triples", value: status?.triples ?? "...", note: "legal RDF facts loaded in Jena" }),
       e(MetricTile, { icon: "file", label: "RDF Files", value: loadedFileCount, note: "active sources" }),
-      e(MetricTile, { icon: "alert", label: "Missing Data", value: missingFileCount, note: "unavailable files" }),
-      e(MetricTile, { icon: "registry", label: "Registry Records", value: crawlStatus?.registryRecords ?? "...", note: "tracked acts" })
+      e(MetricTile, { icon: "registry", label: "Registry", value: crawlStatus?.registryRecords ?? "...", note: "tracked acts" })
     ),
-    e(WorkflowPanel, { status }),
     e(CrawlerStatusPanel, { automationStatus, crawlStatus, updateError, updateResult, updateRunning, onRunUpdate }),
-    e(ArchiveStatusPanel, {
-      archiveEndDate,
-      archiveError,
-      archiveLimit,
-      archiveResult,
-      archiveRunning,
-      archiveStartDate,
-      onArchiveEndDateChange,
-      onArchiveLimitChange,
-      onArchiveStartDateChange,
-      onRunArchiveCrawl,
-      onRunArchiveDiscover
-    }),
     e(SourcePanel, { rdfSources })
+  );
+}
+
+function NormattivaAutomationPanel({
+  normattivaAutomationStatus,
+  normattivaError,
+  normattivaRunning,
+  normattivaUpdateResult,
+  onRunNormattivaUpdate
+}) {
+  return e("section", { className: "panel crawler-panel" },
+    e("div", { className: "panel-heading" },
+      e("div", null,
+        e("p", { className: "section-label" }, "Normattiva"),
+        e("h2", null, "Automatic update status"),
+        e("p", { className: "panel-subtitle" }, "Downloads Normattiva update cards, extracts act links, and generates automatic relationship RDF.")
+      ),
+      e("button", {
+        className: "secondary-button",
+        disabled: normattivaRunning,
+        onClick: onRunNormattivaUpdate,
+        type: "button"
+      }, normattivaRunning ? "Running..." : "Run Normattiva Update")
+    ),
+    e("div", { className: "automation-summary" },
+      e("div", { className: normattivaAutomationStatus?.enabled ? "automation-badge" : "automation-badge muted" },
+        normattivaAutomationStatus
+          ? (normattivaAutomationStatus.enabled ? "Automatic Normattiva updates enabled" : "Automatic Normattiva updates disabled")
+          : "Loading Normattiva schedule"
+      ),
+      e("div", { className: "automation-details" },
+        e("span", null, "Schedule: ", e("strong", null, normattivaAutomationStatus?.cron || "...")),
+        e("span", null, "Zone: ", e("strong", null, normattivaAutomationStatus?.zone || "...")),
+        e("span", null, "Last scheduled run: ", e("strong", null, formatShortDate(normattivaAutomationStatus?.lastTriggeredAt) || "not run yet")),
+        e("span", null, "State: ", e("strong", null, normattivaAutomationStatus?.lastState || "..."))
+      )
+    ),
+    e("div", { className: "update-result" },
+      normattivaError
+        ? e("span", { className: "update-error" }, normattivaError)
+        : normattivaUpdateResult
+          ? e("div", { className: "run-summary" },
+              e("span", null, "Last run: ", e("strong", null, normattivaUpdateResult.state)),
+              e("span", null, "updates: ", e("strong", null, normattivaUpdateResult.updatesRead)),
+              e("span", null, "relations: ", e("strong", null, normattivaUpdateResult.relationRows))
+            )
+          : e("span", { className: "muted-line" }, "Manual Normattiva update has not been run from this screen yet.")
+    )
   );
 }
 
@@ -1090,6 +1204,16 @@ function displayTitle(act) {
   return act.title || "Missing title";
 }
 
+function displayRelationId(localId, uri) {
+  const text = localId || uri || "";
+  const urnMarker = "urn:nir:stato:";
+  const urnIndex = text.indexOf(urnMarker);
+  if (urnIndex >= 0) {
+    return text.slice(urnIndex + urnMarker.length);
+  }
+  return text;
+}
+
 function localIdFromUri(uri) {
   if (!uri) {
     return "";
@@ -1099,7 +1223,7 @@ function localIdFromUri(uri) {
 }
 
 function sourceLabel(source) {
-  return source ? "Gazzetta Ufficiale" : "Local RDF";
+  return source ? "Gazzetta Ufficiale" : "Relation RDF";
 }
 
 function relationshipLabel(value) {
@@ -1132,6 +1256,29 @@ function formatDisplayDate(value) {
     return value;
   }
   return date.toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" });
+}
+
+function relatedModifications(act, modifications) {
+  if (!act) {
+    return [];
+  }
+  const localId = displayLocalId(act);
+  const uri = act.uri;
+  return (modifications || []).filter((row) =>
+    row.sourceLocalId === localId ||
+    row.targetLocalId === localId ||
+    row.sourceUri === uri ||
+    row.targetUri === uri
+  );
+}
+
+function relationSentence(act, row) {
+  const localId = displayLocalId(act);
+  const isSource = row.sourceLocalId === localId || row.sourceUri === act.uri;
+  const other = isSource
+    ? displayRelationId(row.targetLocalId, row.targetUri)
+    : displayRelationId(row.sourceLocalId, row.sourceUri);
+  return isSource ? `Modifies ${other}` : `Modified by ${other}`;
 }
 
 function normattivaStatus(act, modifications) {
@@ -1210,6 +1357,10 @@ function formatSparqlCell(value) {
     return "";
   }
   const text = String(value);
+  const compact = compactRdfName(text);
+  if (compact) {
+    return compact;
+  }
   if (text.includes("gazzettaufficiale.it/eli/id/")) {
     return localIdFromUri(text) || text;
   }
@@ -1220,6 +1371,21 @@ function formatSparqlCell(value) {
     return "source";
   }
   return text;
+}
+
+function compactRdfName(text) {
+  const namespaces = [
+    ["http://data.europa.eu/eli/ontology#", "eli:"],
+    ["http://purl.org/dc/terms/", "dcterms:"],
+    ["http://www.w3.org/2000/01/rdf-schema#", "rdfs:"],
+    ["http://www.w3.org/1999/02/22-rdf-syntax-ns#", "rdf:"],
+    ["http://schema.org/", "schema:"],
+    ["http://example.org/italian-legislation/ontology#", "ilg:"],
+    ["http://www.gazzettaufficiale.it/eli/tables/resource-type#", ""],
+    ["http://www.gazzettaufficiale.it/eli/tables/versions#", ""]
+  ];
+  const match = namespaces.find(([namespace]) => text.startsWith(namespace));
+  return match ? `${match[1]}${text.slice(match[0].length)}` : "";
 }
 
 function isLikelyUri(value) {

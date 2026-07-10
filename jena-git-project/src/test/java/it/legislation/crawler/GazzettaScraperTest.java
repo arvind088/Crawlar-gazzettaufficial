@@ -6,6 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.LocalDate;
+import java.util.List;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -113,5 +114,29 @@ class GazzettaScraperTest {
         assertTrue(GazzettaScraper.processActHtml(sourceUrl, html, registry, rawRoot).isEmpty());
         assertTrue(Files.exists(rawRoot.resolve("2025_01_02_24A06897_sg.html")));
         assertEquals(1, registry.countRecords());
+    }
+
+    @Test
+    void mergesNewRecordsIntoExistingTurtleOutput() throws Exception {
+        Path output = tempDir.resolve("gazzetta_metadata_delta.ttl");
+        CleanLegalActRecord first = CleanLegalActRecord
+                .builder("http://www.gazzettaufficiale.it/eli/id/2025/01/16/25G00006/sg")
+                .title("Original title")
+                .localId("25G00006")
+                .build();
+        CleanLegalActRecord second = CleanLegalActRecord
+                .builder("http://www.gazzettaufficiale.it/eli/id/2025/03/01/25G00028/sg")
+                .title("Relation source title")
+                .localId("25G00028")
+                .build();
+
+        GazzettaScraper.writeRecordsToTurtle(List.of(first), output);
+        GazzettaScraper.writeRecordsToTurtle(List.of(second), output);
+
+        String turtle = Files.readString(output);
+        assertTrue(turtle.contains("25G00006"));
+        assertTrue(turtle.contains("25G00028"));
+        assertTrue(turtle.contains("Original title"));
+        assertTrue(turtle.contains("Relation source title"));
     }
 }

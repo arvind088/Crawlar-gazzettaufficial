@@ -38,6 +38,11 @@ public class LegalActApiController {
             new RdfFileDefinition(
                     Path.of("data", "rdf", "normattiva_modifications.ttl"),
                     "Normattiva modification and relationship data"
+            ),
+            "normattiva_modifications_auto.ttl",
+            new RdfFileDefinition(
+                    Path.of("data", "rdf", "normattiva_modifications_auto.ttl"),
+                    "Automatically downloaded Normattiva update relationships"
             )
     );
 
@@ -46,7 +51,9 @@ public class LegalActApiController {
     private final CrawlerUpdateService crawlerUpdateService;
     private final ArchiveCrawlerService archiveCrawlerService;
     private final ScheduledCrawlerUpdateJob scheduledCrawlerUpdateJob;
+    private final ScheduledNormattivaUpdateJob scheduledNormattivaUpdateJob;
     private final NormattivaQueryService normattivaQueryService;
+    private final NormattivaUpdateService normattivaUpdateService;
 
     public LegalActApiController(
             LegalActQueryService queryService,
@@ -54,14 +61,18 @@ public class LegalActApiController {
             CrawlerUpdateService crawlerUpdateService,
             ArchiveCrawlerService archiveCrawlerService,
             ScheduledCrawlerUpdateJob scheduledCrawlerUpdateJob,
-            NormattivaQueryService normattivaQueryService
+            ScheduledNormattivaUpdateJob scheduledNormattivaUpdateJob,
+            NormattivaQueryService normattivaQueryService,
+            NormattivaUpdateService normattivaUpdateService
     ) {
         this.queryService = queryService;
         this.crawlerStatusService = crawlerStatusService;
         this.crawlerUpdateService = crawlerUpdateService;
         this.archiveCrawlerService = archiveCrawlerService;
         this.scheduledCrawlerUpdateJob = scheduledCrawlerUpdateJob;
+        this.scheduledNormattivaUpdateJob = scheduledNormattivaUpdateJob;
         this.normattivaQueryService = normattivaQueryService;
+        this.normattivaUpdateService = normattivaUpdateService;
     }
 
     @GetMapping("/health")
@@ -125,6 +136,25 @@ public class LegalActApiController {
             @RequestParam(defaultValue = "20") int limit
     ) throws IOException {
         return normattivaQueryService.listModifications(limit);
+    }
+
+    @PostMapping("/normattiva/run")
+    public NormattivaUpdateResult runNormattivaUpdate() throws IOException {
+        return normattivaUpdateService.runUpdate();
+    }
+
+    @GetMapping("/normattiva/run/latest")
+    public ResponseEntity<NormattivaUpdateResult> latestNormattivaUpdate() {
+        NormattivaUpdateResult result = normattivaUpdateService.lastResult();
+        if (result == null) {
+            return ResponseEntity.noContent().build();
+        }
+        return ResponseEntity.ok(result);
+    }
+
+    @GetMapping("/normattiva/automation")
+    public NormattivaAutomationStatus normattivaAutomation() {
+        return scheduledNormattivaUpdateJob.status();
     }
 
     @GetMapping("/acts")
@@ -218,6 +248,7 @@ public class LegalActApiController {
         Map<String, RdfFileDefinition> sorted = new LinkedHashMap<>();
         sorted.put("gazzetta_metadata_delta.ttl", RDF_FILES.get("gazzetta_metadata_delta.ttl"));
         sorted.put("normattiva_modifications.ttl", RDF_FILES.get("normattiva_modifications.ttl"));
+        sorted.put("normattiva_modifications_auto.ttl", RDF_FILES.get("normattiva_modifications_auto.ttl"));
         return sorted;
     }
 

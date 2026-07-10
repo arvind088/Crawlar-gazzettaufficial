@@ -84,6 +84,32 @@ class LegalActQueryServiceTest {
     }
 
     @Test
+    void searchesRelationOnlyActsByIdFromUri() throws Exception {
+        Path turtle = tempDir.resolve("normattiva_modifications.ttl");
+        Files.writeString(turtle, """
+                @prefix eli: <http://data.europa.eu/eli/ontology#> .
+                @prefix ilg: <http://example.org/italian-legislation/ontology#> .
+
+                <http://www.gazzettaufficiale.it/eli/id/2025/03/01/25G00028/sg>
+                  a eli:LegalResource ;
+                  ilg:modifies <http://www.gazzettaufficiale.it/eli/id/2025/01/16/25G00006/sg> .
+
+                <http://www.gazzettaufficiale.it/eli/id/2025/01/16/25G00006/sg>
+                  a eli:LegalResource ;
+                  ilg:modifiedBy <http://www.gazzettaufficiale.it/eli/id/2025/03/01/25G00028/sg> .
+                """, StandardCharsets.UTF_8);
+
+        LegalActQueryService service = new LegalActQueryService(List.of(turtle));
+
+        List<LegalActSummary> results = service.searchActs("25G00028", 10);
+
+        assertEquals(1, results.size());
+        assertEquals("25G00028", results.get(0).localId());
+        assertTrue(service.findByLocalId("25G00028").isPresent());
+        assertTrue(service.rdfForLocalId("25G00028").orElseThrow().contains("25G00006"));
+    }
+
+    @Test
     void exportsRdfForOneLegalAct() throws Exception {
         Path turtle = tempDir.resolve("gazzetta_metadata_delta.ttl");
         Files.writeString(turtle, """
