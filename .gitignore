@@ -29,6 +29,8 @@ jena-git-project/data/registry/crawl_registry.tsv
 jena-git-project/data/raw/**/*.html
 jena-git-project/data/rdf/gazzetta_metadata_delta.ttl
 jena-git-project/data/rdf/normattiva_modifications_auto.ttl
+!jena-git-project/data/rdf/gazzetta_metadata_delta.ttl
+!jena-git-project/data/rdf/normattiva_modifications_auto.ttl
 jena-git-project/eli_metadata.ttl
 jena-git-project/eli_metadata_cleaned.ttl
 jena-git-project/src/eli_metadata_generated.ttl
