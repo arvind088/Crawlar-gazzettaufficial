@@ -1,0 +1,2124 @@
+@prefix dcterms: <http://purl.org/dc/terms/> .
+@prefix eli:     <http://data.europa.eu/eli/ontology#> .
+@prefix gu:      <http://www.gazzettaufficiale.it/eli/> .
+@prefix ilg:     <http://example.org/italian-legislation/ontology#> .
+@prefix rdf:     <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs:    <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix schema:  <http://schema.org/> .
+@prefix xsd:     <http://www.w3.org/2001/XMLSchema#> .
+
+<http://www.gazzettaufficiale.it/eli/id/2026/07/08/26A03283/sg>
+        rdf:type              eli:LegalResource;
+        rdfs:label            "Concessione delle medaglie di bronzo al merito di Marina (26A03283)";
+        eli:date_publication  "2026-07-08"^^xsd:date;
+        eli:id_local          "26A03283";
+        eli:is_realized_by    <http://www.gazzettaufficiale.it/eli/id/2026/07/08/26A03283/sg/ita>;
+        eli:title             "Concessione delle medaglie di bronzo al merito di Marina (26A03283)";
+        eli:type_document     <http://www.gazzettaufficiale.it/eli/tables/resource-type#COMUNICATO>;
+        eli:version           <http://www.gazzettaufficiale.it/eli/tables/versions#ORIGINAL>;
+        dcterms:source        <http://www.gazzettaufficiale.it/eli/id/2026/07/08/26A03283/SG> .
+
+<http://www.gazzettaufficiale.it/eli/id/2026/06/27/26A03066/sg/ita/html>
+        rdf:type    eli:Format;
+        eli:format  <http://www.iana.org/assignments/media-types/text/html> .
+
+<http://www.gazzettaufficiale.it/eli/id/2026/06/20/26A03072/sg/ita>
+        rdf:type            eli:LegalExpression;
+        rdfs:label          "Nomina del dott. Francesco Napoli a consigliere del CNEL in sostituzione della dott.ssa Annalisa Guidotti. (26A03072)";
+        eli:is_embodied_by  <http://www.gazzettaufficiale.it/eli/id/2026/06/20/26A03072/sg/ita/html>;
+        eli:language        <http://publications.europa.eu/resource/authority/language/ITA>;
+        eli:publisher       <http://www.ipzs.it>;
+        eli:realizes        <http://www.gazzettaufficiale.it/eli/id/2026/06/20/26A03072/sg>;
+        eli:title           "Nomina del dott. Francesco Napoli a consigliere del CNEL in sostituzione della dott.ssa Annalisa Guidotti. (26A03072)" .
+
+<http://www.gazzettaufficiale.it/eli/id/2026/06/27/26A03063/sg>
+        rdf:type              eli:LegalResource;
+        rdfs:label            "Liquidazione coatta amministrativa della «Lindo Coop - Societa' cooperativa», in Forli' e nomina del commissario liquidatore. (26A03063)";
+        eli:date_document     "2026-06-08"^^xsd:date;
+        eli:date_publication  "2026-06-27"^^xsd:date;
+        eli:id_local          "26A03063";
+        eli:is_realized_by    <http://www.gazzettaufficiale.it/eli/id/2026/06/27/26A03063/sg/ita>;
+        eli:title             "Liquidazione coatta amministrativa della «Lindo Coop - Societa' cooperativa», in Forli' e nomina del commissario liquidatore. (26A03063)";
+        eli:type_document     <http://www.gazzettaufficiale.it/eli/tables/resource-type#DECRETO>;
+        eli:version           <http://www.gazzettaufficiale.it/eli/tables/versions#ORIGINAL>;
+        dcterms:source        <http://www.gazzettaufficiale.it/eli/id/2026/06/27/26A03063/SG> .
+
+<http://www.gazzettaufficiale.it/eli/id/2026/07/09/26A03403/sg>
+        rdf:type              eli:LegalResource;
+        rdfs:label            "Nomina dei commissari straordinari della Pegaso Security S.p.a., in amministrazione straordinaria. (26A03403)";
+        eli:date_document     "2026-06-24"^^xsd:date;
+        eli:date_publication  "2026-07-09"^^xsd:date;
+        eli:id_local          "26A03403";
+        eli:is_realized_by    <http://www.gazzettaufficiale.it/eli/id/2026/07/09/26A03403/sg/ita>;
+        eli:title             "Nomina dei commissari straordinari della Pegaso Security S.p.a., in amministrazione straordinaria. (26A03403)";
+        eli:type_document     <http://www.gazzettaufficiale.it/eli/tables/resource-type#DECRETO>;
+        eli:version           <http://www.gazzettaufficiale.it/eli/tables/versions#ORIGINAL>;
+        dcterms:source        <http://www.gazzettaufficiale.it/eli/id/2026/07/09/26A03403/SG> .
+
+<http://www.gazzettaufficiale.it/eli/id/2026/07/08/26A03343/sg/ita>
+        rdf:type            eli:LegalExpression;
+        rdfs:label          "Liquidazione coatta amministrativa della «Attivita' societa' cooperativa sociale», in Vicenza e nomina del commissario liquidatore. (26A03343)";
+        eli:is_embodied_by  <http://www.gazzettaufficiale.it/eli/id/2026/07/08/26A03343/sg/ita/html>;
+        eli:language        <http://publications.europa.eu/resource/authority/language/ITA>;
+        eli:publisher       <http://www.ipzs.it>;
+        eli:realizes        <http://www.gazzettaufficiale.it/eli/id/2026/07/08/26A03343/sg>;
+        eli:title           "Liquidazione coatta amministrativa della «Attivita' societa' cooperativa sociale», in Vicenza e nomina del commissario liquidatore. (26A03343)" .
+
+<http://www.gazzettaufficiale.it/eli/id/2026/06/20/26A03028/sg>
+        rdf:type              eli:LegalResource;
+        rdfs:label            "Liquidazione coatta amministrativa della «Omega servizi societa' cooperativa», in Lucca e nomina del commissario liquidatore. (26A03028)";
+        eli:date_document     "2026-06-08"^^xsd:date;
+        eli:date_publication  "2026-06-20"^^xsd:date;
+        eli:id_local          "26A03028";
+        eli:is_realized_by    <http://www.gazzettaufficiale.it/eli/id/2026/06/20/26A03028/sg/ita>;
+        eli:title             "Liquidazione coatta amministrativa della «Omega servizi societa' cooperativa», in Lucca e nomina del commissario liquidatore. (26A03028)";
+        eli:type_document     <http://www.gazzettaufficiale.it/eli/tables/resource-type#DECRETO>;
+        eli:version           <http://www.gazzettaufficiale.it/eli/tables/versions#ORIGINAL>;
+        dcterms:source        <http://www.gazzettaufficiale.it/eli/id/2026/06/20/26A03028/SG> .
+
+<http://www.gazzettaufficiale.it/eli/id/2026/06/20/26A03117/sg/ita>
+        rdf:type            eli:LegalExpression;
+        rdfs:label          "Riparto e assegnazione del fondo a favore delle amministrazioni centrali dello Stato, per assicurare il finanziamento degli investimenti e lo sviluppo infrastrutturale del Paese agli interventi del Ministero dell'economia e delle finanze. (26A03117)";
+        eli:is_embodied_by  <http://www.gazzettaufficiale.it/eli/id/2026/06/20/26A03117/sg/ita/html>;
+        eli:language        <http://publications.europa.eu/resource/authority/language/ITA>;
+        eli:publisher       <http://www.ipzs.it>;
+        eli:realizes        <http://www.gazzettaufficiale.it/eli/id/2026/06/20/26A03117/sg>;
+        eli:title           "Riparto e assegnazione del fondo a favore delle amministrazioni centrali dello Stato, per assicurare il finanziamento degli investimenti e lo sviluppo infrastrutturale del Paese agli interventi del Ministero dell'economia e delle finanze. (26A03117)" .
+
+<http://www.gazzettaufficiale.it/eli/id/2026/06/27/26A03215/sg>
+        rdf:type              eli:LegalResource;
+        rdfs:label            "Bilancio di previsione per l'esercizio 2026 dell'Autorita' per le garanzie nelle comunicazioni. (Delibera n. 65/26/CONS). (26A03215)";
+        eli:date_document     "2026-03-11"^^xsd:date;
+        eli:date_publication  "2026-06-27"^^xsd:date;
+        eli:id_local          "26A03215";
+        eli:is_realized_by    <http://www.gazzettaufficiale.it/eli/id/2026/06/27/26A03215/sg/ita>;
+        eli:title             "Bilancio di previsione per l'esercizio 2026 dell'Autorita' per le garanzie nelle comunicazioni. (Delibera n. 65/26/CONS). (26A03215)";
+        eli:type_document     <http://www.gazzettaufficiale.it/eli/tables/resource-type#DELIBERA>;
+        eli:version           <http://www.gazzettaufficiale.it/eli/tables/versions#ORIGINAL>;
+        dcterms:source        <http://www.gazzettaufficiale.it/eli/id/2026/06/27/26A03215/SG> .
+
+<http://www.gazzettaufficiale.it/eli/id/2026/06/27/26A03227/sg/ita/html>
+        rdf:type    eli:Format;
+        eli:format  <http://www.iana.org/assignments/media-types/text/html> .
+
+<http://www.gazzettaufficiale.it/eli/id/2026/07/08/26A03350/sg/ita>
+        rdf:type            eli:LegalExpression;
+        rdfs:label          "Autorizzazione all'importazione parallela del medicinale per uso umano «Arlevertan» (26A03350)";
+        eli:is_embodied_by  <http://www.gazzettaufficiale.it/eli/id/2026/07/08/26A03350/sg/ita/html>;
+        eli:language        <http://publications.europa.eu/resource/authority/language/ITA>;
+        eli:publisher       <http://www.ipzs.it>;
+        eli:realizes        <http://www.gazzettaufficiale.it/eli/id/2026/07/08/26A03350/sg>;
+        eli:title           "Autorizzazione all'importazione parallela del medicinale per uso umano «Arlevertan» (26A03350)" .
+
+<http://www.gazzettaufficiale.it/eli/id/2026/06/27/26A03228/sg/ita>
+        rdf:type            eli:LegalExpression;
+        rdfs:label          "Approvazione della convenzione concernente la gestione delle funzioni di raccolta, verifica e conservazione della documentazione assicurativa relativa all'assolvimento degli obblighi inerenti al rilascio della sicurezza finanziaria, stipulata tra il Ministero delle infrastrutture e dei trasporti e CONSAP S.p.a. (26A03228)";
+        eli:is_embodied_by  <http://www.gazzettaufficiale.it/eli/id/2026/06/27/26A03228/sg/ita/html>;
+        eli:language        <http://publications.europa.eu/resource/authority/language/ITA>;
+        eli:publisher       <http://www.ipzs.it>;
+        eli:realizes        <http://www.gazzettaufficiale.it/eli/id/2026/06/27/26A03228/sg>;
+        eli:title           "Approvazione della convenzione concernente la gestione delle funzioni di raccolta, verifica e conservazione della documentazione assicurativa relativa all'assolvimento degli obblighi inerenti al rilascio della sicurezza finanziaria, stipulata tra il Ministero delle infrastrutture e dei trasporti e CONSAP S.p.a. (26A03228)" .
+
+<http://www.gazzettaufficiale.it/eli/id/2026/07/09/26A03369/sg/ita>
+        rdf:type            eli:LegalExpression;
+        rdfs:label          "Ordinanza n. 2 del 17 giugno 2026, concernente il contributo per il disagio abitativo finalizzato alla ricostruzione (26A03369)";
+        eli:is_embodied_by  <http://www.gazzettaufficiale.it/eli/id/2026/07/09/26A03369/sg/ita/html>;
+        eli:language        <http://publications.europa.eu/resource/authority/language/ITA>;
+        eli:publisher       <http://www.ipzs.it>;
+        eli:realizes        <http://www.gazzettaufficiale.it/eli/id/2026/07/09/26A03369/sg>;
+        eli:title           "Ordinanza n. 2 del 17 giugno 2026, concernente il contributo per il disagio abitativo finalizzato alla ricostruzione (26A03369)" .
+
+<http://www.gazzettaufficiale.it/eli/id/2026/07/09/26A03360/sg>
+        rdf:type              eli:LegalResource;
+        rdfs:label            "Liquidazione coatta amministrativa della «Cooperativa Cavarzano societa' cooperativa in liquidazione», in Vernio e nomina del commissario liquidatore. (26A03360)";
+        eli:date_document     "2026-06-22"^^xsd:date;
+        eli:date_publication  "2026-07-09"^^xsd:date;
+        eli:id_local          "26A03360";
+        eli:is_realized_by    <http://www.gazzettaufficiale.it/eli/id/2026/07/09/26A03360/sg/ita>;
+        eli:title             "Liquidazione coatta amministrativa della «Cooperativa Cavarzano societa' cooperativa in liquidazione», in Vernio e nomina del commissario liquidatore. (26A03360)";
+        eli:type_document     <http://www.gazzettaufficiale.it/eli/tables/resource-type#DECRETO>;
+        eli:version           <http://www.gazzettaufficiale.it/eli/tables/versions#ORIGINAL>;
+        dcterms:source        <http://www.gazzettaufficiale.it/eli/id/2026/07/09/26A03360/SG> .
+
+<http://www.gazzettaufficiale.it/eli/id/2026/07/08/26A03359/sg>
+        rdf:type              eli:LegalResource;
+        rdfs:label            "Provvedimento concernente i marchi di identificazione dei metalli preziosi (26A03359)";
+        eli:date_publication  "2026-07-08"^^xsd:date;
+        eli:id_local          "26A03359";
+        eli:is_realized_by    <http://www.gazzettaufficiale.it/eli/id/2026/07/08/26A03359/sg/ita>;
+        eli:title             "Provvedimento concernente i marchi di identificazione dei metalli preziosi (26A03359)";
+        eli:type_document     <http://www.gazzettaufficiale.it/eli/tables/resource-type#COMUNICATO>;
+        eli:version           <http://www.gazzettaufficiale.it/eli/tables/versions#ORIGINAL>;
+        dcterms:source        <http://www.gazzettaufficiale.it/eli/id/2026/07/08/26A03359/SG> .
+
+<http://www.gazzettaufficiale.it/eli/id/2026/06/27/26A03065/sg/ita>
+        rdf:type            eli:LegalExpression;
+        rdfs:label          "Liquidazione coatta amministrativa della «Citta' e Salute societa' cooperativa sociale - O.n.l.u.s. in liquidazione», in Milano e nomina del commissario liquidatore. (26A03065)";
+        eli:is_embodied_by  <http://www.gazzettaufficiale.it/eli/id/2026/06/27/26A03065/sg/ita/html>;
+        eli:language        <http://publications.europa.eu/resource/authority/language/ITA>;
+        eli:publisher       <http://www.ipzs.it>;
+        eli:realizes        <http://www.gazzettaufficiale.it/eli/id/2026/06/27/26A03065/sg>;
+        eli:title           "Liquidazione coatta amministrativa della «Citta' e Salute societa' cooperativa sociale - O.n.l.u.s. in liquidazione», in Milano e nomina del commissario liquidatore. (26A03065)" .
+
+<http://www.gazzettaufficiale.it/eli/id/2026/07/08/26A03347/sg>
+        rdf:type              eli:LegalResource;
+        rdfs:label            "Modalita' di ripartizione e di erogazione delle risorse da destinare agli incentivi per la formazione professionale nel settore dell'autotrasporto per l'annualita' 2026. (26A03347)";
+        eli:date_document     "2026-05-06"^^xsd:date;
+        eli:date_publication  "2026-07-08"^^xsd:date;
+        eli:id_local          "26A03347";
+        eli:is_realized_by    <http://www.gazzettaufficiale.it/eli/id/2026/07/08/26A03347/sg/ita>;
+        eli:title             "Modalita' di ripartizione e di erogazione delle risorse da destinare agli incentivi per la formazione professionale nel settore dell'autotrasporto per l'annualita' 2026. (26A03347)";
+        eli:type_document     <http://www.gazzettaufficiale.it/eli/tables/resource-type#DECRETO>;
+        eli:version           <http://www.gazzettaufficiale.it/eli/tables/versions#ORIGINAL>;
+        dcterms:source        <http://www.gazzettaufficiale.it/eli/id/2026/07/08/26A03347/SG> .
+
+<http://www.gazzettaufficiale.it/eli/id/2026/06/27/26A03215/sg/ita/html>
+        rdf:type    eli:Format;
+        eli:format  <http://www.iana.org/assignments/media-types/text/html> .
+
+<http://www.gazzettaufficiale.it/eli/id/2026/06/27/26G00129/sg/ita>
+        rdf:type            eli:LegalExpression;
+        rdfs:label          "Conversione in legge, con modificazioni, del decreto-legge 30 aprile 2026, n. 63, recante disposizioni urgenti in materia di prezzi petroliferi connessi al protrarsi della crisi dei mercati internazionali. (26G00129)";
+        eli:is_embodied_by  <http://www.gazzettaufficiale.it/eli/id/2026/06/27/26G00129/sg/ita/html>;
+        eli:language        <http://publications.europa.eu/resource/authority/language/ITA>;
+        eli:publisher       <http://www.ipzs.it>;
+        eli:realizes        <http://www.gazzettaufficiale.it/eli/id/2026/06/27/26G00129/sg>;
+        eli:title           "Conversione in legge, con modificazioni, del decreto-legge 30 aprile 2026, n. 63, recante disposizioni urgenti in materia di prezzi petroliferi connessi al protrarsi della crisi dei mercati internazionali. (26G00129)" .
+
+<http://www.gazzettaufficiale.it/eli/id/2026/06/20/26A03037/sg/ita/html>
+        rdf:type    eli:Format;
+        eli:format  <http://www.iana.org/assignments/media-types/text/html> .
+
+<http://www.gazzettaufficiale.it/eli/id/2026/07/09/26A03314/sg/ita>
+        rdf:type            eli:LegalExpression;
+        rdfs:label          "Liquidazione coatta amministrativa della «Intemelia Bat cooperativa sociale in liquidazione», in Ventimiglia e nomina del commissario liquidatore. (26A03314)";
+        eli:is_embodied_by  <http://www.gazzettaufficiale.it/eli/id/2026/07/09/26A03314/sg/ita/html>;
+        eli:language        <http://publications.europa.eu/resource/authority/language/ITA>;
+        eli:publisher       <http://www.ipzs.it>;
+        eli:realizes        <http://www.gazzettaufficiale.it/eli/id/2026/07/09/26A03314/sg>;
+        eli:title           "Liquidazione coatta amministrativa della «Intemelia Bat cooperativa sociale in liquidazione», in Ventimiglia e nomina del commissario liquidatore. (26A03314)" .
+
+<http://www.gazzettaufficiale.it/eli/id/2026/06/27/26A03218/sg>
+        rdf:type              eli:LegalResource;
+        rdfs:label            "Autorizzazione all'immissione in commercio del medicinale per uso umano, a base di macitentan, «Macitentan Medac» (26A03218)";
+        eli:date_publication  "2026-06-27"^^xsd:date;
+        eli:id_local          "26A03218";
+        eli:is_realized_by    <http://www.gazzettaufficiale.it/eli/id/2026/06/27/26A03218/sg/ita>;
+        eli:title             "Autorizzazione all'immissione in commercio del medicinale per uso umano, a base di macitentan, «Macitentan Medac» (26A03218)";
+        eli:type_document     <http://www.gazzettaufficiale.it/eli/tables/resource-type#COMUNICATO>;
+        eli:version           <http://www.gazzettaufficiale.it/eli/tables/versions#ORIGINAL>;
+        dcterms:source        <http://www.gazzettaufficiale.it/eli/id/2026/06/27/26A03218/SG> .
+
+<http://www.gazzettaufficiale.it/eli/id/2026/07/09/26A03363/sg>
+        rdf:type              eli:LegalResource;
+        rdfs:label            "Liquidazione coatta amministrativa della «Cooper Fly Service societa' cooperativa sociale», in San Gregorio d'Ippona e nomina del commissario liquidatore. (26A03363)";
+        eli:date_document     "2026-06-22"^^xsd:date;
+        eli:date_publication  "2026-07-09"^^xsd:date;
+        eli:id_local          "26A03363";
+        eli:is_realized_by    <http://www.gazzettaufficiale.it/eli/id/2026/07/09/26A03363/sg/ita>;
+        eli:title             "Liquidazione coatta amministrativa della «Cooper Fly Service societa' cooperativa sociale», in San Gregorio d'Ippona e nomina del commissario liquidatore. (26A03363)";
+        eli:type_document     <http://www.gazzettaufficiale.it/eli/tables/resource-type#DECRETO>;
+        eli:version           <http://www.gazzettaufficiale.it/eli/tables/versions#ORIGINAL>;
+        dcterms:source        <http://www.gazzettaufficiale.it/eli/id/2026/07/09/26A03363/SG> .
+
+<http://www.gazzettaufficiale.it/eli/id/2026/07/09/26A03364/sg/ita>
+        rdf:type            eli:LegalExpression;
+        rdfs:label          "Liquidazione coatta amministrativa della «Eco Logica societa' cooperativa sociale», in Sassari e nomina del commissario liquidatore. (26A03364)";
+        eli:is_embodied_by  <http://www.gazzettaufficiale.it/eli/id/2026/07/09/26A03364/sg/ita/html>;
+        eli:language        <http://publications.europa.eu/resource/authority/language/ITA>;
+        eli:publisher       <http://www.ipzs.it>;
+        eli:realizes        <http://www.gazzettaufficiale.it/eli/id/2026/07/09/26A03364/sg>;
+        eli:title           "Liquidazione coatta amministrativa della «Eco Logica societa' cooperativa sociale», in Sassari e nomina del commissario liquidatore. (26A03364)" .
+
+<http://www.gazzettaufficiale.it/eli/id/2026/07/09/26A03467/sg/ita/html>
+        rdf:type    eli:Format;
+        eli:format  <http://www.iana.org/assignments/media-types/text/html> .
+
+<http://www.gazzettaufficiale.it/eli/id/2026/06/20/26A03037/sg/ita>
+        rdf:type            eli:LegalExpression;
+        rdfs:label          "Scioglimento, per atto dell'autorita', della «Comunita' energetica rinnovabile Südtirol Alto Adige societa' cooperativa», in Brunico, senza nomina del commissario liquidatore. (26A03037)";
+        eli:is_embodied_by  <http://www.gazzettaufficiale.it/eli/id/2026/06/20/26A03037/sg/ita/html>;
+        eli:language        <http://publications.europa.eu/resource/authority/language/ITA>;
+        eli:publisher       <http://www.ipzs.it>;
+        eli:realizes        <http://www.gazzettaufficiale.it/eli/id/2026/06/20/26A03037/sg>;
+        eli:title           "Scioglimento, per atto dell'autorita', della «Comunita' energetica rinnovabile Südtirol Alto Adige societa' cooperativa», in Brunico, senza nomina del commissario liquidatore. (26A03037)" .
+
+<http://www.gazzettaufficiale.it/eli/id/2026/07/08/26A03345/sg/ita/html>
+        rdf:type    eli:Format;
+        eli:format  <http://www.iana.org/assignments/media-types/text/html> .
+
+<http://www.gazzettaufficiale.it/eli/id/2026/06/27/26A03219/sg/ita>
+        rdf:type            eli:LegalExpression;
+        rdfs:label          "Autorizzazione all'immissione in commercio del medicinale per uso umano, a base di azelastina cloridrato e fluticasone propionato, «Azefluxin». (26A03219)";
+        eli:is_embodied_by  <http://www.gazzettaufficiale.it/eli/id/2026/06/27/26A03219/sg/ita/html>;
+        eli:language        <http://publications.europa.eu/resource/authority/language/ITA>;
+        eli:publisher       <http://www.ipzs.it>;
+        eli:realizes        <http://www.gazzettaufficiale.it/eli/id/2026/06/27/26A03219/sg>;
+        eli:title           "Autorizzazione all'immissione in commercio del medicinale per uso umano, a base di azelastina cloridrato e fluticasone propionato, «Azefluxin». (26A03219)" .
+
+<http://www.gazzettaufficiale.it/eli/id/2026/06/27/26A03226/sg/ita>
+        rdf:type            eli:LegalExpression;
+        rdfs:label          "Determinazione del tasso cedolare annuo e accertamento dell'importo emesso dei buoni del Tesoro poliennali, legati all'inflazione italiana, con godimento 23 giugno 2023 e scadenza 23 giugno 2031, prima emissione. (26A03226)";
+        eli:is_embodied_by  <http://www.gazzettaufficiale.it/eli/id/2026/06/27/26A03226/sg/ita/html>;
+        eli:language        <http://publications.europa.eu/resource/authority/language/ITA>;
+        eli:publisher       <http://www.ipzs.it>;
+        eli:realizes        <http://www.gazzettaufficiale.it/eli/id/2026/06/27/26A03226/sg>;
+        eli:title           "Determinazione del tasso cedolare annuo e accertamento dell'importo emesso dei buoni del Tesoro poliennali, legati all'inflazione italiana, con godimento 23 giugno 2023 e scadenza 23 giugno 2031, prima emissione. (26A03226)" .
+
+<http://www.gazzettaufficiale.it/eli/id/2026/07/09/26A03459/sg/ita>
+        rdf:type            eli:LegalExpression;
+        rdfs:label          "Disposizioni urgenti per la realizzazione delle attivita' a valere sul «Programma per interventi di prevenzione strutturale e per la riduzione del rischio idraulico e idrogeologico nel territorio del Comune di Niscemi» e sul «Programma per interventi di demolizione degli edifici, pubblici e privati, rientranti nell'area di frana e nella fascia di rispetto perimetrata nonche' per la concessione di un contributo a favore dei proprietari degli immobili demoliti nel Comune di Niscemi», approvati con delibera del Consiglio dei ministri del 22 maggio 2026, ai sensi dell'articolo 15, comma 3, del decreto-legge 27 febbraio 2026, n. 25, convertito, con modificazioni, dalla legge 27 aprile 2026, n. 59 e approvati con i rispettivi decreti del Ministro per la protezione civile e le politiche del mare del 27 maggio 2026. (Ordinanza n. 1197). (26A03459)";
+        eli:is_embodied_by  <http://www.gazzettaufficiale.it/eli/id/2026/07/09/26A03459/sg/ita/html>;
+        eli:language        <http://publications.europa.eu/resource/authority/language/ITA>;
+        eli:publisher       <http://www.ipzs.it>;
+        eli:realizes        <http://www.gazzettaufficiale.it/eli/id/2026/07/09/26A03459/sg>;
+        eli:title           "Disposizioni urgenti per la realizzazione delle attivita' a valere sul «Programma per interventi di prevenzione strutturale e per la riduzione del rischio idraulico e idrogeologico nel territorio del Comune di Niscemi» e sul «Programma per interventi di demolizione degli edifici, pubblici e privati, rientranti nell'area di frana e nella fascia di rispetto perimetrata nonche' per la concessione di un contributo a favore dei proprietari degli immobili demoliti nel Comune di Niscemi», approvati con delibera del Consiglio dei ministri del 22 maggio 2026, ai sensi dell'articolo 15, comma 3, del decreto-legge 27 febbraio 2026, n. 25, convertito, con modificazioni, dalla legge 27 aprile 2026, n. 59 e approvati con i rispettivi decreti del Ministro per la protezione civile e le politiche del mare del 27 maggio 2026. (Ordinanza n. 1197). (26A03459)" .
+
+<http://www.gazzettaufficiale.it/eli/id/2026/07/08/26A03343/sg>
+        rdf:type              eli:LegalResource;
+        rdfs:label            "Liquidazione coatta amministrativa della «Attivita' societa' cooperativa sociale», in Vicenza e nomina del commissario liquidatore. (26A03343)";
+        eli:date_document     "2026-06-22"^^xsd:date;
+        eli:date_publication  "2026-07-08"^^xsd:date;
+        eli:id_local          "26A03343";
+        eli:is_realized_by    <http://www.gazzettaufficiale.it/eli/id/2026/07/08/26A03343/sg/ita>;
+        eli:title             "Liquidazione coatta amministrativa della «Attivita' societa' cooperativa sociale», in Vicenza e nomina del commissario liquidatore. (26A03343)";
+        eli:type_document     <http://www.gazzettaufficiale.it/eli/tables/resource-type#DECRETO>;
+        eli:version           <http://www.gazzettaufficiale.it/eli/tables/versions#ORIGINAL>;
+        dcterms:source        <http://www.gazzettaufficiale.it/eli/id/2026/07/08/26A03343/SG> .
+
+<http://www.gazzettaufficiale.it/eli/id/2026/07/09/26A03275/sg>
+        rdf:type              eli:LegalResource;
+        rdfs:label            "Autorizzazione all'importazione parallela del medicinale per uso umano «Oftaquix» (26A03275)";
+        eli:date_publication  "2026-07-09"^^xsd:date;
+        eli:id_local          "26A03275";
+        eli:is_realized_by    <http://www.gazzettaufficiale.it/eli/id/2026/07/09/26A03275/sg/ita>;
+        eli:title             "Autorizzazione all'importazione parallela del medicinale per uso umano «Oftaquix» (26A03275)";
+        eli:type_document     <http://www.gazzettaufficiale.it/eli/tables/resource-type#COMUNICATO>;
+        eli:version           <http://www.gazzettaufficiale.it/eli/tables/versions#ORIGINAL>;
+        dcterms:source        <http://www.gazzettaufficiale.it/eli/id/2026/07/09/26A03275/SG> .
+
+<http://www.gazzettaufficiale.it/eli/id/2026/07/09/26A03403/sg/ita/html>
+        rdf:type    eli:Format;
+        eli:format  <http://www.iana.org/assignments/media-types/text/html> .
+
+<http://www.gazzettaufficiale.it/eli/id/2026/07/08/26A03358/sg/ita>
+        rdf:type            eli:LegalExpression;
+        rdfs:label          "Proroga del termine per l'esecuzione delle prestazioni e per la presentazione delle istanze di accredito del contributo di cui all'articolo 13, comma 2, dell'Avviso CSE 2025 «Comuni per la sostenibilita' e l'efficienza energetica» adottato con decreto n. 125 del 28 marzo 2025 del Direttore della direzione generale programmi e incentivi finanziari del Ministero dell'ambiente e della sicurezza energetica. (26A03358)";
+        eli:is_embodied_by  <http://www.gazzettaufficiale.it/eli/id/2026/07/08/26A03358/sg/ita/html>;
+        eli:language        <http://publications.europa.eu/resource/authority/language/ITA>;
+        eli:publisher       <http://www.ipzs.it>;
+        eli:realizes        <http://www.gazzettaufficiale.it/eli/id/2026/07/08/26A03358/sg>;
+        eli:title           "Proroga del termine per l'esecuzione delle prestazioni e per la presentazione delle istanze di accredito del contributo di cui all'articolo 13, comma 2, dell'Avviso CSE 2025 «Comuni per la sostenibilita' e l'efficienza energetica» adottato con decreto n. 125 del 28 marzo 2025 del Direttore della direzione generale programmi e incentivi finanziari del Ministero dell'ambiente e della sicurezza energetica. (26A03358)" .
+
+<http://www.gazzettaufficiale.it/eli/id/2026/06/27/26G00129/sg>
+        rdf:type              eli:LegalResource;
+        rdfs:label            "Conversione in legge, con modificazioni, del decreto-legge 30 aprile 2026, n. 63, recante disposizioni urgenti in materia di prezzi petroliferi connessi al protrarsi della crisi dei mercati internazionali. (26G00129)";
+        eli:date_document     "2026-06-25"^^xsd:date;
+        eli:date_publication  "2026-06-27"^^xsd:date;
+        eli:id_local          "26G00129";
+        eli:is_realized_by    <http://www.gazzettaufficiale.it/eli/id/2026/06/27/26G00129/sg/ita>;
+        eli:title             "Conversione in legge, con modificazioni, del decreto-legge 30 aprile 2026, n. 63, recante disposizioni urgenti in materia di prezzi petroliferi connessi al protrarsi della crisi dei mercati internazionali. (26G00129)";
+        eli:type_document     <http://www.gazzettaufficiale.it/eli/tables/resource-type#LEGGE>;
+        eli:version           <http://www.gazzettaufficiale.it/eli/tables/versions#ORIGINAL>;
+        dcterms:source        <http://www.gazzettaufficiale.it/eli/id/2026/06/27/26G00129/SG> .
+
+<http://www.gazzettaufficiale.it/eli/id/2026/06/20/26A03072/sg>
+        rdf:type              eli:LegalResource;
+        rdfs:label            "Nomina del dott. Francesco Napoli a consigliere del CNEL in sostituzione della dott.ssa Annalisa Guidotti. (26A03072)";
+        eli:date_document     "2026-05-07"^^xsd:date;
+        eli:date_publication  "2026-06-20"^^xsd:date;
+        eli:id_local          "26A03072";
+        eli:is_realized_by    <http://www.gazzettaufficiale.it/eli/id/2026/06/20/26A03072/sg/ita>;
+        eli:title             "Nomina del dott. Francesco Napoli a consigliere del CNEL in sostituzione della dott.ssa Annalisa Guidotti. (26A03072)";
+        eli:type_document     <http://www.gazzettaufficiale.it/eli/tables/resource-type#DECRETO_DEL_PRESIDENTE_DELLA_REPUBBLICA>;
+        eli:version           <http://www.gazzettaufficiale.it/eli/tables/versions#ORIGINAL>;
+        dcterms:source        <http://www.gazzettaufficiale.it/eli/id/2026/06/20/26A03072/SG> .
+
+<http://www.gazzettaufficiale.it/eli/id/2026/07/09/26A03365/sg/ita/html>
+        rdf:type    eli:Format;
+        eli:format  <http://www.iana.org/assignments/media-types/text/html> .
+
+<http://www.gazzettaufficiale.it/eli/id/2026/06/20/26A02994/sg/ita>
+        rdf:type            eli:LegalExpression;
+        rdfs:label          "Fusione per incorporazione della Parrocchia di Santi Pietro e Paolo e della Parrocchia di S. Pietro in Vincoli, in Villafalletto, della Parrocchia Sacra Famiglia, in Vottignasco e della Parrocchia di S. Anna, in Savigliano, nella Parrocchia San Carlo Acutis, in Villafalletto. (26A02994)";
+        eli:is_embodied_by  <http://www.gazzettaufficiale.it/eli/id/2026/06/20/26A02994/sg/ita/html>;
+        eli:language        <http://publications.europa.eu/resource/authority/language/ITA>;
+        eli:publisher       <http://www.ipzs.it>;
+        eli:realizes        <http://www.gazzettaufficiale.it/eli/id/2026/06/20/26A02994/sg>;
+        eli:title           "Fusione per incorporazione della Parrocchia di Santi Pietro e Paolo e della Parrocchia di S. Pietro in Vincoli, in Villafalletto, della Parrocchia Sacra Famiglia, in Vottignasco e della Parrocchia di S. Anna, in Savigliano, nella Parrocchia San Carlo Acutis, in Villafalletto. (26A02994)" .
+
+<http://www.gazzettaufficiale.it/eli/id/2026/07/09/26A03366/sg>
+        rdf:type              eli:LegalResource;
+        rdfs:label            "Liquidazione coatta amministrativa della «Helios societa' cooperativa in liquidazione», in Sesto Fiorentino e nomina del commissario liquidatore. (26A03366)";
+        eli:date_document     "2026-06-22"^^xsd:date;
+        eli:date_publication  "2026-07-09"^^xsd:date;
+        eli:id_local          "26A03366";
+        eli:is_realized_by    <http://www.gazzettaufficiale.it/eli/id/2026/07/09/26A03366/sg/ita>;
+        eli:title             "Liquidazione coatta amministrativa della «Helios societa' cooperativa in liquidazione», in Sesto Fiorentino e nomina del commissario liquidatore. (26A03366)";
+        eli:type_document     <http://www.gazzettaufficiale.it/eli/tables/resource-type#DECRETO>;
+        eli:version           <http://www.gazzettaufficiale.it/eli/tables/versions#ORIGINAL>;
+        dcterms:source        <http://www.gazzettaufficiale.it/eli/id/2026/07/09/26A03366/SG> .
+
+<http://www.gazzettaufficiale.it/eli/id/2026/06/20/26A03032/sg/ita>
+        rdf:type            eli:LegalExpression;
+        rdfs:label          "Revoca, su rinuncia, dell'autorizzazione all'immissione in commercio del medicinale per uso umano «Vincristina EG». (26A03032)";
+        eli:is_embodied_by  <http://www.gazzettaufficiale.it/eli/id/2026/06/20/26A03032/sg/ita/html>;
+        eli:language        <http://publications.europa.eu/resource/authority/language/ITA>;
+        eli:publisher       <http://www.ipzs.it>;
+        eli:realizes        <http://www.gazzettaufficiale.it/eli/id/2026/06/20/26A03032/sg>;
+        eli:title           "Revoca, su rinuncia, dell'autorizzazione all'immissione in commercio del medicinale per uso umano «Vincristina EG». (26A03032)" .
+
+<http://www.gazzettaufficiale.it/eli/id/2026/06/27/26A03217/sg/ita/html>
+        rdf:type    eli:Format;
+        eli:format  <http://www.iana.org/assignments/media-types/text/html> .
+
+<http://www.gazzettaufficiale.it/eli/id/2026/06/20/26A03033/sg>
+        rdf:type              eli:LegalResource;
+        rdfs:label            "Revoca, su rinuncia, dell'autorizzazione all'immissione in commercio del medicinale per uso umano «Pressac» (26A03033)";
+        eli:date_publication  "2026-06-20"^^xsd:date;
+        eli:id_local          "26A03033";
+        eli:is_realized_by    <http://www.gazzettaufficiale.it/eli/id/2026/06/20/26A03033/sg/ita>;
+        eli:title             "Revoca, su rinuncia, dell'autorizzazione all'immissione in commercio del medicinale per uso umano «Pressac» (26A03033)";
+        eli:type_document     <http://www.gazzettaufficiale.it/eli/tables/resource-type#COMUNICATO>;
+        eli:version           <http://www.gazzettaufficiale.it/eli/tables/versions#ORIGINAL>;
+        dcterms:source        <http://www.gazzettaufficiale.it/eli/id/2026/06/20/26A03033/SG> .
+
+<http://www.gazzettaufficiale.it/eli/id/2026/07/08/26A03273/sg>
+        rdf:type              eli:LegalResource;
+        rdfs:label            "Riconoscimento della organizzazione di produttori della pesca «Organizzazione produttori La Fenice soc. coop.» con sede in Cervia, ai sensi del Regolamento (UE) 1379/2013 e del Regolamento di esecuzione (UE) 1419/2013. (26A03273)";
+        eli:date_document     "2026-06-18"^^xsd:date;
+        eli:date_publication  "2026-07-08"^^xsd:date;
+        eli:id_local          "26A03273";
+        eli:is_realized_by    <http://www.gazzettaufficiale.it/eli/id/2026/07/08/26A03273/sg/ita>;
+        eli:title             "Riconoscimento della organizzazione di produttori della pesca «Organizzazione produttori La Fenice soc. coop.» con sede in Cervia, ai sensi del Regolamento (UE) 1379/2013 e del Regolamento di esecuzione (UE) 1419/2013. (26A03273)";
+        eli:type_document     <http://www.gazzettaufficiale.it/eli/tables/resource-type#DECRETO>;
+        eli:version           <http://www.gazzettaufficiale.it/eli/tables/versions#ORIGINAL>;
+        dcterms:source        <http://www.gazzettaufficiale.it/eli/id/2026/07/08/26A03273/SG> .
+
+<http://www.gazzettaufficiale.it/eli/id/2026/06/27/26A02942/sg/ita/html>
+        rdf:type    eli:Format;
+        eli:format  <http://www.iana.org/assignments/media-types/text/html> .
+
+<http://www.gazzettaufficiale.it/eli/id/2026/07/08/26A03349/sg/ita/html>
+        rdf:type    eli:Format;
+        eli:format  <http://www.iana.org/assignments/media-types/text/html> .
+
+<http://www.gazzettaufficiale.it/eli/id/2026/07/09/26A03369/sg>
+        rdf:type              eli:LegalResource;
+        rdfs:label            "Ordinanza n. 2 del 17 giugno 2026, concernente il contributo per il disagio abitativo finalizzato alla ricostruzione (26A03369)";
+        eli:date_publication  "2026-07-09"^^xsd:date;
+        eli:id_local          "26A03369";
+        eli:is_realized_by    <http://www.gazzettaufficiale.it/eli/id/2026/07/09/26A03369/sg/ita>;
+        eli:title             "Ordinanza n. 2 del 17 giugno 2026, concernente il contributo per il disagio abitativo finalizzato alla ricostruzione (26A03369)";
+        eli:type_document     <http://www.gazzettaufficiale.it/eli/tables/resource-type#COMUNICATO>;
+        eli:version           <http://www.gazzettaufficiale.it/eli/tables/versions#ORIGINAL>;
+        dcterms:source        <http://www.gazzettaufficiale.it/eli/id/2026/07/09/26A03369/SG> .
+
+<http://www.gazzettaufficiale.it/eli/id/2026/06/27/26A02942/sg>
+        rdf:type              eli:LegalResource;
+        rdfs:label            "Liquidazione coatta amministrativa della «Isoconsulting societa' cooperativa - in liquidazione», in Milano e nomina del commissario liquidatore. (26A02942)";
+        eli:date_document     "2026-05-29"^^xsd:date;
+        eli:date_publication  "2026-06-27"^^xsd:date;
+        eli:id_local          "26A02942";
+        eli:is_realized_by    <http://www.gazzettaufficiale.it/eli/id/2026/06/27/26A02942/sg/ita>;
+        eli:title             "Liquidazione coatta amministrativa della «Isoconsulting societa' cooperativa - in liquidazione», in Milano e nomina del commissario liquidatore. (26A02942)";
+        eli:type_document     <http://www.gazzettaufficiale.it/eli/tables/resource-type#DECRETO>;
+        eli:version           <http://www.gazzettaufficiale.it/eli/tables/versions#ORIGINAL>;
+        dcterms:source        <http://www.gazzettaufficiale.it/eli/id/2026/06/27/26A02942/SG> .
+
+<http://www.gazzettaufficiale.it/eli/id/2026/06/20/26A02994/sg>
+        rdf:type              eli:LegalResource;
+        rdfs:label            "Fusione per incorporazione della Parrocchia di Santi Pietro e Paolo e della Parrocchia di S. Pietro in Vincoli, in Villafalletto, della Parrocchia Sacra Famiglia, in Vottignasco e della Parrocchia di S. Anna, in Savigliano, nella Parrocchia San Carlo Acutis, in Villafalletto. (26A02994)";
+        eli:date_publication  "2026-06-20"^^xsd:date;
+        eli:id_local          "26A02994";
+        eli:is_realized_by    <http://www.gazzettaufficiale.it/eli/id/2026/06/20/26A02994/sg/ita>;
+        eli:title             "Fusione per incorporazione della Parrocchia di Santi Pietro e Paolo e della Parrocchia di S. Pietro in Vincoli, in Villafalletto, della Parrocchia Sacra Famiglia, in Vottignasco e della Parrocchia di S. Anna, in Savigliano, nella Parrocchia San Carlo Acutis, in Villafalletto. (26A02994)";
+        eli:type_document     <http://www.gazzettaufficiale.it/eli/tables/resource-type#COMUNICATO>;
+        eli:version           <http://www.gazzettaufficiale.it/eli/tables/versions#ORIGINAL>;
+        dcterms:source        <http://www.gazzettaufficiale.it/eli/id/2026/06/20/26A02994/SG> .
+
+<http://www.gazzettaufficiale.it/eli/id/2026/06/20/26A03117/sg/ita/html>
+        rdf:type    eli:Format;
+        eli:format  <http://www.iana.org/assignments/media-types/text/html> .
+
+<http://www.gazzettaufficiale.it/eli/id/2026/06/27/26A03280/sg>
+        rdf:type              eli:LegalResource;
+        rdfs:label            "Testo del decreto-legge 30 aprile 2026, n. 63 (in Gazzetta Ufficiale - Serie generale - n. 99 del 30 aprile 2026), coordinato con la legge di conversione 25 giugno 2026, n. 113 (in questa stessa Gazzetta Ufficiale, alla pag. 10), recante: «Disposizioni urgenti in materia di prezzi petroliferi connessi al protrarsi della crisi dei mercati internazionali.». (26A03280)";
+        eli:date_document     "2026-04-30"^^xsd:date;
+        eli:date_publication  "2026-06-27"^^xsd:date;
+        eli:id_local          "26A03280";
+        eli:is_realized_by    <http://www.gazzettaufficiale.it/eli/id/2026/06/27/26A03280/sg/ita>;
+        eli:title             "Testo del decreto-legge 30 aprile 2026, n. 63 (in Gazzetta Ufficiale - Serie generale - n. 99 del 30 aprile 2026), coordinato con la legge di conversione 25 giugno 2026, n. 113 (in questa stessa Gazzetta Ufficiale, alla pag. 10), recante: «Disposizioni urgenti in materia di prezzi petroliferi connessi al protrarsi della crisi dei mercati internazionali.». (26A03280)";
+        eli:type_document     <http://www.gazzettaufficiale.it/eli/tables/resource-type#TESTO_COORDINATO_DEL_DECRETO-LEGGE>;
+        eli:version           <http://www.gazzettaufficiale.it/eli/tables/versions#ORIGINAL>;
+        dcterms:source        <http://www.gazzettaufficiale.it/eli/id/2026/06/27/26A03280/SG> .
+
+<http://www.gazzettaufficiale.it/eli/id/2026/06/20/26A03027/sg/ita/html>
+        rdf:type    eli:Format;
+        eli:format  <http://www.iana.org/assignments/media-types/text/html> .
+
+<http://www.gazzettaufficiale.it/eli/id/2026/07/09/26A03369/sg/ita/html>
+        rdf:type    eli:Format;
+        eli:format  <http://www.iana.org/assignments/media-types/text/html> .
+
+<http://www.gazzettaufficiale.it/eli/id/2026/06/20/26A03032/sg/ita/html>
+        rdf:type    eli:Format;
+        eli:format  <http://www.iana.org/assignments/media-types/text/html> .
+
+<http://www.gazzettaufficiale.it/eli/id/2026/06/20/26A03036/sg>
+        rdf:type              eli:LegalResource;
+        rdfs:label            "Scioglimento, per atto dell'autorita', della «L.F.C. Lingua formazione cultura societa' cooperativa», in Bolzano, senza nomina del commissario liquidatore. (26A03036)";
+        eli:date_publication  "2026-06-20"^^xsd:date;
+        eli:id_local          "26A03036";
+        eli:is_realized_by    <http://www.gazzettaufficiale.it/eli/id/2026/06/20/26A03036/sg/ita>;
+        eli:title             "Scioglimento, per atto dell'autorita', della «L.F.C. Lingua formazione cultura societa' cooperativa», in Bolzano, senza nomina del commissario liquidatore. (26A03036)";
+        eli:type_document     <http://www.gazzettaufficiale.it/eli/tables/resource-type#COMUNICATO>;
+        eli:version           <http://www.gazzettaufficiale.it/eli/tables/versions#ORIGINAL>;
+        dcterms:source        <http://www.gazzettaufficiale.it/eli/id/2026/06/20/26A03036/SG> .
+
+<http://www.gazzettaufficiale.it/eli/id/2026/07/08/26A03352/sg/ita/html>
+        rdf:type    eli:Format;
+        eli:format  <http://www.iana.org/assignments/media-types/text/html> .
+
+<http://www.gazzettaufficiale.it/eli/id/2026/06/27/26A03065/sg/ita/html>
+        rdf:type    eli:Format;
+        eli:format  <http://www.iana.org/assignments/media-types/text/html> .
+
+<http://www.gazzettaufficiale.it/eli/id/2026/07/09/26G00141/sg/ita/html>
+        rdf:type    eli:Format;
+        eli:format  <http://www.iana.org/assignments/media-types/text/html> .
+
+<http://www.gazzettaufficiale.it/eli/id/2026/06/20/26A03073/sg/ita>
+        rdf:type            eli:LegalExpression;
+        rdfs:label          "Sottoposizione alla procedura di liquidazione coatta amministrativa di «Cirdan Group S.p.a.» (26A03073)";
+        eli:is_embodied_by  <http://www.gazzettaufficiale.it/eli/id/2026/06/20/26A03073/sg/ita/html>;
+        eli:language        <http://publications.europa.eu/resource/authority/language/ITA>;
+        eli:publisher       <http://www.ipzs.it>;
+        eli:realizes        <http://www.gazzettaufficiale.it/eli/id/2026/06/20/26A03073/sg>;
+        eli:title           "Sottoposizione alla procedura di liquidazione coatta amministrativa di «Cirdan Group S.p.a.» (26A03073)" .
+
+<http://www.gazzettaufficiale.it/eli/id/2026/07/08/26A03344/sg/ita>
+        rdf:type            eli:LegalExpression;
+        rdfs:label          "Sostituzione del commissario liquidatore della «Azienda cooperativa agricola industriale del Capo di Leuca», in Tricase, in liquidazione coatta amministrativa. (26A03344)";
+        eli:is_embodied_by  <http://www.gazzettaufficiale.it/eli/id/2026/07/08/26A03344/sg/ita/html>;
+        eli:language        <http://publications.europa.eu/resource/authority/language/ITA>;
+        eli:publisher       <http://www.ipzs.it>;
+        eli:realizes        <http://www.gazzettaufficiale.it/eli/id/2026/07/08/26A03344/sg>;
+        eli:title           "Sostituzione del commissario liquidatore della «Azienda cooperativa agricola industriale del Capo di Leuca», in Tricase, in liquidazione coatta amministrativa. (26A03344)" .
+
+<http://www.gazzettaufficiale.it/eli/id/2026/07/08/26A03351/sg/ita>
+        rdf:type            eli:LegalExpression;
+        rdfs:label          "Autorizzazione all'importazione parallela del medicinale per uso umano «Minoxidil Bailleul» (26A03351)";
+        eli:is_embodied_by  <http://www.gazzettaufficiale.it/eli/id/2026/07/08/26A03351/sg/ita/html>;
+        eli:language        <http://publications.europa.eu/resource/authority/language/ITA>;
+        eli:publisher       <http://www.ipzs.it>;
+        eli:realizes        <http://www.gazzettaufficiale.it/eli/id/2026/07/08/26A03351/sg>;
+        eli:title           "Autorizzazione all'importazione parallela del medicinale per uso umano «Minoxidil Bailleul» (26A03351)" .
+
+<http://www.gazzettaufficiale.it/eli/id/2026/06/27/26A03226/sg>
+        rdf:type              eli:LegalResource;
+        rdfs:label            "Determinazione del tasso cedolare annuo e accertamento dell'importo emesso dei buoni del Tesoro poliennali, legati all'inflazione italiana, con godimento 23 giugno 2023 e scadenza 23 giugno 2031, prima emissione. (26A03226)";
+        eli:date_document     "2026-06-19"^^xsd:date;
+        eli:date_publication  "2026-06-27"^^xsd:date;
+        eli:id_local          "26A03226";
+        eli:is_realized_by    <http://www.gazzettaufficiale.it/eli/id/2026/06/27/26A03226/sg/ita>;
+        eli:title             "Determinazione del tasso cedolare annuo e accertamento dell'importo emesso dei buoni del Tesoro poliennali, legati all'inflazione italiana, con godimento 23 giugno 2023 e scadenza 23 giugno 2031, prima emissione. (26A03226)";
+        eli:type_document     <http://www.gazzettaufficiale.it/eli/tables/resource-type#DECRETO>;
+        eli:version           <http://www.gazzettaufficiale.it/eli/tables/versions#ORIGINAL>;
+        dcterms:source        <http://www.gazzettaufficiale.it/eli/id/2026/06/27/26A03226/SG> .
+
+<http://www.gazzettaufficiale.it/eli/id/2026/06/27/26A03066/sg/ita>
+        rdf:type            eli:LegalExpression;
+        rdfs:label          "Sostituzione del commissario liquidatore della «Il Colo societa' cooperativa», in Massa, in liquidazione coatta amministrativa. (26A03066)";
+        eli:is_embodied_by  <http://www.gazzettaufficiale.it/eli/id/2026/06/27/26A03066/sg/ita/html>;
+        eli:language        <http://publications.europa.eu/resource/authority/language/ITA>;
+        eli:publisher       <http://www.ipzs.it>;
+        eli:realizes        <http://www.gazzettaufficiale.it/eli/id/2026/06/27/26A03066/sg>;
+        eli:title           "Sostituzione del commissario liquidatore della «Il Colo societa' cooperativa», in Massa, in liquidazione coatta amministrativa. (26A03066)" .
+
+<http://www.gazzettaufficiale.it/eli/id/2026/07/09/26A03360/sg/ita/html>
+        rdf:type    eli:Format;
+        eli:format  <http://www.iana.org/assignments/media-types/text/html> .
+
+<http://www.gazzettaufficiale.it/eli/id/2026/07/08/26A03283/sg/ita/html>
+        rdf:type    eli:Format;
+        eli:format  <http://www.iana.org/assignments/media-types/text/html> .
+
+<http://www.gazzettaufficiale.it/eli/id/2026/06/20/26A03182/sg/ita>
+        rdf:type            eli:LegalExpression;
+        rdfs:label          "Ripubblicazione del testo del decreto-legge 24 aprile 2026, n. 55 (in Gazzetta Ufficiale - Serie generale - n. 95 del 24 aprile 2026), convertito, senza modificazioni, dalla legge 19 giugno 2026, n. 103 (in questa stessa Gazzetta Ufficiale alla pag. 1), recante: «Disposizioni urgenti in materia di rimpatri volontari assistiti». (26A03182)";
+        eli:is_embodied_by  <http://www.gazzettaufficiale.it/eli/id/2026/06/20/26A03182/sg/ita/html>;
+        eli:language        <http://publications.europa.eu/resource/authority/language/ITA>;
+        eli:publisher       <http://www.ipzs.it>;
+        eli:realizes        <http://www.gazzettaufficiale.it/eli/id/2026/06/20/26A03182/sg>;
+        eli:title           "Ripubblicazione del testo del decreto-legge 24 aprile 2026, n. 55 (in Gazzetta Ufficiale - Serie generale - n. 95 del 24 aprile 2026), convertito, senza modificazioni, dalla legge 19 giugno 2026, n. 103 (in questa stessa Gazzetta Ufficiale alla pag. 1), recante: «Disposizioni urgenti in materia di rimpatri volontari assistiti». (26A03182)" .
+
+<http://www.gazzettaufficiale.it/eli/id/2026/07/08/26A03356/sg/ita/html>
+        rdf:type    eli:Format;
+        eli:format  <http://www.iana.org/assignments/media-types/text/html> .
+
+<http://www.gazzettaufficiale.it/eli/id/2026/06/27/26A03212/sg/ita/html>
+        rdf:type    eli:Format;
+        eli:format  <http://www.iana.org/assignments/media-types/text/html> .
+
+<http://www.gazzettaufficiale.it/eli/id/2026/06/27/26A03065/sg>
+        rdf:type              eli:LegalResource;
+        rdfs:label            "Liquidazione coatta amministrativa della «Citta' e Salute societa' cooperativa sociale - O.n.l.u.s. in liquidazione», in Milano e nomina del commissario liquidatore. (26A03065)";
+        eli:date_document     "2026-06-08"^^xsd:date;
+        eli:date_publication  "2026-06-27"^^xsd:date;
+        eli:id_local          "26A03065";
+        eli:is_realized_by    <http://www.gazzettaufficiale.it/eli/id/2026/06/27/26A03065/sg/ita>;
+        eli:title             "Liquidazione coatta amministrativa della «Citta' e Salute societa' cooperativa sociale - O.n.l.u.s. in liquidazione», in Milano e nomina del commissario liquidatore. (26A03065)";
+        eli:type_document     <http://www.gazzettaufficiale.it/eli/tables/resource-type#DECRETO>;
+        eli:version           <http://www.gazzettaufficiale.it/eli/tables/versions#ORIGINAL>;
+        dcterms:source        <http://www.gazzettaufficiale.it/eli/id/2026/06/27/26A03065/SG> .
+
+<http://www.gazzettaufficiale.it/eli/id/2026/07/08/26A03351/sg>
+        rdf:type              eli:LegalResource;
+        rdfs:label            "Autorizzazione all'importazione parallela del medicinale per uso umano «Minoxidil Bailleul» (26A03351)";
+        eli:date_publication  "2026-07-08"^^xsd:date;
+        eli:id_local          "26A03351";
+        eli:is_realized_by    <http://www.gazzettaufficiale.it/eli/id/2026/07/08/26A03351/sg/ita>;
+        eli:title             "Autorizzazione all'importazione parallela del medicinale per uso umano «Minoxidil Bailleul» (26A03351)";
+        eli:type_document     <http://www.gazzettaufficiale.it/eli/tables/resource-type#COMUNICATO>;
+        eli:version           <http://www.gazzettaufficiale.it/eli/tables/versions#ORIGINAL>;
+        dcterms:source        <http://www.gazzettaufficiale.it/eli/id/2026/07/08/26A03351/SG> .
+
+<http://www.gazzettaufficiale.it/eli/id/2026/06/20/26A03034/sg/ita/html>
+        rdf:type    eli:Format;
+        eli:format  <http://www.iana.org/assignments/media-types/text/html> .
+
+<http://www.gazzettaufficiale.it/eli/id/2026/07/09/26A03365/sg/ita>
+        rdf:type            eli:LegalExpression;
+        rdfs:label          "Liquidazione coatta amministrativa della «Cooperativa edificatrice Frazzi - Societa' cooperativa», in Firenze e nomina del commissario liquidatore. (26A03365)";
+        eli:is_embodied_by  <http://www.gazzettaufficiale.it/eli/id/2026/07/09/26A03365/sg/ita/html>;
+        eli:language        <http://publications.europa.eu/resource/authority/language/ITA>;
+        eli:publisher       <http://www.ipzs.it>;
+        eli:realizes        <http://www.gazzettaufficiale.it/eli/id/2026/07/09/26A03365/sg>;
+        eli:title           "Liquidazione coatta amministrativa della «Cooperativa edificatrice Frazzi - Societa' cooperativa», in Firenze e nomina del commissario liquidatore. (26A03365)" .
+
+<http://www.gazzettaufficiale.it/eli/id/2026/06/27/26A03228/sg/ita/html>
+        rdf:type    eli:Format;
+        eli:format  <http://www.iana.org/assignments/media-types/text/html> .
+
+<http://www.gazzettaufficiale.it/eli/id/2026/07/09/26A03467/sg/ita>
+        rdf:type            eli:LegalExpression;
+        rdfs:label          "Sostituzione dell'allegato della determina n. 819/2026 del 17 luglio 2026, concernente: «Aggiornamento Nota AIFA 39». (Determina n. 914/2026). (26A03467)";
+        eli:is_embodied_by  <http://www.gazzettaufficiale.it/eli/id/2026/07/09/26A03467/sg/ita/html>;
+        eli:language        <http://publications.europa.eu/resource/authority/language/ITA>;
+        eli:publisher       <http://www.ipzs.it>;
+        eli:realizes        <http://www.gazzettaufficiale.it/eli/id/2026/07/09/26A03467/sg>;
+        eli:title           "Sostituzione dell'allegato della determina n. 819/2026 del 17 luglio 2026, concernente: «Aggiornamento Nota AIFA 39». (Determina n. 914/2026). (26A03467)" .
+
+<http://www.gazzettaufficiale.it/eli/id/2026/06/20/26A03114/sg>
+        rdf:type              eli:LegalResource;
+        rdfs:label            "Modifica dell'autorizzazione all'immissione in commercio del medicinale per uso umano, a base di esomeprazolo, «Esomeprazolo Day Zero». (26A03114)";
+        eli:date_publication  "2026-06-20"^^xsd:date;
+        eli:id_local          "26A03114";
+        eli:is_realized_by    <http://www.gazzettaufficiale.it/eli/id/2026/06/20/26A03114/sg/ita>;
+        eli:title             "Modifica dell'autorizzazione all'immissione in commercio del medicinale per uso umano, a base di esomeprazolo, «Esomeprazolo Day Zero». (26A03114)";
+        eli:type_document     <http://www.gazzettaufficiale.it/eli/tables/resource-type#COMUNICATO>;
+        eli:version           <http://www.gazzettaufficiale.it/eli/tables/versions#ORIGINAL>;
+        dcterms:source        <http://www.gazzettaufficiale.it/eli/id/2026/06/20/26A03114/SG> .
+
+<http://www.gazzettaufficiale.it/eli/id/2026/07/08/26A03359/sg/ita>
+        rdf:type            eli:LegalExpression;
+        rdfs:label          "Provvedimento concernente i marchi di identificazione dei metalli preziosi (26A03359)";
+        eli:is_embodied_by  <http://www.gazzettaufficiale.it/eli/id/2026/07/08/26A03359/sg/ita/html>;
+        eli:language        <http://publications.europa.eu/resource/authority/language/ITA>;
+        eli:publisher       <http://www.ipzs.it>;
+        eli:realizes        <http://www.gazzettaufficiale.it/eli/id/2026/07/08/26A03359/sg>;
+        eli:title           "Provvedimento concernente i marchi di identificazione dei metalli preziosi (26A03359)" .
+
+<http://www.gazzettaufficiale.it/eli/id/2026/07/08/26A03354/sg>
+        rdf:type              eli:LegalResource;
+        rdfs:label            "Autorizzazione all'importazione parallela del medicinale per uso umano «Vicks Vaporub» (26A03354)";
+        eli:date_publication  "2026-07-08"^^xsd:date;
+        eli:id_local          "26A03354";
+        eli:is_realized_by    <http://www.gazzettaufficiale.it/eli/id/2026/07/08/26A03354/sg/ita>;
+        eli:title             "Autorizzazione all'importazione parallela del medicinale per uso umano «Vicks Vaporub» (26A03354)";
+        eli:type_document     <http://www.gazzettaufficiale.it/eli/tables/resource-type#COMUNICATO>;
+        eli:version           <http://www.gazzettaufficiale.it/eli/tables/versions#ORIGINAL>;
+        dcterms:source        <http://www.gazzettaufficiale.it/eli/id/2026/07/08/26A03354/SG> .
+
+<http://www.gazzettaufficiale.it/eli/id/2026/06/20/26A03072/sg/ita/html>
+        rdf:type    eli:Format;
+        eli:format  <http://www.iana.org/assignments/media-types/text/html> .
+
+<http://www.gazzettaufficiale.it/eli/id/2026/07/09/26A03362/sg/ita/html>
+        rdf:type    eli:Format;
+        eli:format  <http://www.iana.org/assignments/media-types/text/html> .
+
+<http://www.gazzettaufficiale.it/eli/id/2026/06/27/26A03216/sg/ita/html>
+        rdf:type    eli:Format;
+        eli:format  <http://www.iana.org/assignments/media-types/text/html> .
+
+<http://www.gazzettaufficiale.it/eli/id/2026/06/20/26G00123/sg/ita>
+        rdf:type            eli:LegalExpression;
+        rdfs:label          "Conversione in legge del decreto-legge 24 aprile 2026, n. 55, recante disposizioni urgenti in materia di rimpatri volontari assistiti. (26G00123)";
+        eli:is_embodied_by  <http://www.gazzettaufficiale.it/eli/id/2026/06/20/26G00123/sg/ita/html>;
+        eli:language        <http://publications.europa.eu/resource/authority/language/ITA>;
+        eli:publisher       <http://www.ipzs.it>;
+        eli:realizes        <http://www.gazzettaufficiale.it/eli/id/2026/06/20/26G00123/sg>;
+        eli:title           "Conversione in legge del decreto-legge 24 aprile 2026, n. 55, recante disposizioni urgenti in materia di rimpatri volontari assistiti. (26G00123)" .
+
+<http://www.gazzettaufficiale.it/eli/id/2026/06/20/26A03033/sg/ita>
+        rdf:type            eli:LegalExpression;
+        rdfs:label          "Revoca, su rinuncia, dell'autorizzazione all'immissione in commercio del medicinale per uso umano «Pressac» (26A03033)";
+        eli:is_embodied_by  <http://www.gazzettaufficiale.it/eli/id/2026/06/20/26A03033/sg/ita/html>;
+        eli:language        <http://publications.europa.eu/resource/authority/language/ITA>;
+        eli:publisher       <http://www.ipzs.it>;
+        eli:realizes        <http://www.gazzettaufficiale.it/eli/id/2026/06/20/26A03033/sg>;
+        eli:title           "Revoca, su rinuncia, dell'autorizzazione all'immissione in commercio del medicinale per uso umano «Pressac» (26A03033)" .
+
+<http://www.gazzettaufficiale.it/eli/id/2026/06/27/26A03215/sg/ita>
+        rdf:type            eli:LegalExpression;
+        rdfs:label          "Bilancio di previsione per l'esercizio 2026 dell'Autorita' per le garanzie nelle comunicazioni. (Delibera n. 65/26/CONS). (26A03215)";
+        eli:is_embodied_by  <http://www.gazzettaufficiale.it/eli/id/2026/06/27/26A03215/sg/ita/html>;
+        eli:language        <http://publications.europa.eu/resource/authority/language/ITA>;
+        eli:publisher       <http://www.ipzs.it>;
+        eli:realizes        <http://www.gazzettaufficiale.it/eli/id/2026/06/27/26A03215/sg>;
+        eli:title           "Bilancio di previsione per l'esercizio 2026 dell'Autorita' per le garanzie nelle comunicazioni. (Delibera n. 65/26/CONS). (26A03215)" .
+
+<http://www.gazzettaufficiale.it/eli/id/2026/07/09/26A03370/sg>
+        rdf:type              eli:LegalResource;
+        rdfs:label            "Fondo 394/81 - Sezione Crescita. Manifestazione di interesse rivolta a operatori privati per il co-investimento nell'ambito degli interventi della Sezione Crescita del Fondo 394/81. (26A03370)";
+        eli:date_publication  "2026-07-09"^^xsd:date;
+        eli:id_local          "26A03370";
+        eli:is_realized_by    <http://www.gazzettaufficiale.it/eli/id/2026/07/09/26A03370/sg/ita>;
+        eli:title             "Fondo 394/81 - Sezione Crescita. Manifestazione di interesse rivolta a operatori privati per il co-investimento nell'ambito degli interventi della Sezione Crescita del Fondo 394/81. (26A03370)";
+        eli:type_document     <http://www.gazzettaufficiale.it/eli/tables/resource-type#COMUNICATO>;
+        eli:version           <http://www.gazzettaufficiale.it/eli/tables/versions#ORIGINAL>;
+        dcterms:source        <http://www.gazzettaufficiale.it/eli/id/2026/07/09/26A03370/SG> .
+
+<http://www.gazzettaufficiale.it/eli/id/2026/06/20/26A03117/sg>
+        rdf:type              eli:LegalResource;
+        rdfs:label            "Riparto e assegnazione del fondo a favore delle amministrazioni centrali dello Stato, per assicurare il finanziamento degli investimenti e lo sviluppo infrastrutturale del Paese agli interventi del Ministero dell'economia e delle finanze. (26A03117)";
+        eli:date_document     "2026-05-18"^^xsd:date;
+        eli:date_publication  "2026-06-20"^^xsd:date;
+        eli:id_local          "26A03117";
+        eli:is_realized_by    <http://www.gazzettaufficiale.it/eli/id/2026/06/20/26A03117/sg/ita>;
+        eli:title             "Riparto e assegnazione del fondo a favore delle amministrazioni centrali dello Stato, per assicurare il finanziamento degli investimenti e lo sviluppo infrastrutturale del Paese agli interventi del Ministero dell'economia e delle finanze. (26A03117)";
+        eli:type_document     <http://www.gazzettaufficiale.it/eli/tables/resource-type#DECRETO>;
+        eli:version           <http://www.gazzettaufficiale.it/eli/tables/versions#ORIGINAL>;
+        dcterms:source        <http://www.gazzettaufficiale.it/eli/id/2026/06/20/26A03117/SG> .
+
+<http://www.gazzettaufficiale.it/eli/id/2026/07/08/26A03357/sg>
+        rdf:type              eli:LegalResource;
+        rdfs:label            "Autorizzazione all'importazione parallela del medicinale per uso umano «Klaira» (26A03357)";
+        eli:date_publication  "2026-07-08"^^xsd:date;
+        eli:id_local          "26A03357";
+        eli:is_realized_by    <http://www.gazzettaufficiale.it/eli/id/2026/07/08/26A03357/sg/ita>;
+        eli:title             "Autorizzazione all'importazione parallela del medicinale per uso umano «Klaira» (26A03357)";
+        eli:type_document     <http://www.gazzettaufficiale.it/eli/tables/resource-type#COMUNICATO>;
+        eli:version           <http://www.gazzettaufficiale.it/eli/tables/versions#ORIGINAL>;
+        dcterms:source        <http://www.gazzettaufficiale.it/eli/id/2026/07/08/26A03357/SG> .
+
+<http://www.gazzettaufficiale.it/eli/id/2026/07/08/26A03354/sg/ita>
+        rdf:type            eli:LegalExpression;
+        rdfs:label          "Autorizzazione all'importazione parallela del medicinale per uso umano «Vicks Vaporub» (26A03354)";
+        eli:is_embodied_by  <http://www.gazzettaufficiale.it/eli/id/2026/07/08/26A03354/sg/ita/html>;
+        eli:language        <http://publications.europa.eu/resource/authority/language/ITA>;
+        eli:publisher       <http://www.ipzs.it>;
+        eli:realizes        <http://www.gazzettaufficiale.it/eli/id/2026/07/08/26A03354/sg>;
+        eli:title           "Autorizzazione all'importazione parallela del medicinale per uso umano «Vicks Vaporub» (26A03354)" .
+
+<http://www.gazzettaufficiale.it/eli/id/2026/06/20/26A03074/sg>
+        rdf:type              eli:LegalResource;
+        rdfs:label            "Revisione del regolamento sull'esercizio del potere sanzionatorio dell'Autorita' in materia di contratti pubblici (26A03074)";
+        eli:date_publication  "2026-06-20"^^xsd:date;
+        eli:id_local          "26A03074";
+        eli:is_realized_by    <http://www.gazzettaufficiale.it/eli/id/2026/06/20/26A03074/sg/ita>;
+        eli:title             "Revisione del regolamento sull'esercizio del potere sanzionatorio dell'Autorita' in materia di contratti pubblici (26A03074)";
+        eli:type_document     <http://www.gazzettaufficiale.it/eli/tables/resource-type#COMUNICATO>;
+        eli:version           <http://www.gazzettaufficiale.it/eli/tables/versions#ORIGINAL>;
+        dcterms:source        <http://www.gazzettaufficiale.it/eli/id/2026/06/20/26A03074/SG> .
+
+<http://www.gazzettaufficiale.it/eli/id/2026/07/08/26A03346/sg/ita/html>
+        rdf:type    eli:Format;
+        eli:format  <http://www.iana.org/assignments/media-types/text/html> .
+
+<http://www.gazzettaufficiale.it/eli/id/2026/06/20/26A03114/sg/ita/html>
+        rdf:type    eli:Format;
+        eli:format  <http://www.iana.org/assignments/media-types/text/html> .
+
+<http://www.gazzettaufficiale.it/eli/id/2026/07/09/26A03404/sg>
+        rdf:type              eli:LegalResource;
+        rdfs:label            "Disposizioni generali in materia di costituzione e riconoscimento dei consorzi di tutela per le denominazioni di origine protette e le indicazioni geografiche protette dei prodotti agricoli e alimentari ai sensi del regolamento (UE) n. 2024/1143 del Parlamento europeo e del Consiglio dell'11 aprile 2024. (26A03404)";
+        eli:date_document     "2026-06-03"^^xsd:date;
+        eli:date_publication  "2026-07-09"^^xsd:date;
+        eli:id_local          "26A03404";
+        eli:is_realized_by    <http://www.gazzettaufficiale.it/eli/id/2026/07/09/26A03404/sg/ita>;
+        eli:title             "Disposizioni generali in materia di costituzione e riconoscimento dei consorzi di tutela per le denominazioni di origine protette e le indicazioni geografiche protette dei prodotti agricoli e alimentari ai sensi del regolamento (UE) n. 2024/1143 del Parlamento europeo e del Consiglio dell'11 aprile 2024. (26A03404)";
+        eli:type_document     <http://www.gazzettaufficiale.it/eli/tables/resource-type#DECRETO>;
+        eli:version           <http://www.gazzettaufficiale.it/eli/tables/versions#ORIGINAL>;
+        dcterms:source        <http://www.gazzettaufficiale.it/eli/id/2026/07/09/26A03404/SG> .
+
+<http://www.gazzettaufficiale.it/eli/id/2026/06/20/26A03029/sg>
+        rdf:type              eli:LegalResource;
+        rdfs:label            "Sostituzione del commissario liquidatore della «Rio Blu societa' cooperativa», in Sabaudia, in liquidazione coatta amministrativa. (26A03029)";
+        eli:date_document     "2026-06-08"^^xsd:date;
+        eli:date_publication  "2026-06-20"^^xsd:date;
+        eli:id_local          "26A03029";
+        eli:is_realized_by    <http://www.gazzettaufficiale.it/eli/id/2026/06/20/26A03029/sg/ita>;
+        eli:title             "Sostituzione del commissario liquidatore della «Rio Blu societa' cooperativa», in Sabaudia, in liquidazione coatta amministrativa. (26A03029)";
+        eli:type_document     <http://www.gazzettaufficiale.it/eli/tables/resource-type#DECRETO>;
+        eli:version           <http://www.gazzettaufficiale.it/eli/tables/versions#ORIGINAL>;
+        dcterms:source        <http://www.gazzettaufficiale.it/eli/id/2026/06/20/26A03029/SG> .
+
+<http://www.gazzettaufficiale.it/eli/id/2026/06/27/26A03216/sg>
+        rdf:type              eli:LegalResource;
+        rdfs:label            "Autorizzazione all'immissione in commercio del medicinale per uso umano, a base di flecainide acetato, «Flecainide Aurobindo Italia». (26A03216)";
+        eli:date_publication  "2026-06-27"^^xsd:date;
+        eli:id_local          "26A03216";
+        eli:is_realized_by    <http://www.gazzettaufficiale.it/eli/id/2026/06/27/26A03216/sg/ita>;
+        eli:title             "Autorizzazione all'immissione in commercio del medicinale per uso umano, a base di flecainide acetato, «Flecainide Aurobindo Italia». (26A03216)";
+        eli:type_document     <http://www.gazzettaufficiale.it/eli/tables/resource-type#COMUNICATO>;
+        eli:version           <http://www.gazzettaufficiale.it/eli/tables/versions#ORIGINAL>;
+        dcterms:source        <http://www.gazzettaufficiale.it/eli/id/2026/06/27/26A03216/SG> .
+
+<http://www.gazzettaufficiale.it/eli/id/2026/07/09/26A03404/sg/ita/html>
+        rdf:type    eli:Format;
+        eli:format  <http://www.iana.org/assignments/media-types/text/html> .
+
+<http://www.gazzettaufficiale.it/eli/id/2026/07/09/26A03366/sg/ita/html>
+        rdf:type    eli:Format;
+        eli:format  <http://www.iana.org/assignments/media-types/text/html> .
+
+<http://www.gazzettaufficiale.it/eli/id/2026/07/09/26A03361/sg>
+        rdf:type              eli:LegalResource;
+        rdfs:label            "Liquidazione coatta amministrativa della «Societa' cooperativa del Principato», in Avellino e nomina del commissario liquidatore. (26A03361)";
+        eli:date_document     "2026-06-22"^^xsd:date;
+        eli:date_publication  "2026-07-09"^^xsd:date;
+        eli:id_local          "26A03361";
+        eli:is_realized_by    <http://www.gazzettaufficiale.it/eli/id/2026/07/09/26A03361/sg/ita>;
+        eli:title             "Liquidazione coatta amministrativa della «Societa' cooperativa del Principato», in Avellino e nomina del commissario liquidatore. (26A03361)";
+        eli:type_document     <http://www.gazzettaufficiale.it/eli/tables/resource-type#DECRETO>;
+        eli:version           <http://www.gazzettaufficiale.it/eli/tables/versions#ORIGINAL>;
+        dcterms:source        <http://www.gazzettaufficiale.it/eli/id/2026/07/09/26A03361/SG> .
+
+<http://www.gazzettaufficiale.it/eli/id/2026/07/08/26G00140/sg>
+        rdf:type              eli:LegalResource;
+        rdfs:label            "Recepimento degli articoli 11, 12, 13 e 15 della direttiva (UE) 2024/1640 del Parlamento europeo e del Consiglio, del 31 maggio 2024, relativa ai meccanismi che gli Stati membri devono istituire per prevenire l'uso del sistema finanziario a fini di riciclaggio o finanziamento del terrorismo, che modifica la direttiva (UE) 2019/1937, e modifica e abroga la direttiva (UE) 2015/849. (26G00140)";
+        eli:date_document     "2026-06-10"^^xsd:date;
+        eli:date_publication  "2026-07-08"^^xsd:date;
+        eli:id_local          "26G00140";
+        eli:is_realized_by    <http://www.gazzettaufficiale.it/eli/id/2026/07/08/26G00140/sg/ita>;
+        eli:title             "Recepimento degli articoli 11, 12, 13 e 15 della direttiva (UE) 2024/1640 del Parlamento europeo e del Consiglio, del 31 maggio 2024, relativa ai meccanismi che gli Stati membri devono istituire per prevenire l'uso del sistema finanziario a fini di riciclaggio o finanziamento del terrorismo, che modifica la direttiva (UE) 2019/1937, e modifica e abroga la direttiva (UE) 2015/849. (26G00140)";
+        eli:type_document     <http://www.gazzettaufficiale.it/eli/tables/resource-type#DECRETO_LEGISLATIVO>;
+        eli:version           <http://www.gazzettaufficiale.it/eli/tables/versions#ORIGINAL>;
+        dcterms:source        <http://www.gazzettaufficiale.it/eli/id/2026/07/08/26G00140/SG> .
+
+<http://www.gazzettaufficiale.it/eli/id/2026/07/08/26A03348/sg>
+        rdf:type              eli:LegalResource;
+        rdfs:label            "Individuazione delle violazioni in materia di tutela delle condizioni di lavoro nonche' di salute e sicurezza nei luoghi di lavoro. (26A03348)";
+        eli:date_document     "2026-06-22"^^xsd:date;
+        eli:date_publication  "2026-07-08"^^xsd:date;
+        eli:id_local          "26A03348";
+        eli:is_realized_by    <http://www.gazzettaufficiale.it/eli/id/2026/07/08/26A03348/sg/ita>;
+        eli:title             "Individuazione delle violazioni in materia di tutela delle condizioni di lavoro nonche' di salute e sicurezza nei luoghi di lavoro. (26A03348)";
+        eli:type_document     <http://www.gazzettaufficiale.it/eli/tables/resource-type#DECRETO>;
+        eli:version           <http://www.gazzettaufficiale.it/eli/tables/versions#ORIGINAL>;
+        dcterms:source        <http://www.gazzettaufficiale.it/eli/id/2026/07/08/26A03348/SG> .
+
+<http://www.gazzettaufficiale.it/eli/id/2026/07/09/26A03403/sg/ita>
+        rdf:type            eli:LegalExpression;
+        rdfs:label          "Nomina dei commissari straordinari della Pegaso Security S.p.a., in amministrazione straordinaria. (26A03403)";
+        eli:is_embodied_by  <http://www.gazzettaufficiale.it/eli/id/2026/07/09/26A03403/sg/ita/html>;
+        eli:language        <http://publications.europa.eu/resource/authority/language/ITA>;
+        eli:publisher       <http://www.ipzs.it>;
+        eli:realizes        <http://www.gazzettaufficiale.it/eli/id/2026/07/09/26A03403/sg>;
+        eli:title           "Nomina dei commissari straordinari della Pegaso Security S.p.a., in amministrazione straordinaria. (26A03403)" .
+
+<http://www.gazzettaufficiale.it/eli/id/2026/06/20/26A03074/sg/ita>
+        rdf:type            eli:LegalExpression;
+        rdfs:label          "Revisione del regolamento sull'esercizio del potere sanzionatorio dell'Autorita' in materia di contratti pubblici (26A03074)";
+        eli:is_embodied_by  <http://www.gazzettaufficiale.it/eli/id/2026/06/20/26A03074/sg/ita/html>;
+        eli:language        <http://publications.europa.eu/resource/authority/language/ITA>;
+        eli:publisher       <http://www.ipzs.it>;
+        eli:realizes        <http://www.gazzettaufficiale.it/eli/id/2026/06/20/26A03074/sg>;
+        eli:title           "Revisione del regolamento sull'esercizio del potere sanzionatorio dell'Autorita' in materia di contratti pubblici (26A03074)" .
+
+<http://www.gazzettaufficiale.it/eli/id/2026/06/27/26G00127/sg/ita/html>
+        rdf:type    eli:Format;
+        eli:format  <http://www.iana.org/assignments/media-types/text/html> .
+
+<http://www.gazzettaufficiale.it/eli/id/2026/06/27/26A03218/sg/ita/html>
+        rdf:type    eli:Format;
+        eli:format  <http://www.iana.org/assignments/media-types/text/html> .
+
+<http://www.gazzettaufficiale.it/eli/id/2026/07/08/26A03345/sg/ita>
+        rdf:type            eli:LegalExpression;
+        rdfs:label          "Liquidazione coatta amministrativa della «C.L.E. Group societa' cooperativa in liquidazione», in Ariccia e nomina del commissario liquidatore. (26A03345)";
+        eli:is_embodied_by  <http://www.gazzettaufficiale.it/eli/id/2026/07/08/26A03345/sg/ita/html>;
+        eli:language        <http://publications.europa.eu/resource/authority/language/ITA>;
+        eli:publisher       <http://www.ipzs.it>;
+        eli:realizes        <http://www.gazzettaufficiale.it/eli/id/2026/07/08/26A03345/sg>;
+        eli:title           "Liquidazione coatta amministrativa della «C.L.E. Group societa' cooperativa in liquidazione», in Ariccia e nomina del commissario liquidatore. (26A03345)" .
+
+<http://www.gazzettaufficiale.it/eli/id/2026/07/08/26A03274/sg/ita>
+        rdf:type            eli:LegalExpression;
+        rdfs:label          "Concessione della croce di bronzo al merito dell'Esercito (26A03274)";
+        eli:is_embodied_by  <http://www.gazzettaufficiale.it/eli/id/2026/07/08/26A03274/sg/ita/html>;
+        eli:language        <http://publications.europa.eu/resource/authority/language/ITA>;
+        eli:publisher       <http://www.ipzs.it>;
+        eli:realizes        <http://www.gazzettaufficiale.it/eli/id/2026/07/08/26A03274/sg>;
+        eli:title           "Concessione della croce di bronzo al merito dell'Esercito (26A03274)" .
+
+<http://www.gazzettaufficiale.it/eli/id/2026/07/08/26A03352/sg/ita>
+        rdf:type            eli:LegalExpression;
+        rdfs:label          "Autorizzazione all'importazione parallela del medicinale per uso umano «Hizaar» (26A03352)";
+        eli:is_embodied_by  <http://www.gazzettaufficiale.it/eli/id/2026/07/08/26A03352/sg/ita/html>;
+        eli:language        <http://publications.europa.eu/resource/authority/language/ITA>;
+        eli:publisher       <http://www.ipzs.it>;
+        eli:realizes        <http://www.gazzettaufficiale.it/eli/id/2026/07/08/26A03352/sg>;
+        eli:title           "Autorizzazione all'importazione parallela del medicinale per uso umano «Hizaar» (26A03352)" .
+
+<http://www.gazzettaufficiale.it/eli/id/2026/06/27/26A03219/sg>
+        rdf:type              eli:LegalResource;
+        rdfs:label            "Autorizzazione all'immissione in commercio del medicinale per uso umano, a base di azelastina cloridrato e fluticasone propionato, «Azefluxin». (26A03219)";
+        eli:date_publication  "2026-06-27"^^xsd:date;
+        eli:id_local          "26A03219";
+        eli:is_realized_by    <http://www.gazzettaufficiale.it/eli/id/2026/06/27/26A03219/sg/ita>;
+        eli:title             "Autorizzazione all'immissione in commercio del medicinale per uso umano, a base di azelastina cloridrato e fluticasone propionato, «Azefluxin». (26A03219)";
+        eli:type_document     <http://www.gazzettaufficiale.it/eli/tables/resource-type#COMUNICATO>;
+        eli:version           <http://www.gazzettaufficiale.it/eli/tables/versions#ORIGINAL>;
+        dcterms:source        <http://www.gazzettaufficiale.it/eli/id/2026/06/27/26A03219/SG> .
+
+<http://www.gazzettaufficiale.it/eli/id/2026/06/27/26A02943/sg/ita/html>
+        rdf:type    eli:Format;
+        eli:format  <http://www.iana.org/assignments/media-types/text/html> .
+
+<http://www.gazzettaufficiale.it/eli/id/2026/07/09/26A03364/sg>
+        rdf:type              eli:LegalResource;
+        rdfs:label            "Liquidazione coatta amministrativa della «Eco Logica societa' cooperativa sociale», in Sassari e nomina del commissario liquidatore. (26A03364)";
+        eli:date_document     "2026-06-22"^^xsd:date;
+        eli:date_publication  "2026-07-09"^^xsd:date;
+        eli:id_local          "26A03364";
+        eli:is_realized_by    <http://www.gazzettaufficiale.it/eli/id/2026/07/09/26A03364/sg/ita>;
+        eli:title             "Liquidazione coatta amministrativa della «Eco Logica societa' cooperativa sociale», in Sassari e nomina del commissario liquidatore. (26A03364)";
+        eli:type_document     <http://www.gazzettaufficiale.it/eli/tables/resource-type#DECRETO>;
+        eli:version           <http://www.gazzettaufficiale.it/eli/tables/versions#ORIGINAL>;
+        dcterms:source        <http://www.gazzettaufficiale.it/eli/id/2026/07/09/26A03364/SG> .
+
+<http://www.gazzettaufficiale.it/eli/id/2026/07/08/26A03282/sg/ita/html>
+        rdf:type    eli:Format;
+        eli:format  <http://www.iana.org/assignments/media-types/text/html> .
+
+<http://www.gazzettaufficiale.it/eli/id/2026/06/20/26A03028/sg/ita/html>
+        rdf:type    eli:Format;
+        eli:format  <http://www.iana.org/assignments/media-types/text/html> .
+
+<http://www.gazzettaufficiale.it/eli/id/2026/07/08/26A03344/sg>
+        rdf:type              eli:LegalResource;
+        rdfs:label            "Sostituzione del commissario liquidatore della «Azienda cooperativa agricola industriale del Capo di Leuca», in Tricase, in liquidazione coatta amministrativa. (26A03344)";
+        eli:date_document     "2026-06-22"^^xsd:date;
+        eli:date_publication  "2026-07-08"^^xsd:date;
+        eli:id_local          "26A03344";
+        eli:is_realized_by    <http://www.gazzettaufficiale.it/eli/id/2026/07/08/26A03344/sg/ita>;
+        eli:title             "Sostituzione del commissario liquidatore della «Azienda cooperativa agricola industriale del Capo di Leuca», in Tricase, in liquidazione coatta amministrativa. (26A03344)";
+        eli:type_document     <http://www.gazzettaufficiale.it/eli/tables/resource-type#DECRETO>;
+        eli:version           <http://www.gazzettaufficiale.it/eli/tables/versions#ORIGINAL>;
+        dcterms:source        <http://www.gazzettaufficiale.it/eli/id/2026/07/08/26A03344/SG> .
+
+<http://www.gazzettaufficiale.it/eli/id/2026/06/20/26A03114/sg/ita>
+        rdf:type            eli:LegalExpression;
+        rdfs:label          "Modifica dell'autorizzazione all'immissione in commercio del medicinale per uso umano, a base di esomeprazolo, «Esomeprazolo Day Zero». (26A03114)";
+        eli:is_embodied_by  <http://www.gazzettaufficiale.it/eli/id/2026/06/20/26A03114/sg/ita/html>;
+        eli:language        <http://publications.europa.eu/resource/authority/language/ITA>;
+        eli:publisher       <http://www.ipzs.it>;
+        eli:realizes        <http://www.gazzettaufficiale.it/eli/id/2026/06/20/26A03114/sg>;
+        eli:title           "Modifica dell'autorizzazione all'immissione in commercio del medicinale per uso umano, a base di esomeprazolo, «Esomeprazolo Day Zero». (26A03114)" .
+
+<http://www.gazzettaufficiale.it/eli/id/2026/07/08/26A03353/sg/ita/html>
+        rdf:type    eli:Format;
+        eli:format  <http://www.iana.org/assignments/media-types/text/html> .
+
+<http://www.gazzettaufficiale.it/eli/id/2026/06/20/26A03073/sg>
+        rdf:type              eli:LegalResource;
+        rdfs:label            "Sottoposizione alla procedura di liquidazione coatta amministrativa di «Cirdan Group S.p.a.» (26A03073)";
+        eli:date_publication  "2026-06-20"^^xsd:date;
+        eli:id_local          "26A03073";
+        eli:is_realized_by    <http://www.gazzettaufficiale.it/eli/id/2026/06/20/26A03073/sg/ita>;
+        eli:title             "Sottoposizione alla procedura di liquidazione coatta amministrativa di «Cirdan Group S.p.a.» (26A03073)";
+        eli:type_document     <http://www.gazzettaufficiale.it/eli/tables/resource-type#COMUNICATO>;
+        eli:version           <http://www.gazzettaufficiale.it/eli/tables/versions#ORIGINAL>;
+        dcterms:source        <http://www.gazzettaufficiale.it/eli/id/2026/06/20/26A03073/SG> .
+
+<http://www.gazzettaufficiale.it/eli/id/2026/07/09/26A03366/sg/ita>
+        rdf:type            eli:LegalExpression;
+        rdfs:label          "Liquidazione coatta amministrativa della «Helios societa' cooperativa in liquidazione», in Sesto Fiorentino e nomina del commissario liquidatore. (26A03366)";
+        eli:is_embodied_by  <http://www.gazzettaufficiale.it/eli/id/2026/07/09/26A03366/sg/ita/html>;
+        eli:language        <http://publications.europa.eu/resource/authority/language/ITA>;
+        eli:publisher       <http://www.ipzs.it>;
+        eli:realizes        <http://www.gazzettaufficiale.it/eli/id/2026/07/09/26A03366/sg>;
+        eli:title           "Liquidazione coatta amministrativa della «Helios societa' cooperativa in liquidazione», in Sesto Fiorentino e nomina del commissario liquidatore. (26A03366)" .
+
+<http://www.gazzettaufficiale.it/eli/id/2026/07/09/26A03367/sg>
+        rdf:type              eli:LegalResource;
+        rdfs:label            "Liquidazione coatta amministrativa della «Abies Alba societa' cooperativa in liquidazione», in Piancastagnaio e nomina del commissario liquidatore. (26A03367)";
+        eli:date_document     "2026-06-22"^^xsd:date;
+        eli:date_publication  "2026-07-09"^^xsd:date;
+        eli:id_local          "26A03367";
+        eli:is_realized_by    <http://www.gazzettaufficiale.it/eli/id/2026/07/09/26A03367/sg/ita>;
+        eli:title             "Liquidazione coatta amministrativa della «Abies Alba societa' cooperativa in liquidazione», in Piancastagnaio e nomina del commissario liquidatore. (26A03367)";
+        eli:type_document     <http://www.gazzettaufficiale.it/eli/tables/resource-type#DECRETO>;
+        eli:version           <http://www.gazzettaufficiale.it/eli/tables/versions#ORIGINAL>;
+        dcterms:source        <http://www.gazzettaufficiale.it/eli/id/2026/07/09/26A03367/SG> .
+
+<http://www.gazzettaufficiale.it/eli/id/2026/07/08/26A03272/sg/ita>
+        rdf:type            eli:LegalExpression;
+        rdfs:label          "Liquidazione coatta amministrativa della «Goccia - Societa' cooperativa sociale», in Porto Tolle e nomina del commissario liquidatore. (26A03272)";
+        eli:is_embodied_by  <http://www.gazzettaufficiale.it/eli/id/2026/07/08/26A03272/sg/ita/html>;
+        eli:language        <http://publications.europa.eu/resource/authority/language/ITA>;
+        eli:publisher       <http://www.ipzs.it>;
+        eli:realizes        <http://www.gazzettaufficiale.it/eli/id/2026/07/08/26A03272/sg>;
+        eli:title           "Liquidazione coatta amministrativa della «Goccia - Societa' cooperativa sociale», in Porto Tolle e nomina del commissario liquidatore. (26A03272)" .
+
+<http://www.gazzettaufficiale.it/eli/id/2026/06/20/26A03182/sg>
+        rdf:type              eli:LegalResource;
+        rdfs:label            "Ripubblicazione del testo del decreto-legge 24 aprile 2026, n. 55 (in Gazzetta Ufficiale - Serie generale - n. 95 del 24 aprile 2026), convertito, senza modificazioni, dalla legge 19 giugno 2026, n. 103 (in questa stessa Gazzetta Ufficiale alla pag. 1), recante: «Disposizioni urgenti in materia di rimpatri volontari assistiti». (26A03182)";
+        eli:date_document     "2026-04-24"^^xsd:date;
+        eli:date_publication  "2026-06-20"^^xsd:date;
+        eli:id_local          "26A03182";
+        eli:is_realized_by    <http://www.gazzettaufficiale.it/eli/id/2026/06/20/26A03182/sg/ita>;
+        eli:title             "Ripubblicazione del testo del decreto-legge 24 aprile 2026, n. 55 (in Gazzetta Ufficiale - Serie generale - n. 95 del 24 aprile 2026), convertito, senza modificazioni, dalla legge 19 giugno 2026, n. 103 (in questa stessa Gazzetta Ufficiale alla pag. 1), recante: «Disposizioni urgenti in materia di rimpatri volontari assistiti». (26A03182)";
+        eli:type_document     <http://www.gazzettaufficiale.it/eli/tables/resource-type#DECRETO-LEGGE>;
+        eli:version           <http://www.gazzettaufficiale.it/eli/tables/versions#ORIGINAL>;
+        dcterms:source        <http://www.gazzettaufficiale.it/eli/id/2026/06/20/26A03182/SG> .
+
+<http://www.gazzettaufficiale.it/eli/id/2026/06/20/26A03034/sg>
+        rdf:type              eli:LegalResource;
+        rdfs:label            "Revoca, su rinuncia, dell'autorizzazione all'immissione in commercio del medicinale per uso umano «Barnidipina Cloridrato Sigillata». (26A03034)";
+        eli:date_publication  "2026-06-20"^^xsd:date;
+        eli:id_local          "26A03034";
+        eli:is_realized_by    <http://www.gazzettaufficiale.it/eli/id/2026/06/20/26A03034/sg/ita>;
+        eli:title             "Revoca, su rinuncia, dell'autorizzazione all'immissione in commercio del medicinale per uso umano «Barnidipina Cloridrato Sigillata». (26A03034)";
+        eli:type_document     <http://www.gazzettaufficiale.it/eli/tables/resource-type#COMUNICATO>;
+        eli:version           <http://www.gazzettaufficiale.it/eli/tables/versions#ORIGINAL>;
+        dcterms:source        <http://www.gazzettaufficiale.it/eli/id/2026/06/20/26A03034/SG> .
+
+<http://www.gazzettaufficiale.it/eli/id/2026/07/08/26A03274/sg>
+        rdf:type              eli:LegalResource;
+        rdfs:label            "Concessione della croce di bronzo al merito dell'Esercito (26A03274)";
+        eli:date_publication  "2026-07-08"^^xsd:date;
+        eli:id_local          "26A03274";
+        eli:is_realized_by    <http://www.gazzettaufficiale.it/eli/id/2026/07/08/26A03274/sg/ita>;
+        eli:title             "Concessione della croce di bronzo al merito dell'Esercito (26A03274)";
+        eli:type_document     <http://www.gazzettaufficiale.it/eli/tables/resource-type#COMUNICATO>;
+        eli:version           <http://www.gazzettaufficiale.it/eli/tables/versions#ORIGINAL>;
+        dcterms:source        <http://www.gazzettaufficiale.it/eli/id/2026/07/08/26A03274/SG> .
+
+<http://www.gazzettaufficiale.it/eli/id/2026/07/09/26A03361/sg/ita/html>
+        rdf:type    eli:Format;
+        eli:format  <http://www.iana.org/assignments/media-types/text/html> .
+
+<http://www.gazzettaufficiale.it/eli/id/2026/07/09/26A03361/sg/ita>
+        rdf:type            eli:LegalExpression;
+        rdfs:label          "Liquidazione coatta amministrativa della «Societa' cooperativa del Principato», in Avellino e nomina del commissario liquidatore. (26A03361)";
+        eli:is_embodied_by  <http://www.gazzettaufficiale.it/eli/id/2026/07/09/26A03361/sg/ita/html>;
+        eli:language        <http://publications.europa.eu/resource/authority/language/ITA>;
+        eli:publisher       <http://www.ipzs.it>;
+        eli:realizes        <http://www.gazzettaufficiale.it/eli/id/2026/07/09/26A03361/sg>;
+        eli:title           "Liquidazione coatta amministrativa della «Societa' cooperativa del Principato», in Avellino e nomina del commissario liquidatore. (26A03361)" .
+
+<http://www.gazzettaufficiale.it/eli/id/2026/06/20/26A03027/sg/ita>
+        rdf:type            eli:LegalExpression;
+        rdfs:label          "Riconoscimento dell'idoneita' al Centro di saggio «Agricola 2000» ad effettuare prove ufficiali di campo, finalizzate alla produzione di dati di efficacia e alla determinazione dell'entita' dei residui di prodotti fitosanitari. (26A03027)";
+        eli:is_embodied_by  <http://www.gazzettaufficiale.it/eli/id/2026/06/20/26A03027/sg/ita/html>;
+        eli:language        <http://publications.europa.eu/resource/authority/language/ITA>;
+        eli:publisher       <http://www.ipzs.it>;
+        eli:realizes        <http://www.gazzettaufficiale.it/eli/id/2026/06/20/26A03027/sg>;
+        eli:title           "Riconoscimento dell'idoneita' al Centro di saggio «Agricola 2000» ad effettuare prove ufficiali di campo, finalizzate alla produzione di dati di efficacia e alla determinazione dell'entita' dei residui di prodotti fitosanitari. (26A03027)" .
+
+<http://www.gazzettaufficiale.it/eli/id/2026/06/27/26A02943/sg>
+        rdf:type              eli:LegalResource;
+        rdfs:label            "Liquidazione coatta amministrativa della «Il Mulino - Societa' cooperativa sociale in liquidazione», in Senna Lodigiana e nomina del commissario liquidatore. (26A02943)";
+        eli:date_document     "2026-05-29"^^xsd:date;
+        eli:date_publication  "2026-06-27"^^xsd:date;
+        eli:id_local          "26A02943";
+        eli:is_realized_by    <http://www.gazzettaufficiale.it/eli/id/2026/06/27/26A02943/sg/ita>;
+        eli:title             "Liquidazione coatta amministrativa della «Il Mulino - Societa' cooperativa sociale in liquidazione», in Senna Lodigiana e nomina del commissario liquidatore. (26A02943)";
+        eli:type_document     <http://www.gazzettaufficiale.it/eli/tables/resource-type#DECRETO>;
+        eli:version           <http://www.gazzettaufficiale.it/eli/tables/versions#ORIGINAL>;
+        dcterms:source        <http://www.gazzettaufficiale.it/eli/id/2026/06/27/26A02943/SG> .
+
+<http://www.gazzettaufficiale.it/eli/id/2026/07/08/26A03456/sg>
+        rdf:type              eli:LegalResource;
+        rdfs:label            "Avviso di pubblicazione di provvedimenti di classificazione e rimborsabilita', ed atti correlati, di specialita' medicinali sul portale «TrovaNormeFarmaco». (26A03456)";
+        eli:date_publication  "2026-07-08"^^xsd:date;
+        eli:id_local          "26A03456";
+        eli:is_realized_by    <http://www.gazzettaufficiale.it/eli/id/2026/07/08/26A03456/sg/ita>;
+        eli:title             "Avviso di pubblicazione di provvedimenti di classificazione e rimborsabilita', ed atti correlati, di specialita' medicinali sul portale «TrovaNormeFarmaco». (26A03456)";
+        eli:type_document     <http://www.gazzettaufficiale.it/eli/tables/resource-type#COMUNICATO>;
+        eli:version           <http://www.gazzettaufficiale.it/eli/tables/versions#ORIGINAL>;
+        dcterms:source        <http://www.gazzettaufficiale.it/eli/id/2026/07/08/26A03456/SG> .
+
+<http://www.gazzettaufficiale.it/eli/id/2026/07/08/26A03357/sg/ita/html>
+        rdf:type    eli:Format;
+        eli:format  <http://www.iana.org/assignments/media-types/text/html> .
+
+<http://www.gazzettaufficiale.it/eli/id/2026/06/20/26A02847/sg>
+        rdf:type              eli:LegalResource;
+        rdfs:label            "Liquidazione coatta amministrativa della «La Terra dei bambini societa' cooperativa sociale», in Montevarchi e nomina del commissario liquidatore. (26A02847)";
+        eli:date_document     "2026-05-26"^^xsd:date;
+        eli:date_publication  "2026-06-20"^^xsd:date;
+        eli:id_local          "26A02847";
+        eli:is_realized_by    <http://www.gazzettaufficiale.it/eli/id/2026/06/20/26A02847/sg/ita>;
+        eli:title             "Liquidazione coatta amministrativa della «La Terra dei bambini societa' cooperativa sociale», in Montevarchi e nomina del commissario liquidatore. (26A02847)";
+        eli:type_document     <http://www.gazzettaufficiale.it/eli/tables/resource-type#DECRETO>;
+        eli:version           <http://www.gazzettaufficiale.it/eli/tables/versions#ORIGINAL>;
+        dcterms:source        <http://www.gazzettaufficiale.it/eli/id/2026/06/20/26A02847/SG> .
+
+<http://www.gazzettaufficiale.it/eli/id/2026/06/20/26A03034/sg/ita>
+        rdf:type            eli:LegalExpression;
+        rdfs:label          "Revoca, su rinuncia, dell'autorizzazione all'immissione in commercio del medicinale per uso umano «Barnidipina Cloridrato Sigillata». (26A03034)";
+        eli:is_embodied_by  <http://www.gazzettaufficiale.it/eli/id/2026/06/20/26A03034/sg/ita/html>;
+        eli:language        <http://publications.europa.eu/resource/authority/language/ITA>;
+        eli:publisher       <http://www.ipzs.it>;
+        eli:realizes        <http://www.gazzettaufficiale.it/eli/id/2026/06/20/26A03034/sg>;
+        eli:title           "Revoca, su rinuncia, dell'autorizzazione all'immissione in commercio del medicinale per uso umano «Barnidipina Cloridrato Sigillata». (26A03034)" .
+
+<http://www.gazzettaufficiale.it/eli/id/2026/06/27/26A03216/sg/ita>
+        rdf:type            eli:LegalExpression;
+        rdfs:label          "Autorizzazione all'immissione in commercio del medicinale per uso umano, a base di flecainide acetato, «Flecainide Aurobindo Italia». (26A03216)";
+        eli:is_embodied_by  <http://www.gazzettaufficiale.it/eli/id/2026/06/27/26A03216/sg/ita/html>;
+        eli:language        <http://publications.europa.eu/resource/authority/language/ITA>;
+        eli:publisher       <http://www.ipzs.it>;
+        eli:realizes        <http://www.gazzettaufficiale.it/eli/id/2026/06/27/26A03216/sg>;
+        eli:title           "Autorizzazione all'immissione in commercio del medicinale per uso umano, a base di flecainide acetato, «Flecainide Aurobindo Italia». (26A03216)" .
+
+<http://www.gazzettaufficiale.it/eli/id/2026/06/27/26A03280/sg/ita/html>
+        rdf:type    eli:Format;
+        eli:format  <http://www.iana.org/assignments/media-types/text/html> .
+
+<http://www.gazzettaufficiale.it/eli/id/2026/07/08/26A03348/sg/ita>
+        rdf:type            eli:LegalExpression;
+        rdfs:label          "Individuazione delle violazioni in materia di tutela delle condizioni di lavoro nonche' di salute e sicurezza nei luoghi di lavoro. (26A03348)";
+        eli:is_embodied_by  <http://www.gazzettaufficiale.it/eli/id/2026/07/08/26A03348/sg/ita/html>;
+        eli:language        <http://publications.europa.eu/resource/authority/language/ITA>;
+        eli:publisher       <http://www.ipzs.it>;
+        eli:realizes        <http://www.gazzettaufficiale.it/eli/id/2026/07/08/26A03348/sg>;
+        eli:title           "Individuazione delle violazioni in materia di tutela delle condizioni di lavoro nonche' di salute e sicurezza nei luoghi di lavoro. (26A03348)" .
+
+<http://www.gazzettaufficiale.it/eli/id/2026/06/20/26A03037/sg>
+        rdf:type              eli:LegalResource;
+        rdfs:label            "Scioglimento, per atto dell'autorita', della «Comunita' energetica rinnovabile Südtirol Alto Adige societa' cooperativa», in Brunico, senza nomina del commissario liquidatore. (26A03037)";
+        eli:date_publication  "2026-06-20"^^xsd:date;
+        eli:id_local          "26A03037";
+        eli:is_realized_by    <http://www.gazzettaufficiale.it/eli/id/2026/06/20/26A03037/sg/ita>;
+        eli:title             "Scioglimento, per atto dell'autorita', della «Comunita' energetica rinnovabile Südtirol Alto Adige societa' cooperativa», in Brunico, senza nomina del commissario liquidatore. (26A03037)";
+        eli:type_document     <http://www.gazzettaufficiale.it/eli/tables/resource-type#COMUNICATO>;
+        eli:version           <http://www.gazzettaufficiale.it/eli/tables/versions#ORIGINAL>;
+        dcterms:source        <http://www.gazzettaufficiale.it/eli/id/2026/06/20/26A03037/SG> .
+
+<http://www.gazzettaufficiale.it/eli/id/2026/06/20/26A03035/sg/ita/html>
+        rdf:type    eli:Format;
+        eli:format  <http://www.iana.org/assignments/media-types/text/html> .
+
+<http://www.gazzettaufficiale.it/eli/id/2026/07/08/26A03272/sg/ita/html>
+        rdf:type    eli:Format;
+        eli:format  <http://www.iana.org/assignments/media-types/text/html> .
+
+<http://www.gazzettaufficiale.it/eli/id/2026/07/09/26A03415/sg/ita/html>
+        rdf:type    eli:Format;
+        eli:format  <http://www.iana.org/assignments/media-types/text/html> .
+
+<http://www.gazzettaufficiale.it/eli/id/2026/07/08/26A03355/sg/ita>
+        rdf:type            eli:LegalExpression;
+        rdfs:label          "Autorizzazione all'importazione parallela del medicinale per uso umano «Vicks Vaporub» (26A03355)";
+        eli:is_embodied_by  <http://www.gazzettaufficiale.it/eli/id/2026/07/08/26A03355/sg/ita/html>;
+        eli:language        <http://publications.europa.eu/resource/authority/language/ITA>;
+        eli:publisher       <http://www.ipzs.it>;
+        eli:realizes        <http://www.gazzettaufficiale.it/eli/id/2026/07/08/26A03355/sg>;
+        eli:title           "Autorizzazione all'importazione parallela del medicinale per uso umano «Vicks Vaporub» (26A03355)" .
+
+<http://www.gazzettaufficiale.it/eli/id/2026/06/27/26A03280/sg/ita>
+        rdf:type            eli:LegalExpression;
+        rdfs:label          "Testo del decreto-legge 30 aprile 2026, n. 63 (in Gazzetta Ufficiale - Serie generale - n. 99 del 30 aprile 2026), coordinato con la legge di conversione 25 giugno 2026, n. 113 (in questa stessa Gazzetta Ufficiale, alla pag. 10), recante: «Disposizioni urgenti in materia di prezzi petroliferi connessi al protrarsi della crisi dei mercati internazionali.». (26A03280)";
+        eli:is_embodied_by  <http://www.gazzettaufficiale.it/eli/id/2026/06/27/26A03280/sg/ita/html>;
+        eli:language        <http://publications.europa.eu/resource/authority/language/ITA>;
+        eli:publisher       <http://www.ipzs.it>;
+        eli:realizes        <http://www.gazzettaufficiale.it/eli/id/2026/06/27/26A03280/sg>;
+        eli:title           "Testo del decreto-legge 30 aprile 2026, n. 63 (in Gazzetta Ufficiale - Serie generale - n. 99 del 30 aprile 2026), coordinato con la legge di conversione 25 giugno 2026, n. 113 (in questa stessa Gazzetta Ufficiale, alla pag. 10), recante: «Disposizioni urgenti in materia di prezzi petroliferi connessi al protrarsi della crisi dei mercati internazionali.». (26A03280)" .
+
+<http://www.gazzettaufficiale.it/eli/id/2026/07/08/26A03343/sg/ita/html>
+        rdf:type    eli:Format;
+        eli:format  <http://www.iana.org/assignments/media-types/text/html> .
+
+<http://www.gazzettaufficiale.it/eli/id/2026/06/20/26A03188/sg>
+        rdf:type              eli:LegalResource;
+        rdfs:label            "Avviso relativo al Libretto Smart e al Libretto Minori (26A03188)";
+        eli:date_publication  "2026-06-20"^^xsd:date;
+        eli:id_local          "26A03188";
+        eli:is_realized_by    <http://www.gazzettaufficiale.it/eli/id/2026/06/20/26A03188/sg/ita>;
+        eli:title             "Avviso relativo al Libretto Smart e al Libretto Minori (26A03188)";
+        eli:type_document     <http://www.gazzettaufficiale.it/eli/tables/resource-type#COMUNICATO>;
+        eli:version           <http://www.gazzettaufficiale.it/eli/tables/versions#ORIGINAL>;
+        dcterms:source        <http://www.gazzettaufficiale.it/eli/id/2026/06/20/26A03188/SG> .
+
+<http://www.gazzettaufficiale.it/eli/id/2026/06/27/26A02941/sg/ita>
+        rdf:type            eli:LegalExpression;
+        rdfs:label          "Liquidazione coatta amministrativa della «Meating societa' cooperativa», in Castelfranco Emilia e nomina del commissario liquidatore. (26A02941)";
+        eli:is_embodied_by  <http://www.gazzettaufficiale.it/eli/id/2026/06/27/26A02941/sg/ita/html>;
+        eli:language        <http://publications.europa.eu/resource/authority/language/ITA>;
+        eli:publisher       <http://www.ipzs.it>;
+        eli:realizes        <http://www.gazzettaufficiale.it/eli/id/2026/06/27/26A02941/sg>;
+        eli:title           "Liquidazione coatta amministrativa della «Meating societa' cooperativa», in Castelfranco Emilia e nomina del commissario liquidatore. (26A02941)" .
+
+<http://www.gazzettaufficiale.it/eli/id/2026/07/09/26A03415/sg>
+        rdf:type              eli:LegalResource;
+        rdfs:label            "Comunicato relativo al decreto 10 giugno 2026 - Cofinanziamento delle iniziative selezionate dall'impresa comune «Chip» per la realizzazione di linee pilota innovative nell'ecosistema dei semiconduttori. Modalita' e termini per la presentazione delle domande di agevolazione. (26A03415)";
+        eli:date_publication  "2026-07-09"^^xsd:date;
+        eli:id_local          "26A03415";
+        eli:is_realized_by    <http://www.gazzettaufficiale.it/eli/id/2026/07/09/26A03415/sg/ita>;
+        eli:title             "Comunicato relativo al decreto 10 giugno 2026 - Cofinanziamento delle iniziative selezionate dall'impresa comune «Chip» per la realizzazione di linee pilota innovative nell'ecosistema dei semiconduttori. Modalita' e termini per la presentazione delle domande di agevolazione. (26A03415)";
+        eli:type_document     <http://www.gazzettaufficiale.it/eli/tables/resource-type#COMUNICATO>;
+        eli:version           <http://www.gazzettaufficiale.it/eli/tables/versions#ORIGINAL>;
+        dcterms:source        <http://www.gazzettaufficiale.it/eli/id/2026/07/09/26A03415/SG> .
+
+<http://www.gazzettaufficiale.it/eli/id/2026/07/09/26A03275/sg/ita/html>
+        rdf:type    eli:Format;
+        eli:format  <http://www.iana.org/assignments/media-types/text/html> .
+
+<http://www.gazzettaufficiale.it/eli/id/2026/06/20/26A03073/sg/ita/html>
+        rdf:type    eli:Format;
+        eli:format  <http://www.iana.org/assignments/media-types/text/html> .
+
+<http://www.gazzettaufficiale.it/eli/id/2026/06/27/26A03227/sg>
+        rdf:type              eli:LegalResource;
+        rdfs:label            "Determinazione del costo medio del rimpatrio per l'anno 2026. (26A03227)";
+        eli:date_document     "2026-05-18"^^xsd:date;
+        eli:date_publication  "2026-06-27"^^xsd:date;
+        eli:id_local          "26A03227";
+        eli:is_realized_by    <http://www.gazzettaufficiale.it/eli/id/2026/06/27/26A03227/sg/ita>;
+        eli:title             "Determinazione del costo medio del rimpatrio per l'anno 2026. (26A03227)";
+        eli:type_document     <http://www.gazzettaufficiale.it/eli/tables/resource-type#DECRETO>;
+        eli:version           <http://www.gazzettaufficiale.it/eli/tables/versions#ORIGINAL>;
+        dcterms:source        <http://www.gazzettaufficiale.it/eli/id/2026/06/27/26A03227/SG> .
+
+<http://www.gazzettaufficiale.it/eli/id/2026/07/09/26A03363/sg/ita/html>
+        rdf:type    eli:Format;
+        eli:format  <http://www.iana.org/assignments/media-types/text/html> .
+
+<http://www.gazzettaufficiale.it/eli/id/2026/06/20/26A02847/sg/ita>
+        rdf:type            eli:LegalExpression;
+        rdfs:label          "Liquidazione coatta amministrativa della «La Terra dei bambini societa' cooperativa sociale», in Montevarchi e nomina del commissario liquidatore. (26A02847)";
+        eli:is_embodied_by  <http://www.gazzettaufficiale.it/eli/id/2026/06/20/26A02847/sg/ita/html>;
+        eli:language        <http://publications.europa.eu/resource/authority/language/ITA>;
+        eli:publisher       <http://www.ipzs.it>;
+        eli:realizes        <http://www.gazzettaufficiale.it/eli/id/2026/06/20/26A02847/sg>;
+        eli:title           "Liquidazione coatta amministrativa della «La Terra dei bambini societa' cooperativa sociale», in Montevarchi e nomina del commissario liquidatore. (26A02847)" .
+
+<http://www.gazzettaufficiale.it/eli/id/2026/07/08/26A03466/sg/ita/html>
+        rdf:type    eli:Format;
+        eli:format  <http://www.iana.org/assignments/media-types/text/html> .
+
+<http://www.gazzettaufficiale.it/eli/id/2026/07/09/26A03404/sg/ita>
+        rdf:type            eli:LegalExpression;
+        rdfs:label          "Disposizioni generali in materia di costituzione e riconoscimento dei consorzi di tutela per le denominazioni di origine protette e le indicazioni geografiche protette dei prodotti agricoli e alimentari ai sensi del regolamento (UE) n. 2024/1143 del Parlamento europeo e del Consiglio dell'11 aprile 2024. (26A03404)";
+        eli:is_embodied_by  <http://www.gazzettaufficiale.it/eli/id/2026/07/09/26A03404/sg/ita/html>;
+        eli:language        <http://publications.europa.eu/resource/authority/language/ITA>;
+        eli:publisher       <http://www.ipzs.it>;
+        eli:realizes        <http://www.gazzettaufficiale.it/eli/id/2026/07/09/26A03404/sg>;
+        eli:title           "Disposizioni generali in materia di costituzione e riconoscimento dei consorzi di tutela per le denominazioni di origine protette e le indicazioni geografiche protette dei prodotti agricoli e alimentari ai sensi del regolamento (UE) n. 2024/1143 del Parlamento europeo e del Consiglio dell'11 aprile 2024. (26A03404)" .
+
+<http://www.gazzettaufficiale.it/eli/id/2026/07/08/26A03346/sg/ita>
+        rdf:type            eli:LegalExpression;
+        rdfs:label          "Liquidazione coatta amministrativa della «Cappa - societa' cooperativa sociale agricola», in Fano e nomina del commissario liquidatore. (26A03346)";
+        eli:is_embodied_by  <http://www.gazzettaufficiale.it/eli/id/2026/07/08/26A03346/sg/ita/html>;
+        eli:language        <http://publications.europa.eu/resource/authority/language/ITA>;
+        eli:publisher       <http://www.ipzs.it>;
+        eli:realizes        <http://www.gazzettaufficiale.it/eli/id/2026/07/08/26A03346/sg>;
+        eli:title           "Liquidazione coatta amministrativa della «Cappa - societa' cooperativa sociale agricola», in Fano e nomina del commissario liquidatore. (26A03346)" .
+
+<http://www.gazzettaufficiale.it/eli/id/2026/07/08/26A03359/sg/ita/html>
+        rdf:type    eli:Format;
+        eli:format  <http://www.iana.org/assignments/media-types/text/html> .
+
+<http://www.gazzettaufficiale.it/eli/id/2026/07/08/26A03353/sg/ita>
+        rdf:type            eli:LegalExpression;
+        rdfs:label          "Autorizzazione all'importazione parallela del medicinale per uso umano «Augmentin» (26A03353)";
+        eli:is_embodied_by  <http://www.gazzettaufficiale.it/eli/id/2026/07/08/26A03353/sg/ita/html>;
+        eli:language        <http://publications.europa.eu/resource/authority/language/ITA>;
+        eli:publisher       <http://www.ipzs.it>;
+        eli:realizes        <http://www.gazzettaufficiale.it/eli/id/2026/07/08/26A03353/sg>;
+        eli:title           "Autorizzazione all'importazione parallela del medicinale per uso umano «Augmentin» (26A03353)" .
+
+<http://www.gazzettaufficiale.it/eli/id/2026/06/27/26A03066/sg>
+        rdf:type              eli:LegalResource;
+        rdfs:label            "Sostituzione del commissario liquidatore della «Il Colo societa' cooperativa», in Massa, in liquidazione coatta amministrativa. (26A03066)";
+        eli:date_document     "2026-06-08"^^xsd:date;
+        eli:date_publication  "2026-06-27"^^xsd:date;
+        eli:id_local          "26A03066";
+        eli:is_realized_by    <http://www.gazzettaufficiale.it/eli/id/2026/06/27/26A03066/sg/ita>;
+        eli:title             "Sostituzione del commissario liquidatore della «Il Colo societa' cooperativa», in Massa, in liquidazione coatta amministrativa. (26A03066)";
+        eli:type_document     <http://www.gazzettaufficiale.it/eli/tables/resource-type#DECRETO>;
+        eli:version           <http://www.gazzettaufficiale.it/eli/tables/versions#ORIGINAL>;
+        dcterms:source        <http://www.gazzettaufficiale.it/eli/id/2026/06/27/26A03066/SG> .
+
+<http://www.gazzettaufficiale.it/eli/id/2026/06/20/26A02847/sg/ita/html>
+        rdf:type    eli:Format;
+        eli:format  <http://www.iana.org/assignments/media-types/text/html> .
+
+<http://www.gazzettaufficiale.it/eli/id/2026/07/08/26A03282/sg/ita>
+        rdf:type            eli:LegalExpression;
+        rdfs:label          "Delibera CIPESS n. 51/2025 - Linea di intervento 04.01 Efficienza energetica, «Aree energia positiva attraverso efficientamento del patrimonio pubblico esistente» e - Linea di intervento 04.02 Energia rinnovabile, «Misura per interventi di decarbonizzazione del settore hard-to-abate». (26A03282)";
+        eli:is_embodied_by  <http://www.gazzettaufficiale.it/eli/id/2026/07/08/26A03282/sg/ita/html>;
+        eli:language        <http://publications.europa.eu/resource/authority/language/ITA>;
+        eli:publisher       <http://www.ipzs.it>;
+        eli:realizes        <http://www.gazzettaufficiale.it/eli/id/2026/07/08/26A03282/sg>;
+        eli:title           "Delibera CIPESS n. 51/2025 - Linea di intervento 04.01 Efficienza energetica, «Aree energia positiva attraverso efficientamento del patrimonio pubblico esistente» e - Linea di intervento 04.02 Energia rinnovabile, «Misura per interventi di decarbonizzazione del settore hard-to-abate». (26A03282)" .
+
+<http://www.gazzettaufficiale.it/eli/id/2026/07/08/26A03352/sg>
+        rdf:type              eli:LegalResource;
+        rdfs:label            "Autorizzazione all'importazione parallela del medicinale per uso umano «Hizaar» (26A03352)";
+        eli:date_publication  "2026-07-08"^^xsd:date;
+        eli:id_local          "26A03352";
+        eli:is_realized_by    <http://www.gazzettaufficiale.it/eli/id/2026/07/08/26A03352/sg/ita>;
+        eli:title             "Autorizzazione all'importazione parallela del medicinale per uso umano «Hizaar» (26A03352)";
+        eli:type_document     <http://www.gazzettaufficiale.it/eli/tables/resource-type#COMUNICATO>;
+        eli:version           <http://www.gazzettaufficiale.it/eli/tables/versions#ORIGINAL>;
+        dcterms:source        <http://www.gazzettaufficiale.it/eli/id/2026/07/08/26A03352/SG> .
+
+<http://www.gazzettaufficiale.it/eli/id/2026/07/08/26A03274/sg/ita/html>
+        rdf:type    eli:Format;
+        eli:format  <http://www.iana.org/assignments/media-types/text/html> .
+
+<http://www.gazzettaufficiale.it/eli/id/2026/06/20/26G00123/sg>
+        rdf:type              eli:LegalResource;
+        rdfs:label            "Conversione in legge del decreto-legge 24 aprile 2026, n. 55, recante disposizioni urgenti in materia di rimpatri volontari assistiti. (26G00123)";
+        eli:date_document     "2026-06-19"^^xsd:date;
+        eli:date_publication  "2026-06-20"^^xsd:date;
+        eli:id_local          "26G00123";
+        eli:is_realized_by    <http://www.gazzettaufficiale.it/eli/id/2026/06/20/26G00123/sg/ita>;
+        eli:title             "Conversione in legge del decreto-legge 24 aprile 2026, n. 55, recante disposizioni urgenti in materia di rimpatri volontari assistiti. (26G00123)";
+        eli:type_document     <http://www.gazzettaufficiale.it/eli/tables/resource-type#LEGGE>;
+        eli:version           <http://www.gazzettaufficiale.it/eli/tables/versions#ORIGINAL>;
+        dcterms:source        <http://www.gazzettaufficiale.it/eli/id/2026/06/20/26G00123/SG> .
+
+<http://www.gazzettaufficiale.it/eli/id/2026/07/08/26A03443/sg>
+        rdf:type              eli:LegalResource;
+        rdfs:label            "Misure di eradicazione e sorveglianza della peste suina africana. (Ordinanza n. 4/2026). (26A03443)";
+        eli:date_document     "2026-07-06"^^xsd:date;
+        eli:date_publication  "2026-07-08"^^xsd:date;
+        eli:id_local          "26A03443";
+        eli:is_realized_by    <http://www.gazzettaufficiale.it/eli/id/2026/07/08/26A03443/sg/ita>;
+        eli:title             "Misure di eradicazione e sorveglianza della peste suina africana. (Ordinanza n. 4/2026). (26A03443)";
+        eli:type_document     <http://www.gazzettaufficiale.it/eli/tables/resource-type#ORDINANZA>;
+        eli:version           <http://www.gazzettaufficiale.it/eli/tables/versions#ORIGINAL>;
+        dcterms:source        <http://www.gazzettaufficiale.it/eli/id/2026/07/08/26A03443/SG> .
+
+<http://www.gazzettaufficiale.it/eli/id/2026/07/08/26A03347/sg/ita/html>
+        rdf:type    eli:Format;
+        eli:format  <http://www.iana.org/assignments/media-types/text/html> .
+
+<http://www.gazzettaufficiale.it/eli/id/2026/07/08/26G00140/sg/ita>
+        rdf:type            eli:LegalExpression;
+        rdfs:label          "Recepimento degli articoli 11, 12, 13 e 15 della direttiva (UE) 2024/1640 del Parlamento europeo e del Consiglio, del 31 maggio 2024, relativa ai meccanismi che gli Stati membri devono istituire per prevenire l'uso del sistema finanziario a fini di riciclaggio o finanziamento del terrorismo, che modifica la direttiva (UE) 2019/1937, e modifica e abroga la direttiva (UE) 2015/849. (26G00140)";
+        eli:is_embodied_by  <http://www.gazzettaufficiale.it/eli/id/2026/07/08/26G00140/sg/ita/html>;
+        eli:language        <http://publications.europa.eu/resource/authority/language/ITA>;
+        eli:publisher       <http://www.ipzs.it>;
+        eli:realizes        <http://www.gazzettaufficiale.it/eli/id/2026/07/08/26G00140/sg>;
+        eli:title           "Recepimento degli articoli 11, 12, 13 e 15 della direttiva (UE) 2024/1640 del Parlamento europeo e del Consiglio, del 31 maggio 2024, relativa ai meccanismi che gli Stati membri devono istituire per prevenire l'uso del sistema finanziario a fini di riciclaggio o finanziamento del terrorismo, che modifica la direttiva (UE) 2019/1937, e modifica e abroga la direttiva (UE) 2015/849. (26G00140)" .
+
+<http://www.gazzettaufficiale.it/eli/id/2026/06/20/26A03182/sg/ita/html>
+        rdf:type    eli:Format;
+        eli:format  <http://www.iana.org/assignments/media-types/text/html> .
+
+<http://www.gazzettaufficiale.it/eli/id/2026/07/09/26A03367/sg/ita/html>
+        rdf:type    eli:Format;
+        eli:format  <http://www.iana.org/assignments/media-types/text/html> .
+
+<http://www.gazzettaufficiale.it/eli/id/2026/07/08/26A03355/sg>
+        rdf:type              eli:LegalResource;
+        rdfs:label            "Autorizzazione all'importazione parallela del medicinale per uso umano «Vicks Vaporub» (26A03355)";
+        eli:date_publication  "2026-07-08"^^xsd:date;
+        eli:id_local          "26A03355";
+        eli:is_realized_by    <http://www.gazzettaufficiale.it/eli/id/2026/07/08/26A03355/sg/ita>;
+        eli:title             "Autorizzazione all'importazione parallela del medicinale per uso umano «Vicks Vaporub» (26A03355)";
+        eli:type_document     <http://www.gazzettaufficiale.it/eli/tables/resource-type#COMUNICATO>;
+        eli:version           <http://www.gazzettaufficiale.it/eli/tables/versions#ORIGINAL>;
+        dcterms:source        <http://www.gazzettaufficiale.it/eli/id/2026/07/08/26A03355/SG> .
+
+<http://www.gazzettaufficiale.it/eli/id/2026/07/09/26A03367/sg/ita>
+        rdf:type            eli:LegalExpression;
+        rdfs:label          "Liquidazione coatta amministrativa della «Abies Alba societa' cooperativa in liquidazione», in Piancastagnaio e nomina del commissario liquidatore. (26A03367)";
+        eli:is_embodied_by  <http://www.gazzettaufficiale.it/eli/id/2026/07/09/26A03367/sg/ita/html>;
+        eli:language        <http://publications.europa.eu/resource/authority/language/ITA>;
+        eli:publisher       <http://www.ipzs.it>;
+        eli:realizes        <http://www.gazzettaufficiale.it/eli/id/2026/07/09/26A03367/sg>;
+        eli:title           "Liquidazione coatta amministrativa della «Abies Alba societa' cooperativa in liquidazione», in Piancastagnaio e nomina del commissario liquidatore. (26A03367)" .
+
+<http://www.gazzettaufficiale.it/eli/id/2026/07/08/26A03282/sg>
+        rdf:type              eli:LegalResource;
+        rdfs:label            "Delibera CIPESS n. 51/2025 - Linea di intervento 04.01 Efficienza energetica, «Aree energia positiva attraverso efficientamento del patrimonio pubblico esistente» e - Linea di intervento 04.02 Energia rinnovabile, «Misura per interventi di decarbonizzazione del settore hard-to-abate». (26A03282)";
+        eli:date_publication  "2026-07-08"^^xsd:date;
+        eli:id_local          "26A03282";
+        eli:is_realized_by    <http://www.gazzettaufficiale.it/eli/id/2026/07/08/26A03282/sg/ita>;
+        eli:title             "Delibera CIPESS n. 51/2025 - Linea di intervento 04.01 Efficienza energetica, «Aree energia positiva attraverso efficientamento del patrimonio pubblico esistente» e - Linea di intervento 04.02 Energia rinnovabile, «Misura per interventi di decarbonizzazione del settore hard-to-abate». (26A03282)";
+        eli:type_document     <http://www.gazzettaufficiale.it/eli/tables/resource-type#COMUNICATO>;
+        eli:version           <http://www.gazzettaufficiale.it/eli/tables/versions#ORIGINAL>;
+        dcterms:source        <http://www.gazzettaufficiale.it/eli/id/2026/07/08/26A03282/SG> .
+
+<http://www.gazzettaufficiale.it/eli/id/2026/06/27/26A03063/sg/ita>
+        rdf:type            eli:LegalExpression;
+        rdfs:label          "Liquidazione coatta amministrativa della «Lindo Coop - Societa' cooperativa», in Forli' e nomina del commissario liquidatore. (26A03063)";
+        eli:is_embodied_by  <http://www.gazzettaufficiale.it/eli/id/2026/06/27/26A03063/sg/ita/html>;
+        eli:language        <http://publications.europa.eu/resource/authority/language/ITA>;
+        eli:publisher       <http://www.ipzs.it>;
+        eli:realizes        <http://www.gazzettaufficiale.it/eli/id/2026/06/27/26A03063/sg>;
+        eli:title           "Liquidazione coatta amministrativa della «Lindo Coop - Societa' cooperativa», in Forli' e nomina del commissario liquidatore. (26A03063)" .
+
+<http://www.gazzettaufficiale.it/eli/id/2026/07/08/26A03350/sg/ita/html>
+        rdf:type    eli:Format;
+        eli:format  <http://www.iana.org/assignments/media-types/text/html> .
+
+<http://www.gazzettaufficiale.it/eli/id/2026/06/27/26A03063/sg/ita/html>
+        rdf:type    eli:Format;
+        eli:format  <http://www.iana.org/assignments/media-types/text/html> .
+
+<http://www.gazzettaufficiale.it/eli/id/2026/06/27/26G00128/sg/ita/html>
+        rdf:type    eli:Format;
+        eli:format  <http://www.iana.org/assignments/media-types/text/html> .
+
+<http://www.gazzettaufficiale.it/eli/id/2026/06/27/26A03219/sg/ita/html>
+        rdf:type    eli:Format;
+        eli:format  <http://www.iana.org/assignments/media-types/text/html> .
+
+<http://www.gazzettaufficiale.it/eli/id/2026/07/08/26A03273/sg/ita>
+        rdf:type            eli:LegalExpression;
+        rdfs:label          "Riconoscimento della organizzazione di produttori della pesca «Organizzazione produttori La Fenice soc. coop.» con sede in Cervia, ai sensi del Regolamento (UE) 1379/2013 e del Regolamento di esecuzione (UE) 1419/2013. (26A03273)";
+        eli:is_embodied_by  <http://www.gazzettaufficiale.it/eli/id/2026/07/08/26A03273/sg/ita/html>;
+        eli:language        <http://publications.europa.eu/resource/authority/language/ITA>;
+        eli:publisher       <http://www.ipzs.it>;
+        eli:realizes        <http://www.gazzettaufficiale.it/eli/id/2026/07/08/26A03273/sg>;
+        eli:title           "Riconoscimento della organizzazione di produttori della pesca «Organizzazione produttori La Fenice soc. coop.» con sede in Cervia, ai sensi del Regolamento (UE) 1379/2013 e del Regolamento di esecuzione (UE) 1419/2013. (26A03273)" .
+
+<http://www.gazzettaufficiale.it/eli/id/2026/06/27/26G00127/sg/ita>
+        rdf:type            eli:LegalExpression;
+        rdfs:label          "Modifica all'articolo 19 della legge 23 dicembre 1978, n. 833, e altre disposizioni in materia di assistenza sanitaria in favore dei cittadini iscritti all'Anagrafe degli italiani residenti all'estero, residenti in Paesi che non appartengono all'Unione europea e non aderiscono all'Associazione europea di libero scambio. (26G00127)";
+        eli:is_embodied_by  <http://www.gazzettaufficiale.it/eli/id/2026/06/27/26G00127/sg/ita/html>;
+        eli:language        <http://publications.europa.eu/resource/authority/language/ITA>;
+        eli:publisher       <http://www.ipzs.it>;
+        eli:realizes        <http://www.gazzettaufficiale.it/eli/id/2026/06/27/26G00127/sg>;
+        eli:title           "Modifica all'articolo 19 della legge 23 dicembre 1978, n. 833, e altre disposizioni in materia di assistenza sanitaria in favore dei cittadini iscritti all'Anagrafe degli italiani residenti all'estero, residenti in Paesi che non appartengono all'Unione europea e non aderiscono all'Associazione europea di libero scambio. (26G00127)" .
+
+<http://www.gazzettaufficiale.it/eli/id/2026/07/08/26A03443/sg/ita>
+        rdf:type            eli:LegalExpression;
+        rdfs:label          "Misure di eradicazione e sorveglianza della peste suina africana. (Ordinanza n. 4/2026). (26A03443)";
+        eli:is_embodied_by  <http://www.gazzettaufficiale.it/eli/id/2026/07/08/26A03443/sg/ita/html>;
+        eli:language        <http://publications.europa.eu/resource/authority/language/ITA>;
+        eli:publisher       <http://www.ipzs.it>;
+        eli:realizes        <http://www.gazzettaufficiale.it/eli/id/2026/07/08/26A03443/sg>;
+        eli:title           "Misure di eradicazione e sorveglianza della peste suina africana. (Ordinanza n. 4/2026). (26A03443)" .
+
+<http://www.gazzettaufficiale.it/eli/id/2026/07/09/26A03370/sg/ita/html>
+        rdf:type    eli:Format;
+        eli:format  <http://www.iana.org/assignments/media-types/text/html> .
+
+<http://www.gazzettaufficiale.it/eli/id/2026/06/20/26A03027/sg>
+        rdf:type              eli:LegalResource;
+        rdfs:label            "Riconoscimento dell'idoneita' al Centro di saggio «Agricola 2000» ad effettuare prove ufficiali di campo, finalizzate alla produzione di dati di efficacia e alla determinazione dell'entita' dei residui di prodotti fitosanitari. (26A03027)";
+        eli:date_document     "2026-05-25"^^xsd:date;
+        eli:date_publication  "2026-06-20"^^xsd:date;
+        eli:id_local          "26A03027";
+        eli:is_realized_by    <http://www.gazzettaufficiale.it/eli/id/2026/06/20/26A03027/sg/ita>;
+        eli:title             "Riconoscimento dell'idoneita' al Centro di saggio «Agricola 2000» ad effettuare prove ufficiali di campo, finalizzate alla produzione di dati di efficacia e alla determinazione dell'entita' dei residui di prodotti fitosanitari. (26A03027)";
+        eli:type_document     <http://www.gazzettaufficiale.it/eli/tables/resource-type#DECRETO>;
+        eli:version           <http://www.gazzettaufficiale.it/eli/tables/versions#ORIGINAL>;
+        dcterms:source        <http://www.gazzettaufficiale.it/eli/id/2026/06/20/26A03027/SG> .
+
+<http://www.gazzettaufficiale.it/eli/id/2026/06/27/26A03291/sg/ita/html>
+        rdf:type    eli:Format;
+        eli:format  <http://www.iana.org/assignments/media-types/text/html> .
+
+<http://www.gazzettaufficiale.it/eli/id/2026/07/08/26A03456/sg/ita/html>
+        rdf:type    eli:Format;
+        eli:format  <http://www.iana.org/assignments/media-types/text/html> .
+
+<http://www.gazzettaufficiale.it/eli/id/2026/07/08/26A03358/sg>
+        rdf:type              eli:LegalResource;
+        rdfs:label            "Proroga del termine per l'esecuzione delle prestazioni e per la presentazione delle istanze di accredito del contributo di cui all'articolo 13, comma 2, dell'Avviso CSE 2025 «Comuni per la sostenibilita' e l'efficienza energetica» adottato con decreto n. 125 del 28 marzo 2025 del Direttore della direzione generale programmi e incentivi finanziari del Ministero dell'ambiente e della sicurezza energetica. (26A03358)";
+        eli:date_publication  "2026-07-08"^^xsd:date;
+        eli:id_local          "26A03358";
+        eli:is_realized_by    <http://www.gazzettaufficiale.it/eli/id/2026/07/08/26A03358/sg/ita>;
+        eli:title             "Proroga del termine per l'esecuzione delle prestazioni e per la presentazione delle istanze di accredito del contributo di cui all'articolo 13, comma 2, dell'Avviso CSE 2025 «Comuni per la sostenibilita' e l'efficienza energetica» adottato con decreto n. 125 del 28 marzo 2025 del Direttore della direzione generale programmi e incentivi finanziari del Ministero dell'ambiente e della sicurezza energetica. (26A03358)";
+        eli:type_document     <http://www.gazzettaufficiale.it/eli/tables/resource-type#COMUNICATO>;
+        eli:version           <http://www.gazzettaufficiale.it/eli/tables/versions#ORIGINAL>;
+        dcterms:source        <http://www.gazzettaufficiale.it/eli/id/2026/07/08/26A03358/SG> .
+
+<http://www.gazzettaufficiale.it/eli/id/2026/07/08/26A03346/sg>
+        rdf:type              eli:LegalResource;
+        rdfs:label            "Liquidazione coatta amministrativa della «Cappa - societa' cooperativa sociale agricola», in Fano e nomina del commissario liquidatore. (26A03346)";
+        eli:date_document     "2026-06-22"^^xsd:date;
+        eli:date_publication  "2026-07-08"^^xsd:date;
+        eli:id_local          "26A03346";
+        eli:is_realized_by    <http://www.gazzettaufficiale.it/eli/id/2026/07/08/26A03346/sg/ita>;
+        eli:title             "Liquidazione coatta amministrativa della «Cappa - societa' cooperativa sociale agricola», in Fano e nomina del commissario liquidatore. (26A03346)";
+        eli:type_document     <http://www.gazzettaufficiale.it/eli/tables/resource-type#DECRETO>;
+        eli:version           <http://www.gazzettaufficiale.it/eli/tables/versions#ORIGINAL>;
+        dcterms:source        <http://www.gazzettaufficiale.it/eli/id/2026/07/08/26A03346/SG> .
+
+<http://www.gazzettaufficiale.it/eli/id/2026/07/08/26G00140/sg/ita/html>
+        rdf:type    eli:Format;
+        eli:format  <http://www.iana.org/assignments/media-types/text/html> .
+
+<http://www.gazzettaufficiale.it/eli/id/2026/07/09/26A03362/sg/ita>
+        rdf:type            eli:LegalExpression;
+        rdfs:label          "Sostituzione del commissario liquidatore della «3DR - Societa' cooperativa in liquidazione», in Pimonte. (26A03362)";
+        eli:is_embodied_by  <http://www.gazzettaufficiale.it/eli/id/2026/07/09/26A03362/sg/ita/html>;
+        eli:language        <http://publications.europa.eu/resource/authority/language/ITA>;
+        eli:publisher       <http://www.ipzs.it>;
+        eli:realizes        <http://www.gazzettaufficiale.it/eli/id/2026/07/09/26A03362/sg>;
+        eli:title           "Sostituzione del commissario liquidatore della «3DR - Societa' cooperativa in liquidazione», in Pimonte. (26A03362)" .
+
+<http://www.gazzettaufficiale.it/eli/id/2026/06/20/26A03028/sg/ita>
+        rdf:type            eli:LegalExpression;
+        rdfs:label          "Liquidazione coatta amministrativa della «Omega servizi societa' cooperativa», in Lucca e nomina del commissario liquidatore. (26A03028)";
+        eli:is_embodied_by  <http://www.gazzettaufficiale.it/eli/id/2026/06/20/26A03028/sg/ita/html>;
+        eli:language        <http://publications.europa.eu/resource/authority/language/ITA>;
+        eli:publisher       <http://www.ipzs.it>;
+        eli:realizes        <http://www.gazzettaufficiale.it/eli/id/2026/06/20/26A03028/sg>;
+        eli:title           "Liquidazione coatta amministrativa della «Omega servizi societa' cooperativa», in Lucca e nomina del commissario liquidatore. (26A03028)" .
+
+<http://www.gazzettaufficiale.it/eli/id/2026/06/20/26A03029/sg/ita/html>
+        rdf:type    eli:Format;
+        eli:format  <http://www.iana.org/assignments/media-types/text/html> .
+
+<http://www.gazzettaufficiale.it/eli/id/2026/07/09/26A03314/sg>
+        rdf:type              eli:LegalResource;
+        rdfs:label            "Liquidazione coatta amministrativa della «Intemelia Bat cooperativa sociale in liquidazione», in Ventimiglia e nomina del commissario liquidatore. (26A03314)";
+        eli:date_document     "2026-06-22"^^xsd:date;
+        eli:date_publication  "2026-07-09"^^xsd:date;
+        eli:id_local          "26A03314";
+        eli:is_realized_by    <http://www.gazzettaufficiale.it/eli/id/2026/07/09/26A03314/sg/ita>;
+        eli:title             "Liquidazione coatta amministrativa della «Intemelia Bat cooperativa sociale in liquidazione», in Ventimiglia e nomina del commissario liquidatore. (26A03314)";
+        eli:type_document     <http://www.gazzettaufficiale.it/eli/tables/resource-type#DECRETO>;
+        eli:version           <http://www.gazzettaufficiale.it/eli/tables/versions#ORIGINAL>;
+        dcterms:source        <http://www.gazzettaufficiale.it/eli/id/2026/07/09/26A03314/SG> .
+
+<http://www.gazzettaufficiale.it/eli/id/2026/06/27/26A03217/sg/ita>
+        rdf:type            eli:LegalExpression;
+        rdfs:label          "Classificazione, ai sensi dell'articolo 12, comma 5, della legge 8 novembre 2012, n. 189, del medicinale per uso umano, a base di clesrovimab, «Enflonsia». (Determina n. 818/2026). (26A03217)";
+        eli:is_embodied_by  <http://www.gazzettaufficiale.it/eli/id/2026/06/27/26A03217/sg/ita/html>;
+        eli:language        <http://publications.europa.eu/resource/authority/language/ITA>;
+        eli:publisher       <http://www.ipzs.it>;
+        eli:realizes        <http://www.gazzettaufficiale.it/eli/id/2026/06/27/26A03217/sg>;
+        eli:title           "Classificazione, ai sensi dell'articolo 12, comma 5, della legge 8 novembre 2012, n. 189, del medicinale per uso umano, a base di clesrovimab, «Enflonsia». (Determina n. 818/2026). (26A03217)" .
+
+<http://www.gazzettaufficiale.it/eli/id/2026/06/20/26A03035/sg/ita>
+        rdf:type            eli:LegalExpression;
+        rdfs:label          "Revoca, su rinuncia, dell'autorizzazione all'immissione in commercio del medicinale per uso umano «Rivaroxaban EG Stada». (26A03035)";
+        eli:is_embodied_by  <http://www.gazzettaufficiale.it/eli/id/2026/06/20/26A03035/sg/ita/html>;
+        eli:language        <http://publications.europa.eu/resource/authority/language/ITA>;
+        eli:publisher       <http://www.ipzs.it>;
+        eli:realizes        <http://www.gazzettaufficiale.it/eli/id/2026/06/20/26A03035/sg>;
+        eli:title           "Revoca, su rinuncia, dell'autorizzazione all'immissione in commercio del medicinale per uso umano «Rivaroxaban EG Stada». (26A03035)" .
+
+<http://www.gazzettaufficiale.it/eli/id/2026/06/20/26A02994/sg/ita/html>
+        rdf:type    eli:Format;
+        eli:format  <http://www.iana.org/assignments/media-types/text/html> .
+
+<http://www.gazzettaufficiale.it/eli/id/2026/07/08/26A03354/sg/ita/html>
+        rdf:type    eli:Format;
+        eli:format  <http://www.iana.org/assignments/media-types/text/html> .
+
+<http://www.gazzettaufficiale.it/eli/id/2026/07/08/26A03349/sg/ita>
+        rdf:type            eli:LegalExpression;
+        rdfs:label          "Scioglimento del Consiglio comunale di Boroneddu e nomina del commissario straordinario. (26A03349)";
+        eli:is_embodied_by  <http://www.gazzettaufficiale.it/eli/id/2026/07/08/26A03349/sg/ita/html>;
+        eli:language        <http://publications.europa.eu/resource/authority/language/ITA>;
+        eli:publisher       <http://www.ipzs.it>;
+        eli:realizes        <http://www.gazzettaufficiale.it/eli/id/2026/07/08/26A03349/sg>;
+        eli:title           "Scioglimento del Consiglio comunale di Boroneddu e nomina del commissario straordinario. (26A03349)" .
+
+<http://www.gazzettaufficiale.it/eli/id/2026/06/27/26A03217/sg>
+        rdf:type              eli:LegalResource;
+        rdfs:label            "Classificazione, ai sensi dell'articolo 12, comma 5, della legge 8 novembre 2012, n. 189, del medicinale per uso umano, a base di clesrovimab, «Enflonsia». (Determina n. 818/2026). (26A03217)";
+        eli:date_document     "2026-06-16"^^xsd:date;
+        eli:date_publication  "2026-06-27"^^xsd:date;
+        eli:id_local          "26A03217";
+        eli:is_realized_by    <http://www.gazzettaufficiale.it/eli/id/2026/06/27/26A03217/sg/ita>;
+        eli:title             "Classificazione, ai sensi dell'articolo 12, comma 5, della legge 8 novembre 2012, n. 189, del medicinale per uso umano, a base di clesrovimab, «Enflonsia». (Determina n. 818/2026). (26A03217)";
+        eli:type_document     <http://www.gazzettaufficiale.it/eli/tables/resource-type#DETERMINA>;
+        eli:version           <http://www.gazzettaufficiale.it/eli/tables/versions#ORIGINAL>;
+        dcterms:source        <http://www.gazzettaufficiale.it/eli/id/2026/06/27/26A03217/SG> .
+
+<http://www.gazzettaufficiale.it/eli/id/2026/07/09/26A03459/sg/ita/html>
+        rdf:type    eli:Format;
+        eli:format  <http://www.iana.org/assignments/media-types/text/html> .
+
+<http://www.gazzettaufficiale.it/eli/id/2026/07/08/26A03356/sg/ita>
+        rdf:type            eli:LegalExpression;
+        rdfs:label          "Autorizzazione all'importazione parallela del medicinale per uso umano «Proscar» (26A03356)";
+        eli:is_embodied_by  <http://www.gazzettaufficiale.it/eli/id/2026/07/08/26A03356/sg/ita/html>;
+        eli:language        <http://publications.europa.eu/resource/authority/language/ITA>;
+        eli:publisher       <http://www.ipzs.it>;
+        eli:realizes        <http://www.gazzettaufficiale.it/eli/id/2026/07/08/26A03356/sg>;
+        eli:title           "Autorizzazione all'importazione parallela del medicinale per uso umano «Proscar» (26A03356)" .
+
+<http://www.gazzettaufficiale.it/eli/id/2026/07/09/26A03362/sg>
+        rdf:type              eli:LegalResource;
+        rdfs:label            "Sostituzione del commissario liquidatore della «3DR - Societa' cooperativa in liquidazione», in Pimonte. (26A03362)";
+        eli:date_document     "2026-06-22"^^xsd:date;
+        eli:date_publication  "2026-07-09"^^xsd:date;
+        eli:id_local          "26A03362";
+        eli:is_realized_by    <http://www.gazzettaufficiale.it/eli/id/2026/07/09/26A03362/sg/ita>;
+        eli:title             "Sostituzione del commissario liquidatore della «3DR - Societa' cooperativa in liquidazione», in Pimonte. (26A03362)";
+        eli:type_document     <http://www.gazzettaufficiale.it/eli/tables/resource-type#DECRETO>;
+        eli:version           <http://www.gazzettaufficiale.it/eli/tables/versions#ORIGINAL>;
+        dcterms:source        <http://www.gazzettaufficiale.it/eli/id/2026/07/09/26A03362/SG> .
+
+<http://www.gazzettaufficiale.it/eli/id/2026/07/08/26A03349/sg>
+        rdf:type              eli:LegalResource;
+        rdfs:label            "Scioglimento del Consiglio comunale di Boroneddu e nomina del commissario straordinario. (26A03349)";
+        eli:date_document     "2026-06-27"^^xsd:date;
+        eli:date_publication  "2026-07-08"^^xsd:date;
+        eli:id_local          "26A03349";
+        eli:is_realized_by    <http://www.gazzettaufficiale.it/eli/id/2026/07/08/26A03349/sg/ita>;
+        eli:title             "Scioglimento del Consiglio comunale di Boroneddu e nomina del commissario straordinario. (26A03349)";
+        eli:type_document     <http://www.gazzettaufficiale.it/eli/tables/resource-type#DECRETO>;
+        eli:version           <http://www.gazzettaufficiale.it/eli/tables/versions#ORIGINAL>;
+        dcterms:source        <http://www.gazzettaufficiale.it/eli/id/2026/07/08/26A03349/SG> .
+
+<http://www.gazzettaufficiale.it/eli/id/2026/07/09/26A03275/sg/ita>
+        rdf:type            eli:LegalExpression;
+        rdfs:label          "Autorizzazione all'importazione parallela del medicinale per uso umano «Oftaquix» (26A03275)";
+        eli:is_embodied_by  <http://www.gazzettaufficiale.it/eli/id/2026/07/09/26A03275/sg/ita/html>;
+        eli:language        <http://publications.europa.eu/resource/authority/language/ITA>;
+        eli:publisher       <http://www.ipzs.it>;
+        eli:realizes        <http://www.gazzettaufficiale.it/eli/id/2026/07/09/26A03275/sg>;
+        eli:title           "Autorizzazione all'importazione parallela del medicinale per uso umano «Oftaquix» (26A03275)" .
+
+<http://www.gazzettaufficiale.it/eli/id/2026/06/27/26A03212/sg/ita>
+        rdf:type            eli:LegalExpression;
+        rdfs:label          "Autorizzazione all'importazione parallela del medicinale per uso umano «Imodium» (26A03212)";
+        eli:is_embodied_by  <http://www.gazzettaufficiale.it/eli/id/2026/06/27/26A03212/sg/ita/html>;
+        eli:language        <http://publications.europa.eu/resource/authority/language/ITA>;
+        eli:publisher       <http://www.ipzs.it>;
+        eli:realizes        <http://www.gazzettaufficiale.it/eli/id/2026/06/27/26A03212/sg>;
+        eli:title           "Autorizzazione all'importazione parallela del medicinale per uso umano «Imodium» (26A03212)" .
+
+<http://www.gazzettaufficiale.it/eli/id/2026/06/27/26A02942/sg/ita>
+        rdf:type            eli:LegalExpression;
+        rdfs:label          "Liquidazione coatta amministrativa della «Isoconsulting societa' cooperativa - in liquidazione», in Milano e nomina del commissario liquidatore. (26A02942)";
+        eli:is_embodied_by  <http://www.gazzettaufficiale.it/eli/id/2026/06/27/26A02942/sg/ita/html>;
+        eli:language        <http://publications.europa.eu/resource/authority/language/ITA>;
+        eli:publisher       <http://www.ipzs.it>;
+        eli:realizes        <http://www.gazzettaufficiale.it/eli/id/2026/06/27/26A02942/sg>;
+        eli:title           "Liquidazione coatta amministrativa della «Isoconsulting societa' cooperativa - in liquidazione», in Milano e nomina del commissario liquidatore. (26A02942)" .
+
+<http://www.gazzettaufficiale.it/eli/id/2026/07/09/26A03360/sg/ita>
+        rdf:type            eli:LegalExpression;
+        rdfs:label          "Liquidazione coatta amministrativa della «Cooperativa Cavarzano societa' cooperativa in liquidazione», in Vernio e nomina del commissario liquidatore. (26A03360)";
+        eli:is_embodied_by  <http://www.gazzettaufficiale.it/eli/id/2026/07/09/26A03360/sg/ita/html>;
+        eli:language        <http://publications.europa.eu/resource/authority/language/ITA>;
+        eli:publisher       <http://www.ipzs.it>;
+        eli:realizes        <http://www.gazzettaufficiale.it/eli/id/2026/07/09/26A03360/sg>;
+        eli:title           "Liquidazione coatta amministrativa della «Cooperativa Cavarzano societa' cooperativa in liquidazione», in Vernio e nomina del commissario liquidatore. (26A03360)" .
+
+<http://www.gazzettaufficiale.it/eli/id/2026/07/09/26A03400/sg/ita/html>
+        rdf:type    eli:Format;
+        eli:format  <http://www.iana.org/assignments/media-types/text/html> .
+
+<http://www.gazzettaufficiale.it/eli/id/2026/06/27/26A03226/sg/ita/html>
+        rdf:type    eli:Format;
+        eli:format  <http://www.iana.org/assignments/media-types/text/html> .
+
+<http://www.gazzettaufficiale.it/eli/id/2026/06/27/26G00128/sg>
+        rdf:type              eli:LegalResource;
+        rdfs:label            "Conversione in legge, con modificazioni, del decreto-legge 30 aprile 2026, n. 62, recante disposizioni urgenti in materia di salario giusto, di incentivi all'occupazione e di contrasto del caporalato digitale. (26G00128)";
+        eli:date_document     "2026-06-25"^^xsd:date;
+        eli:date_publication  "2026-06-27"^^xsd:date;
+        eli:id_local          "26G00128";
+        eli:is_realized_by    <http://www.gazzettaufficiale.it/eli/id/2026/06/27/26G00128/sg/ita>;
+        eli:title             "Conversione in legge, con modificazioni, del decreto-legge 30 aprile 2026, n. 62, recante disposizioni urgenti in materia di salario giusto, di incentivi all'occupazione e di contrasto del caporalato digitale. (26G00128)";
+        eli:type_document     <http://www.gazzettaufficiale.it/eli/tables/resource-type#LEGGE>;
+        eli:version           <http://www.gazzettaufficiale.it/eli/tables/versions#ORIGINAL>;
+        dcterms:source        <http://www.gazzettaufficiale.it/eli/id/2026/06/27/26G00128/SG> .
+
+<http://www.gazzettaufficiale.it/eli/id/2026/07/09/26A03365/sg>
+        rdf:type              eli:LegalResource;
+        rdfs:label            "Liquidazione coatta amministrativa della «Cooperativa edificatrice Frazzi - Societa' cooperativa», in Firenze e nomina del commissario liquidatore. (26A03365)";
+        eli:date_document     "2026-06-02"^^xsd:date;
+        eli:date_publication  "2026-07-09"^^xsd:date;
+        eli:id_local          "26A03365";
+        eli:is_realized_by    <http://www.gazzettaufficiale.it/eli/id/2026/07/09/26A03365/sg/ita>;
+        eli:title             "Liquidazione coatta amministrativa della «Cooperativa edificatrice Frazzi - Societa' cooperativa», in Firenze e nomina del commissario liquidatore. (26A03365)";
+        eli:type_document     <http://www.gazzettaufficiale.it/eli/tables/resource-type#DECRETO>;
+        eli:version           <http://www.gazzettaufficiale.it/eli/tables/versions#ORIGINAL>;
+        dcterms:source        <http://www.gazzettaufficiale.it/eli/id/2026/07/09/26A03365/SG> .
+
+<http://www.gazzettaufficiale.it/eli/id/2026/07/08/26A03358/sg/ita/html>
+        rdf:type    eli:Format;
+        eli:format  <http://www.iana.org/assignments/media-types/text/html> .
+
+<http://www.gazzettaufficiale.it/eli/id/2026/06/20/26A03188/sg/ita/html>
+        rdf:type    eli:Format;
+        eli:format  <http://www.iana.org/assignments/media-types/text/html> .
+
+<http://www.gazzettaufficiale.it/eli/id/2026/07/08/26A03347/sg/ita>
+        rdf:type            eli:LegalExpression;
+        rdfs:label          "Modalita' di ripartizione e di erogazione delle risorse da destinare agli incentivi per la formazione professionale nel settore dell'autotrasporto per l'annualita' 2026. (26A03347)";
+        eli:is_embodied_by  <http://www.gazzettaufficiale.it/eli/id/2026/07/08/26A03347/sg/ita/html>;
+        eli:language        <http://publications.europa.eu/resource/authority/language/ITA>;
+        eli:publisher       <http://www.ipzs.it>;
+        eli:realizes        <http://www.gazzettaufficiale.it/eli/id/2026/07/08/26A03347/sg>;
+        eli:title           "Modalita' di ripartizione e di erogazione delle risorse da destinare agli incentivi per la formazione professionale nel settore dell'autotrasporto per l'annualita' 2026. (26A03347)" .
+
+<http://www.gazzettaufficiale.it/eli/id/2026/07/08/26A03345/sg>
+        rdf:type              eli:LegalResource;
+        rdfs:label            "Liquidazione coatta amministrativa della «C.L.E. Group societa' cooperativa in liquidazione», in Ariccia e nomina del commissario liquidatore. (26A03345)";
+        eli:date_document     "2026-06-22"^^xsd:date;
+        eli:date_publication  "2026-07-08"^^xsd:date;
+        eli:id_local          "26A03345";
+        eli:is_realized_by    <http://www.gazzettaufficiale.it/eli/id/2026/07/08/26A03345/sg/ita>;
+        eli:title             "Liquidazione coatta amministrativa della «C.L.E. Group societa' cooperativa in liquidazione», in Ariccia e nomina del commissario liquidatore. (26A03345)";
+        eli:type_document     <http://www.gazzettaufficiale.it/eli/tables/resource-type#DECRETO>;
+        eli:version           <http://www.gazzettaufficiale.it/eli/tables/versions#ORIGINAL>;
+        dcterms:source        <http://www.gazzettaufficiale.it/eli/id/2026/07/08/26A03345/SG> .
+
+<http://www.gazzettaufficiale.it/eli/id/2026/06/20/26A03036/sg/ita/html>
+        rdf:type    eli:Format;
+        eli:format  <http://www.iana.org/assignments/media-types/text/html> .
+
+<http://www.gazzettaufficiale.it/eli/id/2026/06/20/26A03032/sg>
+        rdf:type              eli:LegalResource;
+        rdfs:label            "Revoca, su rinuncia, dell'autorizzazione all'immissione in commercio del medicinale per uso umano «Vincristina EG». (26A03032)";
+        eli:date_publication  "2026-06-20"^^xsd:date;
+        eli:id_local          "26A03032";
+        eli:is_realized_by    <http://www.gazzettaufficiale.it/eli/id/2026/06/20/26A03032/sg/ita>;
+        eli:title             "Revoca, su rinuncia, dell'autorizzazione all'immissione in commercio del medicinale per uso umano «Vincristina EG». (26A03032)";
+        eli:type_document     <http://www.gazzettaufficiale.it/eli/tables/resource-type#COMUNICATO>;
+        eli:version           <http://www.gazzettaufficiale.it/eli/tables/versions#ORIGINAL>;
+        dcterms:source        <http://www.gazzettaufficiale.it/eli/id/2026/06/20/26A03032/SG> .
+
+<http://www.gazzettaufficiale.it/eli/id/2026/07/08/26A03272/sg>
+        rdf:type              eli:LegalResource;
+        rdfs:label            "Liquidazione coatta amministrativa della «Goccia - Societa' cooperativa sociale», in Porto Tolle e nomina del commissario liquidatore. (26A03272)";
+        eli:date_document     "2026-06-22"^^xsd:date;
+        eli:date_publication  "2026-07-08"^^xsd:date;
+        eli:id_local          "26A03272";
+        eli:is_realized_by    <http://www.gazzettaufficiale.it/eli/id/2026/07/08/26A03272/sg/ita>;
+        eli:title             "Liquidazione coatta amministrativa della «Goccia - Societa' cooperativa sociale», in Porto Tolle e nomina del commissario liquidatore. (26A03272)";
+        eli:type_document     <http://www.gazzettaufficiale.it/eli/tables/resource-type#DECRETO>;
+        eli:version           <http://www.gazzettaufficiale.it/eli/tables/versions#ORIGINAL>;
+        dcterms:source        <http://www.gazzettaufficiale.it/eli/id/2026/07/08/26A03272/SG> .
+
+<http://www.gazzettaufficiale.it/eli/id/2026/07/08/26A03273/sg/ita/html>
+        rdf:type    eli:Format;
+        eli:format  <http://www.iana.org/assignments/media-types/text/html> .
+
+<http://www.gazzettaufficiale.it/eli/id/2026/07/08/26A03283/sg/ita>
+        rdf:type            eli:LegalExpression;
+        rdfs:label          "Concessione delle medaglie di bronzo al merito di Marina (26A03283)";
+        eli:is_embodied_by  <http://www.gazzettaufficiale.it/eli/id/2026/07/08/26A03283/sg/ita/html>;
+        eli:language        <http://publications.europa.eu/resource/authority/language/ITA>;
+        eli:publisher       <http://www.ipzs.it>;
+        eli:realizes        <http://www.gazzettaufficiale.it/eli/id/2026/07/08/26A03283/sg>;
+        eli:title           "Concessione delle medaglie di bronzo al merito di Marina (26A03283)" .
+
+<http://www.gazzettaufficiale.it/eli/id/2026/06/20/26G00123/sg/ita/html>
+        rdf:type    eli:Format;
+        eli:format  <http://www.iana.org/assignments/media-types/text/html> .
+
+<http://www.gazzettaufficiale.it/eli/id/2026/07/09/26A03368/sg>
+        rdf:type              eli:LegalResource;
+        rdfs:label            "Modifica ordinaria al disciplinare di produzione della denominazione di origine protetta «Farina di castagne della Lunigiana». (26A03368)";
+        eli:date_document     "2026-06-30"^^xsd:date;
+        eli:date_publication  "2026-07-09"^^xsd:date;
+        eli:id_local          "26A03368";
+        eli:is_realized_by    <http://www.gazzettaufficiale.it/eli/id/2026/07/09/26A03368/sg/ita>;
+        eli:title             "Modifica ordinaria al disciplinare di produzione della denominazione di origine protetta «Farina di castagne della Lunigiana». (26A03368)";
+        eli:type_document     <http://www.gazzettaufficiale.it/eli/tables/resource-type#DECRETO>;
+        eli:version           <http://www.gazzettaufficiale.it/eli/tables/versions#ORIGINAL>;
+        dcterms:source        <http://www.gazzettaufficiale.it/eli/id/2026/07/09/26A03368/SG> .
+
+<http://www.gazzettaufficiale.it/eli/id/2026/06/27/26A02941/sg>
+        rdf:type              eli:LegalResource;
+        rdfs:label            "Liquidazione coatta amministrativa della «Meating societa' cooperativa», in Castelfranco Emilia e nomina del commissario liquidatore. (26A02941)";
+        eli:date_document     "2026-05-29"^^xsd:date;
+        eli:date_publication  "2026-06-27"^^xsd:date;
+        eli:id_local          "26A02941";
+        eli:is_realized_by    <http://www.gazzettaufficiale.it/eli/id/2026/06/27/26A02941/sg/ita>;
+        eli:title             "Liquidazione coatta amministrativa della «Meating societa' cooperativa», in Castelfranco Emilia e nomina del commissario liquidatore. (26A02941)";
+        eli:type_document     <http://www.gazzettaufficiale.it/eli/tables/resource-type#DECRETO>;
+        eli:version           <http://www.gazzettaufficiale.it/eli/tables/versions#ORIGINAL>;
+        dcterms:source        <http://www.gazzettaufficiale.it/eli/id/2026/06/27/26A02941/SG> .
+
+<http://www.gazzettaufficiale.it/eli/id/2026/07/08/26A03466/sg>
+        rdf:type              eli:LegalResource;
+        rdfs:label            "Rinnovo dell'ordinanza n. 1/2026: «Piano di azione nazionale per la cattura, l'abbattimento e il destino delle carcasse di cinghiale nelle zone indenni da PSA». (Ordinanza n. 5/2026). (26A03466)";
+        eli:date_document     "2026-07-06"^^xsd:date;
+        eli:date_publication  "2026-07-08"^^xsd:date;
+        eli:id_local          "26A03466";
+        eli:is_realized_by    <http://www.gazzettaufficiale.it/eli/id/2026/07/08/26A03466/sg/ita>;
+        eli:title             "Rinnovo dell'ordinanza n. 1/2026: «Piano di azione nazionale per la cattura, l'abbattimento e il destino delle carcasse di cinghiale nelle zone indenni da PSA». (Ordinanza n. 5/2026). (26A03466)";
+        eli:type_document     <http://www.gazzettaufficiale.it/eli/tables/resource-type#ORDINANZA>;
+        eli:version           <http://www.gazzettaufficiale.it/eli/tables/versions#ORIGINAL>;
+        dcterms:source        <http://www.gazzettaufficiale.it/eli/id/2026/07/08/26A03466/SG> .
+
+<http://www.gazzettaufficiale.it/eli/id/2026/06/27/26A03291/sg>
+        rdf:type              eli:LegalResource;
+        rdfs:label            "Testo del decreto-legge 30 aprile 2026, n. 62 (in Gazzetta Ufficiale - Serie generale - n. 99 del 30 aprile 2026), coordinato con la legge di conversione 25 giugno 2026, n. 112 (in questa stessa Gazzetta Ufficiale, alla pag. 3), recante: «Disposizioni urgenti in materia di salario giusto, di incentivi all'occupazione e di contrasto del caporalato digitale.». (26A03291)";
+        eli:date_document     "2026-04-30"^^xsd:date;
+        eli:date_publication  "2026-06-27"^^xsd:date;
+        eli:id_local          "26A03291";
+        eli:is_realized_by    <http://www.gazzettaufficiale.it/eli/id/2026/06/27/26A03291/sg/ita>;
+        eli:title             "Testo del decreto-legge 30 aprile 2026, n. 62 (in Gazzetta Ufficiale - Serie generale - n. 99 del 30 aprile 2026), coordinato con la legge di conversione 25 giugno 2026, n. 112 (in questa stessa Gazzetta Ufficiale, alla pag. 3), recante: «Disposizioni urgenti in materia di salario giusto, di incentivi all'occupazione e di contrasto del caporalato digitale.». (26A03291)";
+        eli:type_document     <http://www.gazzettaufficiale.it/eli/tables/resource-type#TESTO_COORDINATO_DEL_DECRETO-LEGGE>;
+        eli:version           <http://www.gazzettaufficiale.it/eli/tables/versions#ORIGINAL>;
+        dcterms:source        <http://www.gazzettaufficiale.it/eli/id/2026/06/27/26A03291/SG> .
+
+<http://www.gazzettaufficiale.it/eli/id/2026/07/09/26A03459/sg>
+        rdf:type              eli:LegalResource;
+        rdfs:label            "Disposizioni urgenti per la realizzazione delle attivita' a valere sul «Programma per interventi di prevenzione strutturale e per la riduzione del rischio idraulico e idrogeologico nel territorio del Comune di Niscemi» e sul «Programma per interventi di demolizione degli edifici, pubblici e privati, rientranti nell'area di frana e nella fascia di rispetto perimetrata nonche' per la concessione di un contributo a favore dei proprietari degli immobili demoliti nel Comune di Niscemi», approvati con delibera del Consiglio dei ministri del 22 maggio 2026, ai sensi dell'articolo 15, comma 3, del decreto-legge 27 febbraio 2026, n. 25, convertito, con modificazioni, dalla legge 27 aprile 2026, n. 59 e approvati con i rispettivi decreti del Ministro per la protezione civile e le politiche del mare del 27 maggio 2026. (Ordinanza n. 1197). (26A03459)";
+        eli:date_document     "2026-07-04"^^xsd:date;
+        eli:date_publication  "2026-07-09"^^xsd:date;
+        eli:id_local          "26A03459";
+        eli:is_realized_by    <http://www.gazzettaufficiale.it/eli/id/2026/07/09/26A03459/sg/ita>;
+        eli:title             "Disposizioni urgenti per la realizzazione delle attivita' a valere sul «Programma per interventi di prevenzione strutturale e per la riduzione del rischio idraulico e idrogeologico nel territorio del Comune di Niscemi» e sul «Programma per interventi di demolizione degli edifici, pubblici e privati, rientranti nell'area di frana e nella fascia di rispetto perimetrata nonche' per la concessione di un contributo a favore dei proprietari degli immobili demoliti nel Comune di Niscemi», approvati con delibera del Consiglio dei ministri del 22 maggio 2026, ai sensi dell'articolo 15, comma 3, del decreto-legge 27 febbraio 2026, n. 25, convertito, con modificazioni, dalla legge 27 aprile 2026, n. 59 e approvati con i rispettivi decreti del Ministro per la protezione civile e le politiche del mare del 27 maggio 2026. (Ordinanza n. 1197). (26A03459)";
+        eli:type_document     <http://www.gazzettaufficiale.it/eli/tables/resource-type#ORDINANZA>;
+        eli:version           <http://www.gazzettaufficiale.it/eli/tables/versions#ORIGINAL>;
+        dcterms:source        <http://www.gazzettaufficiale.it/eli/id/2026/07/09/26A03459/SG> .
+
+<http://www.gazzettaufficiale.it/eli/id/2026/07/09/26A03400/sg/ita>
+        rdf:type            eli:LegalExpression;
+        rdfs:label          "Modifiche al decreto 5 aprile 2022 recante «Istituzione del Tavolo di lavoro permanente sulla certificazione di genere alle imprese». (26A03400)";
+        eli:is_embodied_by  <http://www.gazzettaufficiale.it/eli/id/2026/07/09/26A03400/sg/ita/html>;
+        eli:language        <http://publications.europa.eu/resource/authority/language/ITA>;
+        eli:publisher       <http://www.ipzs.it>;
+        eli:realizes        <http://www.gazzettaufficiale.it/eli/id/2026/07/09/26A03400/sg>;
+        eli:title           "Modifiche al decreto 5 aprile 2022 recante «Istituzione del Tavolo di lavoro permanente sulla certificazione di genere alle imprese». (26A03400)" .
+
+<http://www.gazzettaufficiale.it/eli/id/2026/07/08/26A03344/sg/ita/html>
+        rdf:type    eli:Format;
+        eli:format  <http://www.iana.org/assignments/media-types/text/html> .
+
+<http://www.gazzettaufficiale.it/eli/id/2026/07/08/26A03456/sg/ita>
+        rdf:type            eli:LegalExpression;
+        rdfs:label          "Avviso di pubblicazione di provvedimenti di classificazione e rimborsabilita', ed atti correlati, di specialita' medicinali sul portale «TrovaNormeFarmaco». (26A03456)";
+        eli:is_embodied_by  <http://www.gazzettaufficiale.it/eli/id/2026/07/08/26A03456/sg/ita/html>;
+        eli:language        <http://publications.europa.eu/resource/authority/language/ITA>;
+        eli:publisher       <http://www.ipzs.it>;
+        eli:realizes        <http://www.gazzettaufficiale.it/eli/id/2026/07/08/26A03456/sg>;
+        eli:title           "Avviso di pubblicazione di provvedimenti di classificazione e rimborsabilita', ed atti correlati, di specialita' medicinali sul portale «TrovaNormeFarmaco». (26A03456)" .
+
+<http://www.gazzettaufficiale.it/eli/id/2026/07/09/26A03314/sg/ita/html>
+        rdf:type    eli:Format;
+        eli:format  <http://www.iana.org/assignments/media-types/text/html> .
+
+<http://www.gazzettaufficiale.it/eli/id/2026/06/20/26A03035/sg>
+        rdf:type              eli:LegalResource;
+        rdfs:label            "Revoca, su rinuncia, dell'autorizzazione all'immissione in commercio del medicinale per uso umano «Rivaroxaban EG Stada». (26A03035)";
+        eli:date_publication  "2026-06-20"^^xsd:date;
+        eli:id_local          "26A03035";
+        eli:is_realized_by    <http://www.gazzettaufficiale.it/eli/id/2026/06/20/26A03035/sg/ita>;
+        eli:title             "Revoca, su rinuncia, dell'autorizzazione all'immissione in commercio del medicinale per uso umano «Rivaroxaban EG Stada». (26A03035)";
+        eli:type_document     <http://www.gazzettaufficiale.it/eli/tables/resource-type#COMUNICATO>;
+        eli:version           <http://www.gazzettaufficiale.it/eli/tables/versions#ORIGINAL>;
+        dcterms:source        <http://www.gazzettaufficiale.it/eli/id/2026/06/20/26A03035/SG> .
+
+<http://www.gazzettaufficiale.it/eli/id/2026/06/20/26A03074/sg/ita/html>
+        rdf:type    eli:Format;
+        eli:format  <http://www.iana.org/assignments/media-types/text/html> .
+
+<http://www.gazzettaufficiale.it/eli/id/2026/06/27/26A03227/sg/ita>
+        rdf:type            eli:LegalExpression;
+        rdfs:label          "Determinazione del costo medio del rimpatrio per l'anno 2026. (26A03227)";
+        eli:is_embodied_by  <http://www.gazzettaufficiale.it/eli/id/2026/06/27/26A03227/sg/ita/html>;
+        eli:language        <http://publications.europa.eu/resource/authority/language/ITA>;
+        eli:publisher       <http://www.ipzs.it>;
+        eli:realizes        <http://www.gazzettaufficiale.it/eli/id/2026/06/27/26A03227/sg>;
+        eli:title           "Determinazione del costo medio del rimpatrio per l'anno 2026. (26A03227)" .
+
+<http://www.gazzettaufficiale.it/eli/id/2026/07/09/26A03368/sg/ita>
+        rdf:type            eli:LegalExpression;
+        rdfs:label          "Modifica ordinaria al disciplinare di produzione della denominazione di origine protetta «Farina di castagne della Lunigiana». (26A03368)";
+        eli:is_embodied_by  <http://www.gazzettaufficiale.it/eli/id/2026/07/09/26A03368/sg/ita/html>;
+        eli:language        <http://publications.europa.eu/resource/authority/language/ITA>;
+        eli:publisher       <http://www.ipzs.it>;
+        eli:realizes        <http://www.gazzettaufficiale.it/eli/id/2026/07/09/26A03368/sg>;
+        eli:title           "Modifica ordinaria al disciplinare di produzione della denominazione di origine protetta «Farina di castagne della Lunigiana». (26A03368)" .
+
+<http://www.gazzettaufficiale.it/eli/id/2026/06/27/26A03064/sg/ita>
+        rdf:type            eli:LegalExpression;
+        rdfs:label          "Liquidazione coatta amministrativa della «Archimede Servizi societa' cooperativa in liquidazione», in Perugia e nomina del commissario liquidatore. (26A03064)";
+        eli:is_embodied_by  <http://www.gazzettaufficiale.it/eli/id/2026/06/27/26A03064/sg/ita/html>;
+        eli:language        <http://publications.europa.eu/resource/authority/language/ITA>;
+        eli:publisher       <http://www.ipzs.it>;
+        eli:realizes        <http://www.gazzettaufficiale.it/eli/id/2026/06/27/26A03064/sg>;
+        eli:title           "Liquidazione coatta amministrativa della «Archimede Servizi societa' cooperativa in liquidazione», in Perugia e nomina del commissario liquidatore. (26A03064)" .
+
+<http://www.gazzettaufficiale.it/eli/id/2026/07/09/26A03364/sg/ita/html>
+        rdf:type    eli:Format;
+        eli:format  <http://www.iana.org/assignments/media-types/text/html> .
+
+<http://www.gazzettaufficiale.it/eli/id/2026/06/27/26G00128/sg/ita>
+        rdf:type            eli:LegalExpression;
+        rdfs:label          "Conversione in legge, con modificazioni, del decreto-legge 30 aprile 2026, n. 62, recante disposizioni urgenti in materia di salario giusto, di incentivi all'occupazione e di contrasto del caporalato digitale. (26G00128)";
+        eli:is_embodied_by  <http://www.gazzettaufficiale.it/eli/id/2026/06/27/26G00128/sg/ita/html>;
+        eli:language        <http://publications.europa.eu/resource/authority/language/ITA>;
+        eli:publisher       <http://www.ipzs.it>;
+        eli:realizes        <http://www.gazzettaufficiale.it/eli/id/2026/06/27/26G00128/sg>;
+        eli:title           "Conversione in legge, con modificazioni, del decreto-legge 30 aprile 2026, n. 62, recante disposizioni urgenti in materia di salario giusto, di incentivi all'occupazione e di contrasto del caporalato digitale. (26G00128)" .
+
+<http://www.gazzettaufficiale.it/eli/id/2026/06/27/26G00127/sg>
+        rdf:type              eli:LegalResource;
+        rdfs:label            "Modifica all'articolo 19 della legge 23 dicembre 1978, n. 833, e altre disposizioni in materia di assistenza sanitaria in favore dei cittadini iscritti all'Anagrafe degli italiani residenti all'estero, residenti in Paesi che non appartengono all'Unione europea e non aderiscono all'Associazione europea di libero scambio. (26G00127)";
+        eli:date_document     "2026-06-12"^^xsd:date;
+        eli:date_publication  "2026-06-27"^^xsd:date;
+        eli:id_local          "26G00127";
+        eli:is_realized_by    <http://www.gazzettaufficiale.it/eli/id/2026/06/27/26G00127/sg/ita>;
+        eli:title             "Modifica all'articolo 19 della legge 23 dicembre 1978, n. 833, e altre disposizioni in materia di assistenza sanitaria in favore dei cittadini iscritti all'Anagrafe degli italiani residenti all'estero, residenti in Paesi che non appartengono all'Unione europea e non aderiscono all'Associazione europea di libero scambio. (26G00127)";
+        eli:type_document     <http://www.gazzettaufficiale.it/eli/tables/resource-type#LEGGE>;
+        eli:version           <http://www.gazzettaufficiale.it/eli/tables/versions#ORIGINAL>;
+        dcterms:source        <http://www.gazzettaufficiale.it/eli/id/2026/06/27/26G00127/SG> .
+
+<http://www.gazzettaufficiale.it/eli/id/2026/06/27/26A03291/sg/ita>
+        rdf:type            eli:LegalExpression;
+        rdfs:label          "Testo del decreto-legge 30 aprile 2026, n. 62 (in Gazzetta Ufficiale - Serie generale - n. 99 del 30 aprile 2026), coordinato con la legge di conversione 25 giugno 2026, n. 112 (in questa stessa Gazzetta Ufficiale, alla pag. 3), recante: «Disposizioni urgenti in materia di salario giusto, di incentivi all'occupazione e di contrasto del caporalato digitale.». (26A03291)";
+        eli:is_embodied_by  <http://www.gazzettaufficiale.it/eli/id/2026/06/27/26A03291/sg/ita/html>;
+        eli:language        <http://publications.europa.eu/resource/authority/language/ITA>;
+        eli:publisher       <http://www.ipzs.it>;
+        eli:realizes        <http://www.gazzettaufficiale.it/eli/id/2026/06/27/26A03291/sg>;
+        eli:title           "Testo del decreto-legge 30 aprile 2026, n. 62 (in Gazzetta Ufficiale - Serie generale - n. 99 del 30 aprile 2026), coordinato con la legge di conversione 25 giugno 2026, n. 112 (in questa stessa Gazzetta Ufficiale, alla pag. 3), recante: «Disposizioni urgenti in materia di salario giusto, di incentivi all'occupazione e di contrasto del caporalato digitale.». (26A03291)" .
+
+<http://www.gazzettaufficiale.it/eli/id/2026/06/27/26A02941/sg/ita/html>
+        rdf:type    eli:Format;
+        eli:format  <http://www.iana.org/assignments/media-types/text/html> .
+
+<http://www.gazzettaufficiale.it/eli/id/2026/07/09/26A03363/sg/ita>
+        rdf:type            eli:LegalExpression;
+        rdfs:label          "Liquidazione coatta amministrativa della «Cooper Fly Service societa' cooperativa sociale», in San Gregorio d'Ippona e nomina del commissario liquidatore. (26A03363)";
+        eli:is_embodied_by  <http://www.gazzettaufficiale.it/eli/id/2026/07/09/26A03363/sg/ita/html>;
+        eli:language        <http://publications.europa.eu/resource/authority/language/ITA>;
+        eli:publisher       <http://www.ipzs.it>;
+        eli:realizes        <http://www.gazzettaufficiale.it/eli/id/2026/07/09/26A03363/sg>;
+        eli:title           "Liquidazione coatta amministrativa della «Cooper Fly Service societa' cooperativa sociale», in San Gregorio d'Ippona e nomina del commissario liquidatore. (26A03363)" .
+
+<http://www.gazzettaufficiale.it/eli/id/2026/07/08/26A03348/sg/ita/html>
+        rdf:type    eli:Format;
+        eli:format  <http://www.iana.org/assignments/media-types/text/html> .
+
+<http://www.gazzettaufficiale.it/eli/id/2026/06/20/26A03029/sg/ita>
+        rdf:type            eli:LegalExpression;
+        rdfs:label          "Sostituzione del commissario liquidatore della «Rio Blu societa' cooperativa», in Sabaudia, in liquidazione coatta amministrativa. (26A03029)";
+        eli:is_embodied_by  <http://www.gazzettaufficiale.it/eli/id/2026/06/20/26A03029/sg/ita/html>;
+        eli:language        <http://publications.europa.eu/resource/authority/language/ITA>;
+        eli:publisher       <http://www.ipzs.it>;
+        eli:realizes        <http://www.gazzettaufficiale.it/eli/id/2026/06/20/26A03029/sg>;
+        eli:title           "Sostituzione del commissario liquidatore della «Rio Blu societa' cooperativa», in Sabaudia, in liquidazione coatta amministrativa. (26A03029)" .
+
+<http://www.gazzettaufficiale.it/eli/id/2026/07/09/26A03370/sg/ita>
+        rdf:type            eli:LegalExpression;
+        rdfs:label          "Fondo 394/81 - Sezione Crescita. Manifestazione di interesse rivolta a operatori privati per il co-investimento nell'ambito degli interventi della Sezione Crescita del Fondo 394/81. (26A03370)";
+        eli:is_embodied_by  <http://www.gazzettaufficiale.it/eli/id/2026/07/09/26A03370/sg/ita/html>;
+        eli:language        <http://publications.europa.eu/resource/authority/language/ITA>;
+        eli:publisher       <http://www.ipzs.it>;
+        eli:realizes        <http://www.gazzettaufficiale.it/eli/id/2026/07/09/26A03370/sg>;
+        eli:title           "Fondo 394/81 - Sezione Crescita. Manifestazione di interesse rivolta a operatori privati per il co-investimento nell'ambito degli interventi della Sezione Crescita del Fondo 394/81. (26A03370)" .
+
+<http://www.gazzettaufficiale.it/eli/id/2026/06/20/26A03036/sg/ita>
+        rdf:type            eli:LegalExpression;
+        rdfs:label          "Scioglimento, per atto dell'autorita', della «L.F.C. Lingua formazione cultura societa' cooperativa», in Bolzano, senza nomina del commissario liquidatore. (26A03036)";
+        eli:is_embodied_by  <http://www.gazzettaufficiale.it/eli/id/2026/06/20/26A03036/sg/ita/html>;
+        eli:language        <http://publications.europa.eu/resource/authority/language/ITA>;
+        eli:publisher       <http://www.ipzs.it>;
+        eli:realizes        <http://www.gazzettaufficiale.it/eli/id/2026/06/20/26A03036/sg>;
+        eli:title           "Scioglimento, per atto dell'autorita', della «L.F.C. Lingua formazione cultura societa' cooperativa», in Bolzano, senza nomina del commissario liquidatore. (26A03036)" .
+
+<http://www.gazzettaufficiale.it/eli/id/2026/06/27/26A03218/sg/ita>
+        rdf:type            eli:LegalExpression;
+        rdfs:label          "Autorizzazione all'immissione in commercio del medicinale per uso umano, a base di macitentan, «Macitentan Medac» (26A03218)";
+        eli:is_embodied_by  <http://www.gazzettaufficiale.it/eli/id/2026/06/27/26A03218/sg/ita/html>;
+        eli:language        <http://publications.europa.eu/resource/authority/language/ITA>;
+        eli:publisher       <http://www.ipzs.it>;
+        eli:realizes        <http://www.gazzettaufficiale.it/eli/id/2026/06/27/26A03218/sg>;
+        eli:title           "Autorizzazione all'immissione in commercio del medicinale per uso umano, a base di macitentan, «Macitentan Medac» (26A03218)" .
+
+<http://www.gazzettaufficiale.it/eli/id/2026/07/09/26A03415/sg/ita>
+        rdf:type            eli:LegalExpression;
+        rdfs:label          "Comunicato relativo al decreto 10 giugno 2026 - Cofinanziamento delle iniziative selezionate dall'impresa comune «Chip» per la realizzazione di linee pilota innovative nell'ecosistema dei semiconduttori. Modalita' e termini per la presentazione delle domande di agevolazione. (26A03415)";
+        eli:is_embodied_by  <http://www.gazzettaufficiale.it/eli/id/2026/07/09/26A03415/sg/ita/html>;
+        eli:language        <http://publications.europa.eu/resource/authority/language/ITA>;
+        eli:publisher       <http://www.ipzs.it>;
+        eli:realizes        <http://www.gazzettaufficiale.it/eli/id/2026/07/09/26A03415/sg>;
+        eli:title           "Comunicato relativo al decreto 10 giugno 2026 - Cofinanziamento delle iniziative selezionate dall'impresa comune «Chip» per la realizzazione di linee pilota innovative nell'ecosistema dei semiconduttori. Modalita' e termini per la presentazione delle domande di agevolazione. (26A03415)" .
+
+<http://www.gazzettaufficiale.it/eli/id/2026/07/09/26A03368/sg/ita/html>
+        rdf:type    eli:Format;
+        eli:format  <http://www.iana.org/assignments/media-types/text/html> .
+
+<http://www.gazzettaufficiale.it/eli/id/2026/06/27/26A03064/sg>
+        rdf:type              eli:LegalResource;
+        rdfs:label            "Liquidazione coatta amministrativa della «Archimede Servizi societa' cooperativa in liquidazione», in Perugia e nomina del commissario liquidatore. (26A03064)";
+        eli:date_document     "2026-06-08"^^xsd:date;
+        eli:date_publication  "2026-06-27"^^xsd:date;
+        eli:id_local          "26A03064";
+        eli:is_realized_by    <http://www.gazzettaufficiale.it/eli/id/2026/06/27/26A03064/sg/ita>;
+        eli:title             "Liquidazione coatta amministrativa della «Archimede Servizi societa' cooperativa in liquidazione», in Perugia e nomina del commissario liquidatore. (26A03064)";
+        eli:type_document     <http://www.gazzettaufficiale.it/eli/tables/resource-type#DECRETO>;
+        eli:version           <http://www.gazzettaufficiale.it/eli/tables/versions#ORIGINAL>;
+        dcterms:source        <http://www.gazzettaufficiale.it/eli/id/2026/06/27/26A03064/SG> .
+
+<http://www.gazzettaufficiale.it/eli/id/2026/07/08/26A03350/sg>
+        rdf:type              eli:LegalResource;
+        rdfs:label            "Autorizzazione all'importazione parallela del medicinale per uso umano «Arlevertan» (26A03350)";
+        eli:date_publication  "2026-07-08"^^xsd:date;
+        eli:id_local          "26A03350";
+        eli:is_realized_by    <http://www.gazzettaufficiale.it/eli/id/2026/07/08/26A03350/sg/ita>;
+        eli:title             "Autorizzazione all'importazione parallela del medicinale per uso umano «Arlevertan» (26A03350)";
+        eli:type_document     <http://www.gazzettaufficiale.it/eli/tables/resource-type#COMUNICATO>;
+        eli:version           <http://www.gazzettaufficiale.it/eli/tables/versions#ORIGINAL>;
+        dcterms:source        <http://www.gazzettaufficiale.it/eli/id/2026/07/08/26A03350/SG> .
+
+<http://www.gazzettaufficiale.it/eli/id/2026/07/08/26A03357/sg/ita>
+        rdf:type            eli:LegalExpression;
+        rdfs:label          "Autorizzazione all'importazione parallela del medicinale per uso umano «Klaira» (26A03357)";
+        eli:is_embodied_by  <http://www.gazzettaufficiale.it/eli/id/2026/07/08/26A03357/sg/ita/html>;
+        eli:language        <http://publications.europa.eu/resource/authority/language/ITA>;
+        eli:publisher       <http://www.ipzs.it>;
+        eli:realizes        <http://www.gazzettaufficiale.it/eli/id/2026/07/08/26A03357/sg>;
+        eli:title           "Autorizzazione all'importazione parallela del medicinale per uso umano «Klaira» (26A03357)" .
+
+<http://www.gazzettaufficiale.it/eli/id/2026/06/27/26A03228/sg>
+        rdf:type              eli:LegalResource;
+        rdfs:label            "Approvazione della convenzione concernente la gestione delle funzioni di raccolta, verifica e conservazione della documentazione assicurativa relativa all'assolvimento degli obblighi inerenti al rilascio della sicurezza finanziaria, stipulata tra il Ministero delle infrastrutture e dei trasporti e CONSAP S.p.a. (26A03228)";
+        eli:date_publication  "2026-06-27"^^xsd:date;
+        eli:id_local          "26A03228";
+        eli:is_realized_by    <http://www.gazzettaufficiale.it/eli/id/2026/06/27/26A03228/sg/ita>;
+        eli:title             "Approvazione della convenzione concernente la gestione delle funzioni di raccolta, verifica e conservazione della documentazione assicurativa relativa all'assolvimento degli obblighi inerenti al rilascio della sicurezza finanziaria, stipulata tra il Ministero delle infrastrutture e dei trasporti e CONSAP S.p.a. (26A03228)";
+        eli:type_document     <http://www.gazzettaufficiale.it/eli/tables/resource-type#COMUNICATO>;
+        eli:version           <http://www.gazzettaufficiale.it/eli/tables/versions#ORIGINAL>;
+        dcterms:source        <http://www.gazzettaufficiale.it/eli/id/2026/06/27/26A03228/SG> .
+
+<http://www.gazzettaufficiale.it/eli/id/2026/07/08/26A03351/sg/ita/html>
+        rdf:type    eli:Format;
+        eli:format  <http://www.iana.org/assignments/media-types/text/html> .
+
+<http://www.gazzettaufficiale.it/eli/id/2026/06/27/26A03064/sg/ita/html>
+        rdf:type    eli:Format;
+        eli:format  <http://www.iana.org/assignments/media-types/text/html> .
+
+<http://www.gazzettaufficiale.it/eli/id/2026/06/27/26G00129/sg/ita/html>
+        rdf:type    eli:Format;
+        eli:format  <http://www.iana.org/assignments/media-types/text/html> .
+
+<http://www.gazzettaufficiale.it/eli/id/2026/06/20/26A03188/sg/ita>
+        rdf:type            eli:LegalExpression;
+        rdfs:label          "Avviso relativo al Libretto Smart e al Libretto Minori (26A03188)";
+        eli:is_embodied_by  <http://www.gazzettaufficiale.it/eli/id/2026/06/20/26A03188/sg/ita/html>;
+        eli:language        <http://publications.europa.eu/resource/authority/language/ITA>;
+        eli:publisher       <http://www.ipzs.it>;
+        eli:realizes        <http://www.gazzettaufficiale.it/eli/id/2026/06/20/26A03188/sg>;
+        eli:title           "Avviso relativo al Libretto Smart e al Libretto Minori (26A03188)" .
+
+<http://www.gazzettaufficiale.it/eli/id/2026/06/27/26A02943/sg/ita>
+        rdf:type            eli:LegalExpression;
+        rdfs:label          "Liquidazione coatta amministrativa della «Il Mulino - Societa' cooperativa sociale in liquidazione», in Senna Lodigiana e nomina del commissario liquidatore. (26A02943)";
+        eli:is_embodied_by  <http://www.gazzettaufficiale.it/eli/id/2026/06/27/26A02943/sg/ita/html>;
+        eli:language        <http://publications.europa.eu/resource/authority/language/ITA>;
+        eli:publisher       <http://www.ipzs.it>;
+        eli:realizes        <http://www.gazzettaufficiale.it/eli/id/2026/06/27/26A02943/sg>;
+        eli:title           "Liquidazione coatta amministrativa della «Il Mulino - Societa' cooperativa sociale in liquidazione», in Senna Lodigiana e nomina del commissario liquidatore. (26A02943)" .
+
+<http://www.gazzettaufficiale.it/eli/id/2026/07/08/26A03353/sg>
+        rdf:type              eli:LegalResource;
+        rdfs:label            "Autorizzazione all'importazione parallela del medicinale per uso umano «Augmentin» (26A03353)";
+        eli:date_publication  "2026-07-08"^^xsd:date;
+        eli:id_local          "26A03353";
+        eli:is_realized_by    <http://www.gazzettaufficiale.it/eli/id/2026/07/08/26A03353/sg/ita>;
+        eli:title             "Autorizzazione all'importazione parallela del medicinale per uso umano «Augmentin» (26A03353)";
+        eli:type_document     <http://www.gazzettaufficiale.it/eli/tables/resource-type#COMUNICATO>;
+        eli:version           <http://www.gazzettaufficiale.it/eli/tables/versions#ORIGINAL>;
+        dcterms:source        <http://www.gazzettaufficiale.it/eli/id/2026/07/08/26A03353/SG> .
+
+<http://www.gazzettaufficiale.it/eli/id/2026/07/08/26A03466/sg/ita>
+        rdf:type            eli:LegalExpression;
+        rdfs:label          "Rinnovo dell'ordinanza n. 1/2026: «Piano di azione nazionale per la cattura, l'abbattimento e il destino delle carcasse di cinghiale nelle zone indenni da PSA». (Ordinanza n. 5/2026). (26A03466)";
+        eli:is_embodied_by  <http://www.gazzettaufficiale.it/eli/id/2026/07/08/26A03466/sg/ita/html>;
+        eli:language        <http://publications.europa.eu/resource/authority/language/ITA>;
+        eli:publisher       <http://www.ipzs.it>;
+        eli:realizes        <http://www.gazzettaufficiale.it/eli/id/2026/07/08/26A03466/sg>;
+        eli:title           "Rinnovo dell'ordinanza n. 1/2026: «Piano di azione nazionale per la cattura, l'abbattimento e il destino delle carcasse di cinghiale nelle zone indenni da PSA». (Ordinanza n. 5/2026). (26A03466)" .
+
+<http://www.gazzettaufficiale.it/eli/id/2026/07/09/26G00141/sg/ita>
+        rdf:type            eli:LegalExpression;
+        rdfs:label          "Disposizioni integrative e correttive al decreto legislativo 5 febbraio 2024, n. 20, recante istituzione dell'Autorita' Garante nazionale dei diritti delle persone con disabilita'. (26G00141)";
+        eli:is_embodied_by  <http://www.gazzettaufficiale.it/eli/id/2026/07/09/26G00141/sg/ita/html>;
+        eli:language        <http://publications.europa.eu/resource/authority/language/ITA>;
+        eli:publisher       <http://www.ipzs.it>;
+        eli:realizes        <http://www.gazzettaufficiale.it/eli/id/2026/07/09/26G00141/sg>;
+        eli:title           "Disposizioni integrative e correttive al decreto legislativo 5 febbraio 2024, n. 20, recante istituzione dell'Autorita' Garante nazionale dei diritti delle persone con disabilita'. (26G00141)" .
+
+<http://www.gazzettaufficiale.it/eli/id/2026/07/09/26A03400/sg>
+        rdf:type              eli:LegalResource;
+        rdfs:label            "Modifiche al decreto 5 aprile 2022 recante «Istituzione del Tavolo di lavoro permanente sulla certificazione di genere alle imprese». (26A03400)";
+        eli:date_document     "2026-06-11"^^xsd:date;
+        eli:date_publication  "2026-07-09"^^xsd:date;
+        eli:id_local          "26A03400";
+        eli:is_realized_by    <http://www.gazzettaufficiale.it/eli/id/2026/07/09/26A03400/sg/ita>;
+        eli:title             "Modifiche al decreto 5 aprile 2022 recante «Istituzione del Tavolo di lavoro permanente sulla certificazione di genere alle imprese». (26A03400)";
+        eli:type_document     <http://www.gazzettaufficiale.it/eli/tables/resource-type#DECRETO>;
+        eli:version           <http://www.gazzettaufficiale.it/eli/tables/versions#ORIGINAL>;
+        dcterms:source        <http://www.gazzettaufficiale.it/eli/id/2026/07/09/26A03400/SG> .
+
+<http://www.gazzettaufficiale.it/eli/id/2026/07/09/26A03467/sg>
+        rdf:type              eli:LegalResource;
+        rdfs:label            "Sostituzione dell'allegato della determina n. 819/2026 del 17 luglio 2026, concernente: «Aggiornamento Nota AIFA 39». (Determina n. 914/2026). (26A03467)";
+        eli:date_document     "2026-07-06"^^xsd:date;
+        eli:date_publication  "2026-07-09"^^xsd:date;
+        eli:id_local          "26A03467";
+        eli:is_realized_by    <http://www.gazzettaufficiale.it/eli/id/2026/07/09/26A03467/sg/ita>;
+        eli:title             "Sostituzione dell'allegato della determina n. 819/2026 del 17 luglio 2026, concernente: «Aggiornamento Nota AIFA 39». (Determina n. 914/2026). (26A03467)";
+        eli:type_document     <http://www.gazzettaufficiale.it/eli/tables/resource-type#DETERMINA>;
+        eli:version           <http://www.gazzettaufficiale.it/eli/tables/versions#ORIGINAL>;
+        dcterms:source        <http://www.gazzettaufficiale.it/eli/id/2026/07/09/26A03467/SG> .
+
+<http://www.gazzettaufficiale.it/eli/id/2026/07/08/26A03355/sg/ita/html>
+        rdf:type    eli:Format;
+        eli:format  <http://www.iana.org/assignments/media-types/text/html> .
+
+<http://www.gazzettaufficiale.it/eli/id/2026/06/27/26A03212/sg>
+        rdf:type              eli:LegalResource;
+        rdfs:label            "Autorizzazione all'importazione parallela del medicinale per uso umano «Imodium» (26A03212)";
+        eli:date_publication  "2026-06-27"^^xsd:date;
+        eli:id_local          "26A03212";
+        eli:is_realized_by    <http://www.gazzettaufficiale.it/eli/id/2026/06/27/26A03212/sg/ita>;
+        eli:title             "Autorizzazione all'importazione parallela del medicinale per uso umano «Imodium» (26A03212)";
+        eli:type_document     <http://www.gazzettaufficiale.it/eli/tables/resource-type#COMUNICATO>;
+        eli:version           <http://www.gazzettaufficiale.it/eli/tables/versions#ORIGINAL>;
+        dcterms:source        <http://www.gazzettaufficiale.it/eli/id/2026/06/27/26A03212/SG> .
+
+<http://www.gazzettaufficiale.it/eli/id/2026/07/08/26A03356/sg>
+        rdf:type              eli:LegalResource;
+        rdfs:label            "Autorizzazione all'importazione parallela del medicinale per uso umano «Proscar» (26A03356)";
+        eli:date_publication  "2026-07-08"^^xsd:date;
+        eli:id_local          "26A03356";
+        eli:is_realized_by    <http://www.gazzettaufficiale.it/eli/id/2026/07/08/26A03356/sg/ita>;
+        eli:title             "Autorizzazione all'importazione parallela del medicinale per uso umano «Proscar» (26A03356)";
+        eli:type_document     <http://www.gazzettaufficiale.it/eli/tables/resource-type#COMUNICATO>;
+        eli:version           <http://www.gazzettaufficiale.it/eli/tables/versions#ORIGINAL>;
+        dcterms:source        <http://www.gazzettaufficiale.it/eli/id/2026/07/08/26A03356/SG> .
+
+<http://www.gazzettaufficiale.it/eli/id/2026/07/09/26G00141/sg>
+        rdf:type              eli:LegalResource;
+        rdfs:label            "Disposizioni integrative e correttive al decreto legislativo 5 febbraio 2024, n. 20, recante istituzione dell'Autorita' Garante nazionale dei diritti delle persone con disabilita'. (26G00141)";
+        eli:date_document     "2026-06-18"^^xsd:date;
+        eli:date_publication  "2026-07-09"^^xsd:date;
+        eli:id_local          "26G00141";
+        eli:is_realized_by    <http://www.gazzettaufficiale.it/eli/id/2026/07/09/26G00141/sg/ita>;
+        eli:title             "Disposizioni integrative e correttive al decreto legislativo 5 febbraio 2024, n. 20, recante istituzione dell'Autorita' Garante nazionale dei diritti delle persone con disabilita'. (26G00141)";
+        eli:type_document     <http://www.gazzettaufficiale.it/eli/tables/resource-type#DECRETO_LEGISLATIVO>;
+        eli:version           <http://www.gazzettaufficiale.it/eli/tables/versions#ORIGINAL>;
+        dcterms:source        <http://www.gazzettaufficiale.it/eli/id/2026/07/09/26G00141/SG> .
+
+<http://www.gazzettaufficiale.it/eli/id/2026/07/08/26A03443/sg/ita/html>
+        rdf:type    eli:Format;
+        eli:format  <http://www.iana.org/assignments/media-types/text/html> .
+
+<http://www.gazzettaufficiale.it/eli/id/2026/06/20/26A03033/sg/ita/html>
+        rdf:type    eli:Format;
+        eli:format  <http://www.iana.org/assignments/media-types/text/html> .
