@@ -39,3 +39,9 @@ jena-git-project/src/eli_metadata_generated.ttl
 jena-git-project/output/
 jena-git-project/data/reports/
 jena-git-project/data/registry/reports/
+ngrok-demo.log
+ngrok-demo.err.log
+PROJECT_MANUAL.md
+docs/PROGRESS_LOG.md
+ngrok-demo.log
+ngrok-demo.err.log
