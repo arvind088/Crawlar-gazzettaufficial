@@ -1,7 +1,6 @@
 package it.legislation.web;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -11,10 +10,7 @@ import org.apache.jena.query.QueryExecution;
 import org.apache.jena.query.QueryExecutionFactory;
 import org.apache.jena.query.QuerySolution;
 import org.apache.jena.query.ResultSet;
-import org.apache.jena.rdf.model.Model;
-import org.apache.jena.rdf.model.ModelFactory;
-import org.apache.jena.riot.Lang;
-import org.apache.jena.riot.RDFDataMgr;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import it.legislation.crawler.RdfModelBuilder;
@@ -22,29 +18,30 @@ import it.legislation.crawler.RdfModelBuilder;
 @Service
 public class NormattivaQueryService {
 
-    private static final Path NORMATTIVA_MODIFICATIONS = Path.of("data", "rdf", "normattiva_modifications.ttl");
-    private static final Path NORMATTIVA_AUTO_MODIFICATIONS = Path.of("data", "rdf", "normattiva_modifications_auto.ttl");
+    private final Tdb2DatasetService datasetService;
 
-    private final List<Path> modificationPaths;
-
-    public NormattivaQueryService() {
-        this(List.of(NORMATTIVA_MODIFICATIONS, NORMATTIVA_AUTO_MODIFICATIONS));
+    @Autowired
+    public NormattivaQueryService(Tdb2DatasetService datasetService) {
+        this.datasetService = datasetService;
     }
 
-    NormattivaQueryService(Path modificationsPath) {
+    NormattivaQueryService(Path modificationsPath) throws IOException {
         this(List.of(modificationsPath));
     }
 
-    NormattivaQueryService(List<Path> modificationPaths) {
-        this.modificationPaths = List.copyOf(modificationPaths);
+    NormattivaQueryService(List<Path> modificationPaths) throws IOException {
+        this(Tdb2DatasetService.inMemoryForRdfPaths(modificationPaths));
+    }
+
+    NormattivaQueryService(Path datasetPath, List<Path> modificationPaths) throws IOException {
+        this(Tdb2DatasetService.forRdfPaths(datasetPath, modificationPaths));
     }
 
     public List<NormattivaModificationSummary> listModifications(int limit) throws IOException {
-        if (modificationPaths.stream().noneMatch(Files::exists)) {
+        if (datasetService.status().loadedFiles().isEmpty()) {
             return List.of();
         }
 
-        Model model = loadModel();
         int safeLimit = Math.max(1, Math.min(limit, 100));
         String queryText = """
                 PREFIX eli: <%s>
@@ -59,27 +56,20 @@ public class NormattivaQueryService {
                 LIMIT %d
                 """.formatted(RdfModelBuilder.ELI_NS, RdfModelBuilder.PROJECT_NS, safeLimit);
 
-        List<NormattivaModificationSummary> rows = new ArrayList<>();
-        try (QueryExecution execution = QueryExecutionFactory.create(queryText, model)) {
-            ResultSet resultSet = execution.execSelect();
-            while (resultSet.hasNext()) {
-                rows.add(toSummary(resultSet.nextSolution()));
+        return datasetService.read(dataset -> {
+            List<NormattivaModificationSummary> rows = new ArrayList<>();
+            try (QueryExecution execution = QueryExecutionFactory.create(queryText, dataset)) {
+                ResultSet resultSet = execution.execSelect();
+                while (resultSet.hasNext()) {
+                    rows.add(toSummary(resultSet.nextSolution()));
+                }
             }
-        }
-        return rows;
+            return rows;
+        });
     }
 
-    private Model loadModel() throws IOException {
-        Model model = ModelFactory.createDefaultModel();
-        for (Path modificationsPath : modificationPaths) {
-            if (!Files.exists(modificationsPath)) {
-                continue;
-            }
-            try (InputStream inputStream = Files.newInputStream(modificationsPath)) {
-                RDFDataMgr.read(model, inputStream, Lang.TURTLE);
-            }
-        }
-        return model;
+    void closeForTests() {
+        datasetService.close();
     }
 
     private NormattivaModificationSummary toSummary(QuerySolution solution) {
