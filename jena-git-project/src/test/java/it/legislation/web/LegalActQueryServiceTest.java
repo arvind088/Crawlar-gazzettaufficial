@@ -7,8 +7,10 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.List;
 
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
@@ -16,6 +18,13 @@ class LegalActQueryServiceTest {
 
     @TempDir
     Path tempDir;
+
+    private final List<LegalActQueryService> services = new ArrayList<>();
+
+    @AfterEach
+    void closeServices() {
+        services.forEach(LegalActQueryService::closeForTests);
+    }
 
     @Test
     void searchesLegalActsFromGeneratedTurtle() throws Exception {
@@ -36,7 +45,7 @@ class LegalActQueryServiceTest {
                   dcterms:source <http://www.gazzettaufficiale.it/eli/id/2026/06/12/26G00117/SG> .
                 """, StandardCharsets.UTF_8);
 
-        LegalActQueryService service = new LegalActQueryService(List.of(turtle));
+        LegalActQueryService service = service(turtle);
 
         List<LegalActSummary> results = service.searchActs("melanoma", 10);
 
@@ -63,7 +72,7 @@ class LegalActQueryServiceTest {
                   eli:type_document <http://www.gazzettaufficiale.it/eli/tables/resource-type#DECRETO> .
                 """, StandardCharsets.UTF_8);
 
-        LegalActQueryService service = new LegalActQueryService(List.of(turtle));
+        LegalActQueryService service = service(turtle);
 
         SparqlQueryResult result = service.executeSelectQuery("""
                 PREFIX eli: <http://data.europa.eu/eli/ontology#>
@@ -99,7 +108,7 @@ class LegalActQueryServiceTest {
                   ilg:modifiedBy <http://www.gazzettaufficiale.it/eli/id/2025/03/01/25G00028/sg> .
                 """, StandardCharsets.UTF_8);
 
-        LegalActQueryService service = new LegalActQueryService(List.of(turtle));
+        LegalActQueryService service = service(turtle);
 
         List<LegalActSummary> results = service.searchActs("25G00028", 10);
 
@@ -124,12 +133,18 @@ class LegalActQueryServiceTest {
                   eli:id_local "26A02811" .
                 """, StandardCharsets.UTF_8);
 
-        LegalActQueryService service = new LegalActQueryService(List.of(turtle));
+        LegalActQueryService service = service(turtle);
 
         String rdf = service.rdfForLocalId("26A02811").orElseThrow();
 
         assertTrue(rdf.contains("26A02811"));
         assertTrue(rdf.contains("Liquidazione coatta amministrativa"));
         assertTrue(service.rdfForLocalId("missing").isEmpty());
+    }
+
+    private LegalActQueryService service(Path turtle) throws Exception {
+        LegalActQueryService service = new LegalActQueryService(List.of(turtle));
+        services.add(service);
+        return service;
     }
 }
