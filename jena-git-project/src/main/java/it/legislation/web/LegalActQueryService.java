@@ -1,7 +1,6 @@
 package it.legislation.web;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.StringWriter;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -11,8 +10,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-import org.apache.jena.query.Query;
 import org.apache.jena.query.ParameterizedSparqlString;
+import org.apache.jena.query.Query;
 import org.apache.jena.query.QueryExecution;
 import org.apache.jena.query.QueryExecutionFactory;
 import org.apache.jena.query.QueryFactory;
@@ -22,39 +21,39 @@ import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.RDFNode;
 import org.apache.jena.rdf.model.Resource;
-import org.apache.jena.riot.Lang;
 import org.apache.jena.riot.RDFDataMgr;
 import org.apache.jena.riot.RDFFormat;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Service
 public class LegalActQueryService {
 
-    private static final Path GAZZETTA_DELTA = Path.of("data", "rdf", "gazzetta_metadata_delta.ttl");
-    private static final Path NORMATTIVA_MODIFICATIONS = Path.of("data", "rdf", "normattiva_modifications.ttl");
-    private static final Path NORMATTIVA_AUTO_MODIFICATIONS = Path.of("data", "rdf", "normattiva_modifications_auto.ttl");
+    private final Tdb2DatasetService datasetService;
 
-    private final List<Path> rdfPaths;
-
-    public LegalActQueryService() {
-        this(List.of(GAZZETTA_DELTA, NORMATTIVA_MODIFICATIONS, NORMATTIVA_AUTO_MODIFICATIONS));
+    @Autowired
+    public LegalActQueryService(Tdb2DatasetService datasetService) {
+        this.datasetService = datasetService;
     }
 
-    LegalActQueryService(List<Path> rdfPaths) {
-        this.rdfPaths = List.copyOf(rdfPaths);
+    LegalActQueryService(List<Path> rdfPaths) throws IOException {
+        this(Tdb2DatasetService.inMemoryForRdfPaths(rdfPaths));
+    }
+
+    LegalActQueryService(Path datasetPath, List<Path> rdfPaths) throws IOException {
+        this(Tdb2DatasetService.forRdfPaths(datasetPath, rdfPaths));
     }
 
     public DataStatus status() throws IOException {
-        LoadResult loadResult = loadData();
+        Tdb2DatasetService.LoadStatus loadResult = datasetService.status();
         return new DataStatus(
-                loadResult.model().size(),
+                loadResult.triples(),
                 loadResult.loadedFiles(),
                 loadResult.missingFiles()
         );
     }
 
     public List<LegalActSummary> searchActs(String search, int limit) throws IOException {
-        Model model = loadData().model();
         int safeLimit = Math.max(1, Math.min(limit, 100));
 
         String queryText = """
@@ -94,14 +93,16 @@ public class LegalActQueryService {
         ParameterizedSparqlString query = new ParameterizedSparqlString(queryText);
         query.setLiteral("needle", normalizeSearch(search));
 
-        List<LegalActSummary> results = new ArrayList<>();
-        try (QueryExecution execution = QueryExecutionFactory.create(query.asQuery(), model)) {
-            ResultSet resultSet = execution.execSelect();
-            while (resultSet.hasNext()) {
-                results.add(toSummary(resultSet.nextSolution()));
+        return datasetService.read(dataset -> {
+            List<LegalActSummary> results = new ArrayList<>();
+            try (QueryExecution execution = QueryExecutionFactory.create(query.asQuery(), dataset)) {
+                ResultSet resultSet = execution.execSelect();
+                while (resultSet.hasNext()) {
+                    results.add(toSummary(resultSet.nextSolution()));
+                }
             }
-        }
-        return results;
+            return results;
+        });
     }
 
     public Optional<LegalActSummary> findByLocalId(String localId) throws IOException {
@@ -109,7 +110,6 @@ public class LegalActQueryService {
             return Optional.empty();
         }
 
-        Model model = loadData().model();
         String queryText = """
                 PREFIX eli: <http://data.europa.eu/eli/ontology#>
                 PREFIX ilg: <http://example.org/italian-legislation/ontology#>
@@ -142,13 +142,15 @@ public class LegalActQueryService {
         ParameterizedSparqlString query = new ParameterizedSparqlString(queryText);
         query.setLiteral("requestedLocalId", localId.trim());
 
-        try (QueryExecution execution = QueryExecutionFactory.create(query.asQuery(), model)) {
-            ResultSet resultSet = execution.execSelect();
-            if (resultSet.hasNext()) {
-                return Optional.of(toSummary(resultSet.nextSolution()));
+        return datasetService.read(dataset -> {
+            try (QueryExecution execution = QueryExecutionFactory.create(query.asQuery(), dataset)) {
+                ResultSet resultSet = execution.execSelect();
+                if (resultSet.hasNext()) {
+                    return Optional.of(toSummary(resultSet.nextSolution()));
+                }
             }
-        }
-        return Optional.empty();
+            return Optional.empty();
+        });
     }
 
     public SparqlQueryResult executeSelectQuery(String queryText) throws IOException {
@@ -161,24 +163,25 @@ public class LegalActQueryService {
             return SparqlQueryResult.error("Query error: only SELECT queries are supported in this explorer.");
         }
 
-        Model model = loadData().model();
-        List<Map<String, String>> rows = new ArrayList<>();
-        List<String> columns;
+        return datasetService.read(dataset -> {
+            List<Map<String, String>> rows = new ArrayList<>();
+            List<String> columns;
 
-        try (QueryExecution execution = QueryExecutionFactory.create(query, model)) {
-            ResultSet resultSet = execution.execSelect();
-            columns = new ArrayList<>(resultSet.getResultVars());
-            while (resultSet.hasNext() && rows.size() < 100) {
-                QuerySolution solution = resultSet.nextSolution();
-                Map<String, String> row = new LinkedHashMap<>();
-                for (String column : columns) {
-                    row.put(column, value(solution, column));
+            try (QueryExecution execution = QueryExecutionFactory.create(query, dataset)) {
+                ResultSet resultSet = execution.execSelect();
+                columns = new ArrayList<>(resultSet.getResultVars());
+                while (resultSet.hasNext() && rows.size() < 100) {
+                    QuerySolution solution = resultSet.nextSolution();
+                    Map<String, String> row = new LinkedHashMap<>();
+                    for (String column : columns) {
+                        row.put(column, value(solution, column));
+                    }
+                    rows.add(row);
                 }
-                rows.add(row);
             }
-        }
 
-        return new SparqlQueryResult(columns, rows, null);
+            return new SparqlQueryResult(columns, rows, null);
+        });
     }
 
     public Optional<String> rdfForLocalId(String localId) throws IOException {
@@ -187,19 +190,22 @@ public class LegalActQueryService {
             return Optional.empty();
         }
 
-        Model source = loadData().model();
-        Model selected = ModelFactory.createDefaultModel();
-        selected.setNsPrefixes(source.getNsPrefixMap());
+        Model selected = datasetService.read(dataset -> {
+            Model source = dataset.getDefaultModel();
+            Model model = ModelFactory.createDefaultModel();
+            model.setNsPrefixes(source.getNsPrefixMap());
 
-        Resource act = source.createResource(maybeAct.get().uri());
-        source.listStatements(act, null, (RDFNode) null).forEachRemaining(statement -> {
-            selected.add(statement);
-            if (statement.getObject().isResource()) {
-                Resource linkedResource = statement.getObject().asResource();
-                source.listStatements(linkedResource, null, (RDFNode) null).forEachRemaining(selected::add);
-            }
+            Resource act = source.createResource(maybeAct.get().uri());
+            source.listStatements(act, null, (RDFNode) null).forEachRemaining(statement -> {
+                model.add(statement);
+                if (statement.getObject().isResource()) {
+                    Resource linkedResource = statement.getObject().asResource();
+                    source.listStatements(linkedResource, null, (RDFNode) null).forEachRemaining(model::add);
+                }
+            });
+            source.listStatements(null, null, act).forEachRemaining(model::add);
+            return model;
         });
-        source.listStatements(null, null, act).forEachRemaining(selected::add);
 
         if (selected.isEmpty()) {
             return Optional.empty();
@@ -210,23 +216,8 @@ public class LegalActQueryService {
         return Optional.of(writer.toString());
     }
 
-    private LoadResult loadData() throws IOException {
-        Model model = ModelFactory.createDefaultModel();
-        List<String> loadedFiles = new ArrayList<>();
-        List<String> missingFiles = new ArrayList<>();
-
-        for (Path rdfPath : rdfPaths) {
-            if (Files.exists(rdfPath)) {
-                try (InputStream inputStream = Files.newInputStream(rdfPath)) {
-                    RDFDataMgr.read(model, inputStream, Lang.TURTLE);
-                }
-                loadedFiles.add(rdfPath.toAbsolutePath().normalize().toString());
-            } else {
-                missingFiles.add(rdfPath.toAbsolutePath().normalize().toString());
-            }
-        }
-
-        return new LoadResult(model, loadedFiles, missingFiles);
+    void closeForTests() {
+        datasetService.close();
     }
 
     private String normalizeSearch(String search) {
@@ -271,12 +262,5 @@ public class LegalActQueryService {
             return node.asLiteral().getLexicalForm();
         }
         return node.toString();
-    }
-
-    private record LoadResult(
-            Model model,
-            List<String> loadedFiles,
-            List<String> missingFiles
-    ) {
     }
 }

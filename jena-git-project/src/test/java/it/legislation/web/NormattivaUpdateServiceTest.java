@@ -17,24 +17,31 @@ class NormattivaUpdateServiceTest {
 
     @Test
     void runsNormattivaUpdateAndStoresLatestResult() throws Exception {
-        LegalActQueryService queryService = new LegalActQueryService(List.of(tempDir.resolve("missing.ttl")));
-        NormattivaUpdateService service = new NormattivaUpdateService(
-                queryService,
-                (sourceUrl, updatesOutput, relationsOutput, rdfOutput) -> new NormattivaUpdateRunner.Result(
-                        sourceUrl,
-                        8,
-                        3,
-                        updatesOutput.toString(),
-                        relationsOutput.toString(),
-                        rdfOutput.toString()
-                )
+        LegalActQueryService queryService = new LegalActQueryService(
+                List.of(tempDir.resolve("missing.ttl"))
         );
+        try {
+            NormattivaUpdateService service = new NormattivaUpdateService(
+                    queryService,
+                    (sourceUrl, updatesOutput, relationsOutput, rdfOutput) -> new NormattivaUpdateRunner.Result(
+                            sourceUrl,
+                            8,
+                            3,
+                            updatesOutput.toString(),
+                            relationsOutput.toString(),
+                            rdfOutput.toString()
+                    )
+            );
 
-        NormattivaUpdateResult result = service.runUpdate();
+            NormattivaUpdateResult result = service.runUpdate();
 
-        assertEquals("COMPLETED", result.state());
-        assertEquals(8, result.updatesRead());
-        assertEquals(3, result.relationRows());
-        assertEquals(result, service.lastResult());
+            assertEquals("COMPLETED", result.state());
+            assertEquals(8, result.updatesRead());
+            assertEquals(3, result.relationRows());
+            assertEquals(result, service.lastResult());
+        } finally {
+            queryService.closeForTests();
+        }
     }
+
 }

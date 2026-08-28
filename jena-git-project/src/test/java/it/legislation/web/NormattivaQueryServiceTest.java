@@ -7,6 +7,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
@@ -14,6 +15,15 @@ class NormattivaQueryServiceTest {
 
     @TempDir
     Path tempDir;
+
+    private NormattivaQueryService service;
+
+    @AfterEach
+    void closeService() {
+        if (service != null) {
+            service.closeForTests();
+        }
+    }
 
     @Test
     void listsModificationRelationshipsFromTurtle() throws Exception {
@@ -30,7 +40,7 @@ class NormattivaQueryServiceTest {
                   ilg:modifies <http://www.gazzettaufficiale.it/eli/id/2025/03/26/25G00044/sg> .
                 """, StandardCharsets.UTF_8);
 
-        NormattivaQueryService service = new NormattivaQueryService(turtle);
+        service = new NormattivaQueryService(List.of(turtle));
 
         List<NormattivaModificationSummary> rows = service.listModifications(10);
 
@@ -42,4 +52,5 @@ class NormattivaQueryServiceTest {
         assertEquals("conversion", rows.get(1).relationship());
         assertEquals("25G00030", rows.get(1).targetLocalId());
     }
+
 }
