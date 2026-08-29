@@ -153,6 +153,44 @@ public class LegalActQueryService {
         });
     }
 
+    public Optional<LinkedDataResource> findLinkedDataResource(String identifier) throws IOException {
+        if (identifier == null || identifier.isBlank()) {
+            return Optional.empty();
+        }
+
+        String requested = identifier.trim();
+        Optional<LegalActSummary> summary = isHttpUri(requested) ? findByUri(requested) : findByLocalId(requested);
+        String resourceUri = summary.map(LegalActSummary::uri)
+                .filter(uri -> uri != null && !uri.isBlank())
+                .orElse(isHttpUri(requested) ? requested : null);
+
+        if (resourceUri == null || resourceUri.isBlank()) {
+            return Optional.empty();
+        }
+
+        return datasetService.read(dataset -> {
+            if (!resourceExists(dataset, resourceUri)) {
+                return Optional.empty();
+            }
+
+            LegalActSummary resolved = summary.orElseGet(() -> summaryForUri(dataset, resourceUri));
+            String localId = resolved.localId() == null || resolved.localId().isBlank()
+                    ? localIdFromUri(resourceUri)
+                    : resolved.localId();
+            String title = resolved.title();
+
+            return Optional.of(new LinkedDataResource(
+                    resourceUri,
+                    localId,
+                    title,
+                    expressionNodes(dataset, resourceUri),
+                    manifestationNodes(dataset, resourceUri),
+                    outgoingRelations(dataset, resourceUri),
+                    incomingRelations(dataset, resourceUri)
+            ));
+        });
+    }
+
     public SparqlQueryResult executeSelectQuery(String queryText) throws IOException {
         if (queryText == null || queryText.isBlank()) {
             return SparqlQueryResult.error("Query error: enter a SPARQL SELECT query.");
@@ -236,6 +274,223 @@ public class LegalActQueryService {
                 localId == null || localId.isBlank() ? localIdFromUri(uri) : localId,
                 value(solution, "source")
         );
+    }
+
+    private Optional<LegalActSummary> findByUri(String uri) throws IOException {
+        return datasetService.read(dataset -> {
+            LegalActSummary summary = summaryForUri(dataset, uri);
+            return summary.uri() == null ? Optional.empty() : Optional.of(summary);
+        });
+    }
+
+    private LegalActSummary summaryForUri(org.apache.jena.query.Dataset dataset, String uri) {
+        String queryText = """
+                PREFIX eli: <http://data.europa.eu/eli/ontology#>
+                PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+                PREFIX dcterms: <http://purl.org/dc/terms/>
+
+                SELECT ?label ?publicationDate ?documentDate ?type ?localId ?source
+                WHERE {
+                  OPTIONAL { ?resource rdfs:label ?label . }
+                  OPTIONAL { ?resource eli:date_publication ?publicationDate . }
+                  OPTIONAL { ?resource eli:date_document ?documentDate . }
+                  OPTIONAL { ?resource eli:type_document ?type . }
+                  OPTIONAL { ?resource eli:id_local ?localId . }
+                  OPTIONAL { ?resource dcterms:source ?source . }
+                }
+                LIMIT 1
+                """;
+
+        ParameterizedSparqlString query = new ParameterizedSparqlString(queryText);
+        query.setIri("resource", uri);
+
+        try (QueryExecution execution = QueryExecutionFactory.create(query.asQuery(), dataset)) {
+            ResultSet resultSet = execution.execSelect();
+            if (resultSet.hasNext()) {
+                QuerySolution solution = resultSet.nextSolution();
+                String localId = value(solution, "localId");
+                return new LegalActSummary(
+                        uri,
+                        value(solution, "label"),
+                        value(solution, "publicationDate"),
+                        value(solution, "documentDate"),
+                        value(solution, "type"),
+                        localId == null || localId.isBlank() ? localIdFromUri(uri) : localId,
+                        value(solution, "source")
+                );
+            }
+        }
+
+        return new LegalActSummary(uri, null, null, null, null, localIdFromUri(uri), null);
+    }
+
+    private boolean resourceExists(org.apache.jena.query.Dataset dataset, String uri) {
+        String queryText = """
+                ASK {
+                  { ?resource ?predicate ?object . }
+                  UNION
+                  { ?subject ?predicate ?resource . }
+                }
+                """;
+
+        ParameterizedSparqlString query = new ParameterizedSparqlString(queryText);
+        query.setIri("resource", uri);
+
+        try (QueryExecution execution = QueryExecutionFactory.create(query.asQuery(), dataset)) {
+            return execution.execAsk();
+        }
+    }
+
+    private List<LinkedDataNode> expressionNodes(org.apache.jena.query.Dataset dataset, String resourceUri) {
+        String queryText = """
+                PREFIX eli: <http://data.europa.eu/eli/ontology#>
+                PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+                PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+
+                SELECT DISTINCT ?node ?label ?type (COALESCE(?expressionVersion, ?workVersion) AS ?version) ?language
+                WHERE {
+                  ?resource eli:is_realized_by ?node .
+                  OPTIONAL { ?node rdfs:label ?label . }
+                  OPTIONAL { ?node rdf:type ?type . }
+                  OPTIONAL { ?node eli:version ?expressionVersion . }
+                  OPTIONAL { ?resource eli:version ?workVersion . }
+                  OPTIONAL { ?node eli:language ?language . }
+                }
+                ORDER BY ?node
+                """;
+
+        ParameterizedSparqlString query = new ParameterizedSparqlString(queryText);
+        query.setIri("resource", resourceUri);
+        return linkedNodes(dataset, query);
+    }
+
+    private List<LinkedDataNode> manifestationNodes(org.apache.jena.query.Dataset dataset, String resourceUri) {
+        String queryText = """
+                PREFIX eli: <http://data.europa.eu/eli/ontology#>
+                PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+                PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+
+                SELECT DISTINCT ?node ?label ?type ?format ?language
+                WHERE {
+                  ?resource eli:is_realized_by ?expression .
+                  ?expression eli:is_embodied_by ?node .
+                  OPTIONAL { ?node rdfs:label ?label . }
+                  OPTIONAL { ?node rdf:type ?type . }
+                  OPTIONAL { ?node eli:format ?format . }
+                  OPTIONAL { ?expression eli:language ?language . }
+                }
+                ORDER BY ?node
+                """;
+
+        ParameterizedSparqlString query = new ParameterizedSparqlString(queryText);
+        query.setIri("resource", resourceUri);
+        return linkedNodes(dataset, query);
+    }
+
+    private List<LinkedDataRelation> outgoingRelations(org.apache.jena.query.Dataset dataset, String resourceUri) {
+        String queryText = """
+                PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+
+                SELECT DISTINCT ?predicate ?target ?label
+                WHERE {
+                  ?resource ?predicate ?target .
+                  FILTER(isIRI(?target))
+                  OPTIONAL { ?target rdfs:label ?label . }
+                }
+                ORDER BY ?predicate ?target
+                LIMIT 100
+                """;
+
+        ParameterizedSparqlString query = new ParameterizedSparqlString(queryText);
+        query.setIri("resource", resourceUri);
+        return relations(dataset, query, "target");
+    }
+
+    private List<LinkedDataRelation> incomingRelations(org.apache.jena.query.Dataset dataset, String resourceUri) {
+        String queryText = """
+                PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+
+                SELECT DISTINCT ?predicate ?source ?label
+                WHERE {
+                  ?source ?predicate ?resource .
+                  FILTER(isIRI(?source))
+                  OPTIONAL { ?source rdfs:label ?label . }
+                }
+                ORDER BY ?predicate ?source
+                LIMIT 100
+                """;
+
+        ParameterizedSparqlString query = new ParameterizedSparqlString(queryText);
+        query.setIri("resource", resourceUri);
+        return relations(dataset, query, "source");
+    }
+
+    private List<LinkedDataNode> linkedNodes(org.apache.jena.query.Dataset dataset, ParameterizedSparqlString query) {
+        List<LinkedDataNode> nodes = new ArrayList<>();
+        try (QueryExecution execution = QueryExecutionFactory.create(query.asQuery(), dataset)) {
+            ResultSet resultSet = execution.execSelect();
+            while (resultSet.hasNext()) {
+                QuerySolution solution = resultSet.nextSolution();
+                String uri = value(solution, "node");
+                nodes.add(new LinkedDataNode(
+                        uri,
+                        value(solution, "label"),
+                        localIdFromUri(uri),
+                        value(solution, "type"),
+                        value(solution, "version"),
+                        value(solution, "language"),
+                        value(solution, "format")
+                ));
+            }
+        }
+        return nodes;
+    }
+
+    private List<LinkedDataRelation> relations(
+            org.apache.jena.query.Dataset dataset,
+            ParameterizedSparqlString query,
+            String resourceColumn
+    ) {
+        List<LinkedDataRelation> relations = new ArrayList<>();
+        try (QueryExecution execution = QueryExecutionFactory.create(query.asQuery(), dataset)) {
+            ResultSet resultSet = execution.execSelect();
+            while (resultSet.hasNext()) {
+                QuerySolution solution = resultSet.nextSolution();
+                String predicate = value(solution, "predicate");
+                String resourceUri = value(solution, resourceColumn);
+                relations.add(new LinkedDataRelation(
+                        predicate,
+                        compactPredicate(predicate),
+                        resourceUri,
+                        value(solution, "label"),
+                        localIdFromUri(resourceUri)
+                ));
+            }
+        }
+        return relations;
+    }
+
+    private String compactPredicate(String predicate) {
+        if (predicate == null) {
+            return null;
+        }
+        Map<String, String> namespaces = Map.of(
+                "http://data.europa.eu/eli/ontology#", "eli:",
+                "http://purl.org/dc/terms/", "dcterms:",
+                "http://www.w3.org/2000/01/rdf-schema#", "rdfs:",
+                "http://www.w3.org/1999/02/22-rdf-syntax-ns#", "rdf:",
+                "http://example.org/italian-legislation/ontology#", "ilg:"
+        );
+        for (Map.Entry<String, String> entry : namespaces.entrySet()) {
+            if (predicate.startsWith(entry.getKey())) {
+                return entry.getValue() + predicate.substring(entry.getKey().length());
+            }
+        }
+        return predicate;
+    }
+
+    private boolean isHttpUri(String value) {
+        return value.startsWith("http://") || value.startsWith("https://");
     }
 
     private String localIdFromUri(String uri) {

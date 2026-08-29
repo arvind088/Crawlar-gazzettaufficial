@@ -172,6 +172,13 @@ public class LegalActApiController {
                 .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
+    @GetMapping("/resources")
+    public ResponseEntity<LinkedDataResource> findLinkedDataResource(@RequestParam String id) throws IOException {
+        return queryService.findLinkedDataResource(id)
+                .map(ResponseEntity::ok)
+                .orElseGet(() -> ResponseEntity.notFound().build());
+    }
+
     @GetMapping("/acts/{localId}/rdf")
     public ResponseEntity<String> rdfForAct(
             @PathVariable String localId,

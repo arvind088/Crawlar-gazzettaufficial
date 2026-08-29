@@ -108,6 +108,9 @@ function App() {
   const [rdfSources, setRdfSources] = useState([]);
   const [acts, setActs] = useState([]);
   const [selected, setSelected] = useState(null);
+  const [resourceDetail, setResourceDetail] = useState(null);
+  const [resourceLoading, setResourceLoading] = useState(false);
+  const [resourceError, setResourceError] = useState("");
   const [search, setSearch] = useState("");
   const [yearFilter, setYearFilter] = useState("");
   const [typeFilter, setTypeFilter] = useState("");
@@ -197,6 +200,38 @@ function App() {
     }
     const rows = await response.json();
     setRdfSources(Array.isArray(rows) ? rows : []);
+  }, []);
+
+  const loadResourceDetail = useCallback(async (identifier) => {
+    if (!identifier) {
+      setResourceDetail(null);
+      setResourceError("");
+      return null;
+    }
+
+    setResourceLoading(true);
+    setResourceError("");
+    try {
+      const params = new URLSearchParams({ id: identifier });
+      const response = await fetch(`/api/resources?${params.toString()}`);
+      if (response.status === 404) {
+        setResourceDetail(null);
+        setResourceError("No linked data found for this resource.");
+        return null;
+      }
+      if (!response.ok) {
+        throw new Error("Linked-data request failed");
+      }
+      const detail = await response.json();
+      setResourceDetail(detail);
+      return detail;
+    } catch (err) {
+      setResourceDetail(null);
+      setResourceError(err.message || "Linked-data request failed");
+      return null;
+    } finally {
+      setResourceLoading(false);
+    }
   }, []);
 
   const runSearch = useCallback(async (query, options = {}) => {
@@ -337,6 +372,21 @@ function App() {
     setActiveTab("sparql");
   }, []);
 
+  const navigateResource = useCallback(async (identifier) => {
+    const detail = await loadResourceDetail(identifier);
+    if (detail) {
+      setSelected({
+        uri: detail.uri,
+        title: detail.title,
+        localId: detail.localId,
+        publicationDate: null,
+        documentDate: null,
+        type: null,
+        source: null
+      });
+    }
+  }, [loadResourceDetail]);
+
   useEffect(() => {
     loadStatus().catch((err) => setError(err.message || "Status request failed"));
     loadCrawlStatus().catch((err) => setError(err.message || "Crawler status request failed"));
@@ -349,6 +399,10 @@ function App() {
     loadRdfSources().catch((err) => setError(err.message || "RDF sources request failed"));
     runSearch("");
   }, [loadAutomationStatus, loadCrawlStatus, loadLatestArchiveRun, loadLatestNormattivaUpdate, loadLatestUpdate, loadModifications, loadNormattivaAutomationStatus, loadRdfSources, loadStatus, runSearch]);
+
+  useEffect(() => {
+    loadResourceDetail(selected?.uri || displayLocalId(selected));
+  }, [loadResourceDetail, selected]);
 
   const filteredActs = useMemo(() => acts.filter((act) => {
     const yearMatch = !yearFilter || String(act.publicationDate || "").startsWith(yearFilter);
@@ -370,6 +424,9 @@ function App() {
     error,
     loading,
     modifications,
+    resourceDetail,
+    resourceError,
+    resourceLoading,
     search,
     selected,
     sourceFilter,
@@ -381,6 +438,7 @@ function App() {
     onSearchChange: setSearch,
     onRunSearch: runSearch,
     onRunSparqlForAct: runSparqlForAct,
+    onNavigateResource: navigateResource,
     onSelect: setSelected,
     onSourceFilterChange: setSourceFilter,
     onTypeFilterChange: setTypeFilter,
@@ -462,7 +520,15 @@ function SearchPage(props) {
     ),
     e("div", { className: "content-grid" },
       e(SearchPanel, props),
-      e(DetailPanel, { act: props.selected, modifications: props.modifications, onRunSparqlForAct: props.onRunSparqlForAct })
+      e(DetailPanel, {
+        act: props.selected,
+        modifications: props.modifications,
+        resourceDetail: props.resourceDetail,
+        resourceError: props.resourceError,
+        resourceLoading: props.resourceLoading,
+        onNavigateResource: props.onNavigateResource,
+        onRunSparqlForAct: props.onRunSparqlForAct
+      })
     )
   );
 }
@@ -612,7 +678,15 @@ function ResultTable({ acts, selected, onSelect }) {
   );
 }
 
-function DetailPanel({ act, modifications, onRunSparqlForAct }) {
+function DetailPanel({
+  act,
+  modifications,
+  resourceDetail,
+  resourceError,
+  resourceLoading,
+  onNavigateResource,
+  onRunSparqlForAct
+}) {
   return e("aside", { className: "panel detail-panel" },
     e("div", { className: "panel-heading" },
       e("div", { className: "heading-lockup" },
@@ -623,12 +697,29 @@ function DetailPanel({ act, modifications, onRunSparqlForAct }) {
         )
       )
     ),
-    act ? e(DetailView, { act, modifications, onRunSparqlForAct }) : e("div", { className: "empty-state" }, "Select a record from the results")
+    act ? e(DetailView, {
+      act,
+      modifications,
+      resourceDetail,
+      resourceError,
+      resourceLoading,
+      onNavigateResource,
+      onRunSparqlForAct
+    }) : e("div", { className: "empty-state" }, "Select a record from the results")
   );
 }
 
-function DetailView({ act, modifications, onRunSparqlForAct }) {
+function DetailView({
+  act,
+  modifications,
+  resourceDetail,
+  resourceError,
+  resourceLoading,
+  onNavigateResource,
+  onRunSparqlForAct
+}) {
   const relations = relatedModifications(act, modifications);
+  const detail = resourceDetail?.uri === act.uri ? resourceDetail : null;
   const fields = [
     ["Title", displayTitle(act)],
     ["Publication Date", act.publicationDate],
@@ -657,6 +748,46 @@ function DetailView({ act, modifications, onRunSparqlForAct }) {
       )
     ),
     e("div", { className: "detail-item" },
+      e("div", { className: "detail-label" }, "Expression Level"),
+      resourceLoading
+        ? e("div", { className: "detail-value muted-line" }, "Loading linked data...")
+        : e(LinkedNodeList, {
+            empty: resourceError || "No expression loaded",
+            nodes: detail?.expressions || [],
+            onNavigateResource
+          })
+    ),
+    e("div", { className: "detail-item" },
+      e("div", { className: "detail-label" }, "Manifestation Level"),
+      resourceLoading
+        ? e("div", { className: "detail-value muted-line" }, "Loading linked data...")
+        : e(LinkedNodeList, {
+            empty: resourceError || "No manifestation loaded",
+            nodes: detail?.manifestations || [],
+            onNavigateResource
+          })
+    ),
+    e("div", { className: "detail-item" },
+      e("div", { className: "detail-label" }, "Outgoing Linked Data"),
+      resourceLoading
+        ? e("div", { className: "detail-value muted-line" }, "Loading linked data...")
+        : e(LinkedRelationList, {
+            empty: resourceError || "No outgoing resource links",
+            relations: detail?.outgoingRelations || [],
+            onNavigateResource
+          })
+    ),
+    e("div", { className: "detail-item" },
+      e("div", { className: "detail-label" }, "Incoming Linked Data"),
+      resourceLoading
+        ? e("div", { className: "detail-value muted-line" }, "Loading linked data...")
+        : e(LinkedRelationList, {
+            empty: resourceError || "No incoming resource links",
+            relations: detail?.incomingRelations || [],
+            onNavigateResource
+          })
+    ),
+    e("div", { className: "detail-item" },
       e("div", { className: "detail-label" }, "Normattiva Relations"),
       relations.length
         ? e("div", { className: "relation-list" },
@@ -670,16 +801,64 @@ function DetailView({ act, modifications, onRunSparqlForAct }) {
     ),
     e("div", { className: "detail-actions" },
       e(LinkButton, { href: act.source || act.uri, icon: "external", label: "Open Gazzetta" }),
-      e(LinkButton, { href: actRdfUrl(act), icon: "link", label: "View RDF" }),
-      e("a", { className: "action-link secondary-link-inline", href: `${actRdfUrl(act)}?download=true` },
+      displayLocalId(act) ? e(LinkButton, { href: actRdfUrl(act), icon: "link", label: "View RDF" }) : null,
+      displayLocalId(act) ? e("a", { className: "action-link secondary-link-inline", href: `${actRdfUrl(act)}?download=true` },
         e(Icon, { name: "download" }),
         e("span", null, "Download TTL")
-      ),
+      ) : null,
       e("button", {
         className: "secondary-button",
         onClick: () => onRunSparqlForAct(act),
         type: "button"
       }, e(Icon, { name: "code" }), e("span", null, "Run SPARQL"))
+    )
+  );
+}
+
+function LinkedNodeList({ empty, nodes, onNavigateResource }) {
+  if (!nodes.length) {
+    return e("div", { className: "detail-value muted-line" }, empty);
+  }
+
+  return e("div", { className: "resource-node-list" },
+    nodes.map((node) =>
+      e("button", {
+        key: node.uri,
+        className: "resource-link-button",
+        onClick: () => onNavigateResource(node.uri),
+        title: node.uri,
+        type: "button"
+      },
+        e("span", { className: "resource-main" }, displayNodeTitle(node)),
+        e("span", { className: "resource-meta" },
+          [compactRdfName(node.version), compactRdfName(node.language), compactRdfName(node.format)]
+            .filter(Boolean)
+            .join(" | ") || compactUri(node.uri)
+        )
+      )
+    )
+  );
+}
+
+function LinkedRelationList({ empty, relations, onNavigateResource }) {
+  if (!relations.length) {
+    return e("div", { className: "detail-value muted-line" }, empty);
+  }
+
+  return e("div", { className: "linked-relation-list" },
+    relations.map((relation) =>
+      e("div", { key: `${relation.predicate}-${relation.resourceUri}`, className: "linked-relation-row" },
+        e("span", { className: "relation-predicate" }, relation.predicateLabel || compactRdfName(relation.predicate) || relation.predicate),
+        e("button", {
+          className: "resource-link-button relation-resource",
+          onClick: () => onNavigateResource(relation.resourceUri),
+          title: relation.resourceUri,
+          type: "button"
+        },
+          e("span", { className: "resource-main" }, relation.resourceLocalId || relation.resourceLabel || compactUri(relation.resourceUri)),
+          e("span", { className: "resource-meta" }, relation.resourceLabel || compactUri(relation.resourceUri))
+        )
+      )
     )
   );
 }
@@ -1197,10 +1376,16 @@ function hasDisplayMetadata(act) {
 }
 
 function displayLocalId(act) {
+  if (!act) {
+    return "";
+  }
   return act.localId || localIdFromUri(act.uri) || "Unknown ID";
 }
 
 function displayTitle(act) {
+  if (!act) {
+    return "Missing title";
+  }
   return act.title || "Missing title";
 }
 
@@ -1291,6 +1476,27 @@ function normattivaStatus(act, modifications) {
     row.targetUri === uri
   );
   return linked ? "Linked in loaded Normattiva relations" : "No loaded Normattiva relation";
+}
+
+function displayNodeTitle(node) {
+  return node?.localId || node?.label || compactUri(node?.uri) || "Resource";
+}
+
+function compactUri(uri) {
+  if (!uri) {
+    return "";
+  }
+  const compact = compactRdfName(uri);
+  if (compact) {
+    return compact;
+  }
+  const text = String(uri).replace(/\/$/, "");
+  const hash = text.lastIndexOf("#");
+  if (hash >= 0) {
+    return text.slice(hash + 1);
+  }
+  const slash = text.lastIndexOf("/");
+  return slash >= 0 ? text.slice(slash + 1) : text;
 }
 
 function actRdfUrl(act) {
