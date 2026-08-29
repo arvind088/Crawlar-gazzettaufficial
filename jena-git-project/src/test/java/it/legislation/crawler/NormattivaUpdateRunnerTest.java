@@ -8,6 +8,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.OffsetDateTime;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicReference;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -16,6 +17,89 @@ class NormattivaUpdateRunnerTest {
 
     @TempDir
     Path tempDir;
+
+    @Test
+    void buildsOfficialUpdatedActsEndpointAndRequestBody() {
+        String endpoint = NormattivaUpdateRunner.updatedActsEndpoint("https://api.normattiva.it/t/normattiva.api/");
+        String body = NormattivaUpdateRunner.updatedActsRequestBody(
+                OffsetDateTime.parse("2026-08-01T00:00:00Z"),
+                OffsetDateTime.parse("2026-08-02T00:00:00Z")
+        );
+
+        assertEquals("https://api.normattiva.it/t/normattiva.api/api/v1/ricerca/aggiornati", endpoint);
+        assertTrue(body.contains("\"dataInizioAggiornamento\":\"2026-08-01T00:00Z\""));
+        assertTrue(body.contains("\"dataFineAggiornamento\":\"2026-08-02T00:00Z\""));
+    }
+
+    @Test
+    void parsesOpenDataUpdatedActsResponse() throws Exception {
+        String json = """
+                {
+                  "listaAtti": [
+                    {
+                      "codiceRedazionale": "005G0104",
+                      "dataGU": "2005-05-16",
+                      "denominazioneAtto": "DECRETO LEGISLATIVO",
+                      "numeroAtto": "82",
+                      "titoloAtto": "Codice dell'amministrazione digitale",
+                      "dataEmanazione": "2005-03-07",
+                      "dataUltimaModifica": "2025-03-20",
+                      "ultimiAttiModificanti": "Versione 52"
+                    }
+                  ]
+                }
+                """;
+
+        List<NormattivaUpdateRunner.NormattivaOpenDataUpdate> updates =
+                NormattivaUpdateRunner.parseOpenDataUpdates(json);
+
+        assertEquals(1, updates.size());
+        assertEquals("005G0104", updates.get(0).codiceRedazionale());
+        assertEquals("Codice dell'amministrazione digitale", updates.get(0).titoloAtto());
+        assertEquals("2025-03-20", updates.get(0).dataUltimaModifica());
+    }
+
+    @Test
+    void runsOpenDataUpdateDiscoveryWithoutInferringRelations() throws Exception {
+        Path updatesPath = tempDir.resolve("normattiva_updates.tsv");
+        Path relationsPath = tempDir.resolve("normattiva_relations.tsv");
+        Path rdfPath = tempDir.resolve("normattiva_auto.ttl");
+        AtomicReference<String> requestedUrl = new AtomicReference<>();
+        AtomicReference<String> requestBody = new AtomicReference<>();
+
+        NormattivaUpdateRunner.Result result = NormattivaUpdateRunner.runOpenData(
+                "https://api.normattiva.it/t/normattiva.api",
+                OffsetDateTime.parse("2026-08-01T00:00:00Z"),
+                OffsetDateTime.parse("2026-08-02T00:00:00Z"),
+                updatesPath,
+                relationsPath,
+                rdfPath,
+                (url, jsonBody) -> {
+                    requestedUrl.set(url);
+                    requestBody.set(jsonBody);
+                    return """
+                            {
+                              "listaAtti": [
+                                {
+                                  "codiceRedazionale": "005G0104",
+                                  "titoloAtto": "Codice dell'amministrazione digitale",
+                                  "dataUltimaModifica": "2025-03-20"
+                                }
+                              ]
+                            }
+                            """;
+                }
+        );
+
+        assertEquals("https://api.normattiva.it/t/normattiva.api/api/v1/ricerca/aggiornati", requestedUrl.get());
+        assertTrue(requestBody.get().contains("dataInizioAggiornamento"));
+        assertEquals(1, result.updatesRead());
+        assertEquals(0, result.relationRows());
+        assertTrue(Files.readString(updatesPath, StandardCharsets.UTF_8).contains("005G0104"));
+        assertTrue(Files.readString(updatesPath, StandardCharsets.UTF_8).contains("Codice dell'amministrazione digitale"));
+        assertTrue(Files.notExists(relationsPath));
+        assertTrue(Files.notExists(rdfPath));
+    }
 
     @Test
     void parsesNormattivaUpdateCardsAndInfersRelations() {

@@ -13,7 +13,7 @@ import it.legislation.crawler.NormattivaUpdateRunner;
 @Service
 public class NormattivaUpdateService {
 
-    private static final String DEFAULT_SOURCE_URL = "https://www.normattiva.it/";
+    private static final String DEFAULT_SOURCE_URL = "https://api.normattiva.it/t/normattiva.api";
     private static final Path DEFAULT_UPDATES_OUTPUT = Path.of("data", "clean", "normattiva_updates.tsv");
     private static final Path DEFAULT_RELATIONS_OUTPUT = Path.of("data", "clean", "normattiva_modifications_auto.tsv");
     private static final Path DEFAULT_RDF_OUTPUT = Path.of("data", "rdf", "normattiva_modifications_auto.ttl");
