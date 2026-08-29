@@ -32,6 +32,25 @@ class NormattivaUpdateRunnerTest {
     }
 
     @Test
+    void buildsOfficialActDetailEndpointAndRequestBody() {
+        String endpoint = NormattivaUpdateRunner.actDetailEndpoint("https://api.normattiva.it/t/normattiva.api/");
+        String body = NormattivaUpdateRunner.actDetailRequestBody(new NormattivaUpdateRunner.NormattivaOpenDataUpdate(
+                "005G0104",
+                "2005-05-16",
+                "DECRETO LEGISLATIVO",
+                "82",
+                "Codice dell'amministrazione digitale",
+                "2005-03-07",
+                "2025-03-20",
+                "Versione 52"
+        ));
+
+        assertEquals("https://api.normattiva.it/t/normattiva.api/api/v1/atto/dettaglio-atto", endpoint);
+        assertTrue(body.contains("\"dataGU\":\"2005-05-16\""));
+        assertTrue(body.contains("\"codiceRedazionale\":\"005G0104\""));
+    }
+
+    @Test
     void parsesOpenDataUpdatedActsResponse() throws Exception {
         String json = """
                 {
@@ -57,6 +76,86 @@ class NormattivaUpdateRunnerTest {
         assertEquals("005G0104", updates.get(0).codiceRedazionale());
         assertEquals("Codice dell'amministrazione digitale", updates.get(0).titoloAtto());
         assertEquals("2025-03-20", updates.get(0).dataUltimaModifica());
+    }
+
+    @Test
+    void parsesActDetailResponse() throws Exception {
+        String json = """
+                {
+                  "success": true,
+                  "data": {
+                    "atto": {
+                      "titolo": "Codice dell'amministrazione digitale",
+                      "sottoTitolo": "Testo vigente",
+                      "tipoProvvedimentoDescrizione": "DECRETO LEGISLATIVO",
+                      "tipoProvvedimentoCodice": "DLGS",
+                      "annoProvvedimento": 2005,
+                      "meseProvvedimento": 3,
+                      "giornoProvvedimento": 7,
+                      "numeroProvvedimento": 82,
+                      "dataPubblicazioneInGazzetta": "2005-05-16",
+                      "articoloDataInizioVigenza": "2025-03-20",
+                      "testoInVigore": "vigente",
+                      "articoloHtml": "<p>Articolo 1</p>"
+                    }
+                  }
+                }
+                """;
+
+        List<NormattivaUpdateRunner.NormattivaActDetail> details =
+                NormattivaUpdateRunner.parseActDetails(json);
+
+        assertEquals(1, details.size());
+        NormattivaUpdateRunner.NormattivaActDetail detail = details.get(0);
+        assertEquals("Codice dell'amministrazione digitale", detail.title());
+        assertEquals("DECRETO LEGISLATIVO", detail.actType());
+        assertEquals("2005-03-07", detail.actDate());
+        assertEquals("82", detail.actNumber());
+        assertEquals("2025-03-20", detail.forceStartDate());
+        assertTrue(detail.articleHtml().contains("Articolo 1"));
+    }
+
+    @Test
+    void fetchesActDetailsWithoutWritingRdf() throws Exception {
+        AtomicReference<String> requestedUrl = new AtomicReference<>();
+        AtomicReference<String> requestBody = new AtomicReference<>();
+        NormattivaUpdateRunner.NormattivaOpenDataUpdate update = new NormattivaUpdateRunner.NormattivaOpenDataUpdate(
+                "005G0104",
+                "2005-05-16",
+                "DECRETO LEGISLATIVO",
+                "82",
+                "Codice dell'amministrazione digitale",
+                "2005-03-07",
+                "2025-03-20",
+                "Versione 52"
+        );
+
+        List<NormattivaUpdateRunner.NormattivaActDetail> details = NormattivaUpdateRunner.fetchActDetails(
+                "https://api.normattiva.it/t/normattiva.api",
+                update,
+                (url, jsonBody) -> {
+                    requestedUrl.set(url);
+                    requestBody.set(jsonBody);
+                    return """
+                            {
+                              "data": {
+                                "atto": {
+                                  "titolo": "Codice dell'amministrazione digitale",
+                                  "annoProvvedimento": 2005,
+                                  "meseProvvedimento": 3,
+                                  "giornoProvvedimento": 7,
+                                  "numeroProvvedimento": 82
+                                }
+                              }
+                            }
+                            """;
+                }
+        );
+
+        assertEquals("https://api.normattiva.it/t/normattiva.api/api/v1/atto/dettaglio-atto", requestedUrl.get());
+        assertTrue(requestBody.get().contains("\"codiceRedazionale\":\"005G0104\""));
+        assertEquals(1, details.size());
+        assertEquals("Codice dell'amministrazione digitale", details.get(0).title());
     }
 
     @Test

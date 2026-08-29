@@ -115,12 +115,32 @@ public class NormattivaUpdateRunner {
         return base.replaceAll("/+$", "") + "/api/v1/ricerca/aggiornati";
     }
 
+    static String actDetailEndpoint(String sourceUrl) {
+        String base = sourceUrl == null || sourceUrl.isBlank() ? DEFAULT_SOURCE_URL : sourceUrl.trim();
+        return base.replaceAll("/+$", "") + "/api/v1/atto/dettaglio-atto";
+    }
+
     static String updatedActsRequestBody(OffsetDateTime start, OffsetDateTime end) {
         String safeStart = start == null ? OffsetDateTime.now(ZoneOffset.UTC).minusDays(lookbackDays()).toString() : start.toString();
         String safeEnd = end == null ? OffsetDateTime.now(ZoneOffset.UTC).toString() : end.toString();
         return """
                 {"dataInizioAggiornamento":"%s","dataFineAggiornamento":"%s"}
                 """.formatted(safeStart, safeEnd).trim();
+    }
+
+    static String actDetailRequestBody(NormattivaOpenDataUpdate update) {
+        return """
+                {"dataGU":"%s","codiceRedazionale":"%s"}
+                """.formatted(jsonText(update == null ? "" : update.dataGu()), jsonText(update == null ? "" : update.codiceRedazionale())).trim();
+    }
+
+    static List<NormattivaActDetail> fetchActDetails(
+            String sourceUrl,
+            NormattivaOpenDataUpdate update,
+            HttpJsonClient client
+    ) throws IOException {
+        String json = client.postJson(actDetailEndpoint(sourceUrl), actDetailRequestBody(update));
+        return parseActDetails(json);
     }
 
     static List<NormattivaOpenDataUpdate> parseOpenDataUpdates(String json) throws IOException {
@@ -147,6 +167,42 @@ public class NormattivaUpdateRunner {
             ));
         }
         return List.copyOf(updates);
+    }
+
+    static List<NormattivaActDetail> parseActDetails(String json) throws IOException {
+        JsonNode root = JSON.readTree(json == null || json.isBlank() ? "{}" : json);
+        JsonNode data = root.path("data");
+        List<JsonNode> actNodes = new ArrayList<>();
+
+        addActNode(actNodes, root.path("atto"));
+        addActNode(actNodes, data.path("atto"));
+        JsonNode list = data.path("lista");
+        if (!list.isArray()) {
+            list = root.path("lista");
+        }
+        if (list.isArray()) {
+            for (JsonNode act : list) {
+                addActNode(actNodes, act);
+            }
+        }
+
+        List<NormattivaActDetail> details = new ArrayList<>();
+        for (JsonNode act : actNodes) {
+            details.add(new NormattivaActDetail(
+                    text(act, "titolo"),
+                    text(act, "sottoTitolo"),
+                    text(act, "tipoProvvedimentoDescrizione"),
+                    text(act, "tipoProvvedimentoCodice"),
+                    actDate(act),
+                    text(act, "numeroProvvedimento"),
+                    firstText(act, "dataPubblicazioneInGazzetta", "dataGU"),
+                    text(act, "articoloDataInizioVigenza"),
+                    text(act, "articoloDataFineVigenza"),
+                    text(act, "testoInVigore"),
+                    text(act, "articoloHtml")
+            ));
+        }
+        return List.copyOf(details);
     }
 
     static List<NormattivaUpdate> parseUpdates(String html, String baseUrl) {
@@ -394,6 +450,32 @@ public class NormattivaUpdateRunner {
         return end == null ? OffsetDateTime.now(ZoneOffset.UTC) : end;
     }
 
+    private static void addActNode(List<JsonNode> actNodes, JsonNode act) {
+        if (act != null && act.isObject() && !act.isEmpty()) {
+            actNodes.add(act);
+        }
+    }
+
+    private static String actDate(JsonNode act) {
+        String year = text(act, "annoProvvedimento");
+        String month = text(act, "meseProvvedimento");
+        String day = text(act, "giornoProvvedimento");
+        if (year.isBlank() || month.isBlank() || day.isBlank()) {
+            return "";
+        }
+        return "%s-%s-%s".formatted(year, leftPad2(month), leftPad2(day));
+    }
+
+    private static String leftPad2(String value) {
+        return value.length() == 1 ? "0" + value : value;
+    }
+
+    private static String jsonText(String value) {
+        return cleanText(value)
+                .replace("\\", "\\\\")
+                .replace("\"", "\\\"");
+    }
+
     private static String firstText(JsonNode node, String... fieldNames) {
         for (String fieldName : fieldNames) {
             String value = text(node, fieldName);
@@ -434,6 +516,21 @@ public class NormattivaUpdateRunner {
             String dataEmanazione,
             String dataUltimaModifica,
             String ultimiAttiModificanti
+    ) {
+    }
+
+    public record NormattivaActDetail(
+            String title,
+            String subtitle,
+            String actType,
+            String actTypeCode,
+            String actDate,
+            String actNumber,
+            String publicationDate,
+            String forceStartDate,
+            String forceEndDate,
+            String textInForce,
+            String articleHtml
     ) {
     }
 

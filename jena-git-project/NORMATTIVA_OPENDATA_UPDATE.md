@@ -30,6 +30,23 @@ The official request body schema is:
 
 The endpoint returns acts updated between two dates.
 
+The next official endpoint used by the code foundation is:
+
+```text
+POST /api/v1/atto/dettaglio-atto
+```
+
+The request uses candidate metadata from the update response:
+
+```json
+{
+  "dataGU": "string",
+  "codiceRedazionale": "string"
+}
+```
+
+The response contains an `atto` object with fields such as title, act type, act date, publication date, vigency dates, text state, and article HTML.
+
 ## Current Implementation
 
 Main class:
@@ -70,6 +87,17 @@ ultimi_atti_modificanti
 endpoint
 fetched_at
 ```
+
+The runner also contains small helper methods for the future detail stage:
+
+```text
+actDetailEndpoint(...)
+actDetailRequestBody(...)
+fetchActDetails(...)
+parseActDetails(...)
+```
+
+These helpers fetch and parse act detail responses. They do not write RDF.
 
 ## Configuration
 
@@ -121,6 +149,8 @@ The current implementation follows that direction:
 - it keeps the implementation small and testable,
 - it creates a foundation for the next robust step: fetching details for each updated act.
 
+The detail helper follows the same principle. It reads structured `AttoDto` fields from the official detail response, but it still does not claim a legal relation unless a later step can identify explicit relation evidence.
+
 ## Tests
 
 Covered by:
@@ -134,12 +164,15 @@ Current tests verify:
 - the endpoint path is built correctly,
 - the official request body fields are used,
 - `listaAtti` JSON responses are parsed,
+- the official detail endpoint and request body are built correctly,
+- detail `atto` responses are parsed,
+- detail fetch uses the official endpoint without writing RDF,
 - update candidates are written to TSV,
 - relation RDF is not generated when the API response does not contain relation evidence.
 
 ## Next Step
 
-The next routine should process each update candidate and fetch enough structured detail to map:
+The next routine should process each fetched detail and identify explicit evidence for:
 
 ```text
 updated act
