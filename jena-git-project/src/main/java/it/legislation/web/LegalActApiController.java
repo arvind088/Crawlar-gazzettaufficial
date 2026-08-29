@@ -164,6 +164,13 @@ public class LegalActApiController {
         return normattivaUpdateService.listUpdateCandidates(limit);
     }
 
+    @GetMapping("/normattiva/details")
+    public List<NormattivaDetailCandidate> normattivaDetails(
+            @RequestParam(defaultValue = "50") int limit
+    ) throws IOException {
+        return normattivaUpdateService.listDetailCandidates(limit);
+    }
+
     @GetMapping("/normattiva/automation")
     public NormattivaAutomationStatus normattivaAutomation() {
         return scheduledNormattivaUpdateJob.status();
