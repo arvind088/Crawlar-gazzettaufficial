@@ -189,9 +189,13 @@ class LegalActQueryServiceTest {
         assertTrue(resource.manifestations().get(0).format().endsWith("text/html"));
         assertTrue(resource.outgoingRelations().stream()
                 .anyMatch(relation -> "ilg:modifies".equals(relation.predicateLabel())
+                        && "Modifies".equals(relation.displayLabel())
+                        && relation.important()
                         && "26G00099".equals(relation.resourceLocalId())));
         assertTrue(resource.incomingRelations().stream()
                 .anyMatch(relation -> "ilg:modifiedBy".equals(relation.predicateLabel())
+                        && "Modified by".equals(relation.displayLabel())
+                        && relation.important()
                         && "26G00099".equals(relation.resourceLocalId())));
     }
 

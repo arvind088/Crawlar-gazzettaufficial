@@ -5,6 +5,7 @@ import java.io.StringWriter;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -458,16 +459,62 @@ public class LegalActQueryService {
                 QuerySolution solution = resultSet.nextSolution();
                 String predicate = value(solution, "predicate");
                 String resourceUri = value(solution, resourceColumn);
+                String predicateLabel = compactPredicate(predicate);
                 relations.add(new LinkedDataRelation(
                         predicate,
-                        compactPredicate(predicate),
+                        predicateLabel,
+                        humanRelationLabel(predicateLabel),
+                        isImportantRelation(predicateLabel),
                         resourceUri,
                         value(solution, "label"),
                         localIdFromUri(resourceUri)
                 ));
             }
         }
+        relations.sort(Comparator
+                .comparingInt((LinkedDataRelation relation) -> relationPriority(relation.predicateLabel()))
+                .thenComparing(LinkedDataRelation::predicateLabel, Comparator.nullsLast(String::compareTo))
+                .thenComparing(LinkedDataRelation::resourceLocalId, Comparator.nullsLast(String::compareTo))
+                .thenComparing(LinkedDataRelation::resourceUri, Comparator.nullsLast(String::compareTo)));
         return relations;
+    }
+
+    private int relationPriority(String predicateLabel) {
+        if (predicateLabel == null) {
+            return 100;
+        }
+        return switch (predicateLabel) {
+            case "ilg:modifies", "ilg:modifiedBy", "eli:commences", "eli:commenced_by" -> 0;
+            case "eli:is_realized_by", "eli:realizes", "eli:is_embodied_by", "eli:is_embodied_in" -> 1;
+            case "eli:type_document", "eli:version", "dcterms:source" -> 2;
+            case "rdf:type" -> 3;
+            default -> 10;
+        };
+    }
+
+    private boolean isImportantRelation(String predicateLabel) {
+        return relationPriority(predicateLabel) <= 1;
+    }
+
+    private String humanRelationLabel(String predicateLabel) {
+        if (predicateLabel == null) {
+            return null;
+        }
+        return switch (predicateLabel) {
+            case "ilg:modifies" -> "Modifies";
+            case "ilg:modifiedBy" -> "Modified by";
+            case "eli:commences" -> "Commences / converts";
+            case "eli:commenced_by" -> "Commenced / converted by";
+            case "eli:is_realized_by" -> "Has expression";
+            case "eli:realizes" -> "Expression of";
+            case "eli:is_embodied_by" -> "Has manifestation";
+            case "eli:is_embodied_in" -> "Manifestation of";
+            case "eli:type_document" -> "Document type";
+            case "eli:version" -> "Version";
+            case "dcterms:source" -> "Source";
+            case "rdf:type" -> "RDF class";
+            default -> predicateLabel;
+        };
     }
 
     private String compactPredicate(String predicate) {

@@ -847,8 +847,15 @@ function LinkedRelationList({ empty, relations, onNavigateResource }) {
 
   return e("div", { className: "linked-relation-list" },
     relations.map((relation) =>
-      e("div", { key: `${relation.predicate}-${relation.resourceUri}`, className: "linked-relation-row" },
-        e("span", { className: "relation-predicate" }, relation.predicateLabel || compactRdfName(relation.predicate) || relation.predicate),
+      e("div", {
+        key: `${relation.predicate}-${relation.resourceUri}`,
+        className: relation.important ? "linked-relation-row key-relation" : "linked-relation-row"
+      },
+        e("span", { className: "relation-predicate" },
+          e("span", { className: "relation-label" }, relation.displayLabel || relation.predicateLabel || compactRdfName(relation.predicate) || relation.predicate),
+          e("span", { className: "relation-code" }, relation.predicateLabel || compactRdfName(relation.predicate) || relation.predicate),
+          relation.important ? e("span", { className: "relation-importance" }, "Key") : null
+        ),
         e("button", {
           className: "resource-link-button relation-resource",
           onClick: () => onNavigateResource(relation.resourceUri),
