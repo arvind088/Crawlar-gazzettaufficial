@@ -324,6 +324,13 @@ button:focus,
   margin: 0;
 }
 
+.panel-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
 .panel-subtitle {
   color: var(--muted);
   font-size: 15px;
