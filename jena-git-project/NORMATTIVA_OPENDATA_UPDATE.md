@@ -119,6 +119,14 @@ GET /api/normattiva/details?limit=50
 
 The frontend shows these rows in the Normattiva tab as **Detail evidence**. They remain separate from the RDF relationship table.
 
+The detail TSV can also be generated through the local API:
+
+```text
+POST /api/normattiva/details/run?limit=20
+```
+
+This calls the official detail endpoint for update candidates and writes `data/clean/normattiva_details.tsv`.
+
 Optional configuration:
 
 ```text
@@ -199,6 +207,7 @@ Current tests verify:
 - update candidates can be read back from TSV,
 - detail rows can be fetched and written to a separate TSV,
 - detail rows can be served back through the web API,
+- the detail TSV routine can be triggered through the web API,
 - detail evidence can be shown in the UI without mixing it with RDF relations,
 - update candidates are written to TSV,
 - relation RDF is not generated when the API response does not contain relation evidence.
