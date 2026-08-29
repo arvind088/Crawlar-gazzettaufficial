@@ -160,6 +160,65 @@ class NormattivaUpdateServiceTest {
     }
 
     @Test
+    void listsNormattivaRelationEvidenceCandidates() throws Exception {
+        LegalActQueryService queryService = new LegalActQueryService(
+                List.of(tempDir.resolve("missing.ttl"))
+        );
+        Path evidenceOutput = tempDir.resolve("normattiva_relation_evidence.tsv");
+        Files.write(evidenceOutput, List.of(
+                "codice_redazionale\tdata_gu\ttitolo_atto\tdetail_title\tevidence_type\tevidence_text",
+                "005G0104\t2005-05-16\tCodice dell'amministrazione digitale\tCodice dell'amministrazione digitale\tconversion\tIl decreto-legge e' convertito, con modificazioni."
+        ), StandardCharsets.UTF_8);
+
+        try {
+            NormattivaUpdateService service = new NormattivaUpdateService(
+                    queryService,
+                    (sourceUrl, updatesPath, relationsOutput, rdfOutput) -> null,
+                    NormattivaUpdateRunner::runDetails,
+                    tempDir.resolve("updates.tsv"),
+                    tempDir.resolve("details.tsv"),
+                    evidenceOutput,
+                    tempDir.resolve("relations.tsv"),
+                    tempDir.resolve("relations.ttl")
+            );
+
+            List<NormattivaRelationEvidenceCandidate> evidence = service.listRelationEvidence(10);
+
+            assertEquals(1, evidence.size());
+            NormattivaRelationEvidenceCandidate row = evidence.get(0);
+            assertEquals("005G0104", row.code());
+            assertEquals("2005-05-16", row.gazzettaDate());
+            assertEquals("conversion", row.evidenceType());
+            assertTrue(row.evidenceText().contains("convertito"));
+        } finally {
+            queryService.closeForTests();
+        }
+    }
+
+    @Test
+    void returnsEmptyRelationEvidenceWhenFileIsMissing() throws Exception {
+        LegalActQueryService queryService = new LegalActQueryService(
+                List.of(tempDir.resolve("missing.ttl"))
+        );
+        try {
+            NormattivaUpdateService service = new NormattivaUpdateService(
+                    queryService,
+                    (sourceUrl, updatesPath, relationsOutput, rdfOutput) -> null,
+                    NormattivaUpdateRunner::runDetails,
+                    tempDir.resolve("updates.tsv"),
+                    tempDir.resolve("details.tsv"),
+                    tempDir.resolve("missing-evidence.tsv"),
+                    tempDir.resolve("relations.tsv"),
+                    tempDir.resolve("relations.ttl")
+            );
+
+            assertTrue(service.listRelationEvidence(10).isEmpty());
+        } finally {
+            queryService.closeForTests();
+        }
+    }
+
+    @Test
     void runsNormattivaDetailFetch() throws Exception {
         LegalActQueryService queryService = new LegalActQueryService(
                 List.of(tempDir.resolve("missing.ttl"))
