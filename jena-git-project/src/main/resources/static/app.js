@@ -76,12 +76,54 @@ LIMIT 10`
   {
     id: "relations",
     label: "Acts with Normattiva relations",
-    query: `PREFIX ilg: <http://example.org/italian-legislation/>
+    query: `PREFIX eli: <http://data.europa.eu/eli/ontology#>
+PREFIX ilg: <http://example.org/italian-legislation/ontology#>
 
 SELECT ?source ?relation ?target WHERE {
   ?source ?relation ?target .
-  FILTER(?relation IN (ilg:modifies, ilg:modifiedBy))
+  FILTER(?relation IN (ilg:modifies, ilg:modifiedBy, eli:commences, eli:commenced_by))
 }
+LIMIT 20`
+  },
+  {
+    id: "eli-levels",
+    label: "Validate ELI levels",
+    query: `PREFIX eli: <http://data.europa.eu/eli/ontology#>
+
+SELECT ?act ?expression ?manifestation ?version ?language ?format WHERE {
+  ?act eli:id_local "26A03275" ;
+       eli:is_realized_by ?expression .
+  OPTIONAL { ?act eli:version ?version . }
+  OPTIONAL { ?expression eli:language ?language . }
+  OPTIONAL { ?expression eli:is_embodied_by ?manifestation . }
+  OPTIONAL { ?manifestation eli:format ?format . }
+}`
+  },
+  {
+    id: "conversion",
+    label: "Validate conversion links",
+    query: `PREFIX eli: <http://data.europa.eu/eli/ontology#>
+PREFIX ilg: <http://example.org/italian-legislation/ontology#>
+
+SELECT ?source ?predicate ?target WHERE {
+  VALUES ?source { <http://www.gazzettaufficiale.it/eli/id/2025/03/24/25G00041/sg> }
+  ?source ?predicate ?target .
+  FILTER(?predicate IN (ilg:modifies, eli:commences))
+}
+ORDER BY ?predicate ?target`
+  },
+  {
+    id: "multi-version",
+    label: "Find multi-version acts",
+    query: `PREFIX eli: <http://data.europa.eu/eli/ontology#>
+
+SELECT ?act (COUNT(DISTINCT ?expression) AS ?expressionCount) WHERE {
+  ?act a eli:LegalResource ;
+       eli:is_realized_by ?expression .
+}
+GROUP BY ?act
+HAVING (COUNT(DISTINCT ?expression) > 1)
+ORDER BY DESC(?expressionCount)
 LIMIT 20`
   }
 ];
