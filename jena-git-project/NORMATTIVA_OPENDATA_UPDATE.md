@@ -166,6 +166,8 @@ GET /api/normattiva/evidence?limit=50
 
 This endpoint reads `data/clean/normattiva_relation_evidence.tsv` and returns the evidence rows for review. It is intentionally read-only: evidence rows are not treated as confirmed legal relations until a later validation step identifies the exact source act, target act, relation type, and affected version/expression.
 
+The frontend shows these rows in the Normattiva tab as **Relation evidence**, positioned between fetched detail evidence and confirmed RDF relationships.
+
 ## Configuration
 
 The update interval can be controlled with environment variables:
@@ -242,6 +244,7 @@ Current tests verify:
 - detail evidence can be shown in the UI without mixing it with RDF relations,
 - relation evidence can be reported from detail text without emitting RDF,
 - relation evidence rows can be served back through the web API,
+- relation evidence rows can be shown in the UI without mixing them with confirmed RDF relations,
 - update candidates are written to TSV,
 - relation RDF is not generated when the API response does not contain relation evidence.
 
