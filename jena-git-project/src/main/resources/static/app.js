@@ -141,6 +141,9 @@ function App() {
   const [normattivaDetailFetchResult, setNormattivaDetailFetchResult] = useState(null);
   const [normattivaDetailRunning, setNormattivaDetailRunning] = useState(false);
   const [normattivaDetailError, setNormattivaDetailError] = useState("");
+  const [normattivaEvidenceScanResult, setNormattivaEvidenceScanResult] = useState(null);
+  const [normattivaEvidenceRunning, setNormattivaEvidenceRunning] = useState(false);
+  const [normattivaEvidenceError, setNormattivaEvidenceError] = useState("");
   const [updateResult, setUpdateResult] = useState(null);
   const [updateRunning, setUpdateRunning] = useState(false);
   const [updateError, setUpdateError] = useState("");
@@ -468,6 +471,27 @@ function App() {
     }
   }, [loadNormattivaDetails, loadNormattivaEvidence]);
 
+  const runNormattivaEvidenceScan = useCallback(async () => {
+    setNormattivaEvidenceRunning(true);
+    setNormattivaEvidenceError("");
+    try {
+      const response = await fetch("/api/normattiva/evidence/run?limit=20", { method: "POST" });
+      if (!response.ok) {
+        throw new Error("Normattiva evidence scan request failed");
+      }
+      const result = await response.json();
+      setNormattivaEvidenceScanResult(result);
+      if (result.state === "FAILED") {
+        setNormattivaEvidenceError(result.message || "Normattiva evidence scan failed");
+      }
+      await loadNormattivaEvidence();
+    } catch (err) {
+      setNormattivaEvidenceError(err.message || "Normattiva evidence scan failed");
+    } finally {
+      setNormattivaEvidenceRunning(false);
+    }
+  }, [loadNormattivaEvidence]);
+
   const runSparqlForAct = useCallback((act) => {
     setActSparqlQuery(createActSparqlQuery(act));
     setActiveTab("sparql");
@@ -564,6 +588,9 @@ function App() {
           normattivaDetailError,
           normattivaDetailFetchResult,
           normattivaDetailRunning,
+          normattivaEvidenceError,
+          normattivaEvidenceRunning,
+          normattivaEvidenceScanResult,
           normattivaError,
           normattivaRunning,
           normattivaUpdateResult,
@@ -578,6 +605,7 @@ function App() {
           onRunArchiveCrawl: runArchiveCrawl,
           onRunArchiveDiscover: runArchiveDiscover,
           onRunNormattivaDetailFetch: runNormattivaDetailFetch,
+          onRunNormattivaEvidenceScan: runNormattivaEvidenceScan,
           onRunNormattivaUpdate: runNormattivaUpdate,
           onRunUpdate: runCrawlerUpdate
         });
@@ -1246,6 +1274,9 @@ function TechnicalPage({
   normattivaDetailError,
   normattivaDetailFetchResult,
   normattivaDetailRunning,
+  normattivaEvidenceError,
+  normattivaEvidenceRunning,
+  normattivaEvidenceScanResult,
   normattivaError,
   normattivaRunning,
   normattivaUpdateResult,
@@ -1260,6 +1291,7 @@ function TechnicalPage({
   onRunArchiveCrawl,
   onRunArchiveDiscover,
   onRunNormattivaDetailFetch,
+  onRunNormattivaEvidenceScan,
   onRunNormattivaUpdate,
   onRunUpdate
 }) {
@@ -1275,10 +1307,14 @@ function TechnicalPage({
       normattivaDetailError,
       normattivaDetailFetchResult,
       normattivaDetailRunning,
+      normattivaEvidenceError,
+      normattivaEvidenceRunning,
+      normattivaEvidenceScanResult,
       normattivaError,
       normattivaRunning,
       normattivaUpdateResult,
       onRunNormattivaDetailFetch,
+      onRunNormattivaEvidenceScan,
       onRunNormattivaUpdate
     }),
     e(SourcePanel, { rdfSources })
@@ -1290,10 +1326,14 @@ function NormattivaAutomationPanel({
   normattivaDetailError,
   normattivaDetailFetchResult,
   normattivaDetailRunning,
+  normattivaEvidenceError,
+  normattivaEvidenceRunning,
+  normattivaEvidenceScanResult,
   normattivaError,
   normattivaRunning,
   normattivaUpdateResult,
   onRunNormattivaDetailFetch,
+  onRunNormattivaEvidenceScan,
   onRunNormattivaUpdate
 }) {
   return e("section", { className: "panel crawler-panel" },
@@ -1315,7 +1355,13 @@ function NormattivaAutomationPanel({
           disabled: normattivaDetailRunning,
           onClick: onRunNormattivaDetailFetch,
           type: "button"
-        }, normattivaDetailRunning ? "Fetching..." : "Fetch Details")
+        }, normattivaDetailRunning ? "Fetching..." : "Fetch Details"),
+        e("button", {
+          className: "secondary-button",
+          disabled: normattivaEvidenceRunning,
+          onClick: onRunNormattivaEvidenceScan,
+          type: "button"
+        }, normattivaEvidenceRunning ? "Scanning..." : "Scan Evidence")
       )
     ),
     e("div", { className: "automation-summary" },
@@ -1352,6 +1398,17 @@ function NormattivaAutomationPanel({
               e("span", null, "details: ", e("strong", null, normattivaDetailFetchResult.detailsWritten))
             )
           : e("span", { className: "muted-line" }, "Detail evidence has not been fetched from this screen yet.")
+    ),
+    e("div", { className: "update-result" },
+      normattivaEvidenceError
+        ? e("span", { className: "update-error" }, normattivaEvidenceError)
+        : normattivaEvidenceScanResult
+          ? e("div", { className: "run-summary" },
+              e("span", null, "Evidence scan: ", e("strong", null, normattivaEvidenceScanResult.state)),
+              e("span", null, "details: ", e("strong", null, normattivaEvidenceScanResult.detailsRead)),
+              e("span", null, "evidence: ", e("strong", null, normattivaEvidenceScanResult.evidenceRows))
+            )
+          : e("span", { className: "muted-line" }, "Relation evidence has not been scanned from this screen yet.")
     )
   );
 }

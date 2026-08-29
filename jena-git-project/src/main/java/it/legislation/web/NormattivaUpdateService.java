@@ -28,9 +28,11 @@ public class NormattivaUpdateService {
 
     private final AtomicBoolean running = new AtomicBoolean(false);
     private final AtomicBoolean detailRunning = new AtomicBoolean(false);
+    private final AtomicBoolean evidenceRunning = new AtomicBoolean(false);
     private final LegalActQueryService queryService;
     private final NormattivaRunner runner;
     private final NormattivaDetailRunner detailRunner;
+    private final NormattivaEvidenceRunner evidenceRunner;
     private final Path updatesOutput;
     private final Path detailsOutput;
     private final Path evidenceOutput;
@@ -40,17 +42,26 @@ public class NormattivaUpdateService {
 
     @Autowired
     public NormattivaUpdateService(LegalActQueryService queryService) {
-        this(queryService, NormattivaUpdateRunner::run, NormattivaUpdateRunner::runDetails);
+        this(queryService, NormattivaUpdateRunner::run, NormattivaUpdateRunner::runDetails, NormattivaUpdateRunner::runEvidenceScan);
     }
 
     NormattivaUpdateService(LegalActQueryService queryService, NormattivaRunner runner) {
-        this(queryService, runner, NormattivaUpdateRunner::runDetails);
+        this(queryService, runner, NormattivaUpdateRunner::runDetails, NormattivaUpdateRunner::runEvidenceScan);
     }
 
     NormattivaUpdateService(
             LegalActQueryService queryService,
             NormattivaRunner runner,
             NormattivaDetailRunner detailRunner
+    ) {
+        this(queryService, runner, detailRunner, NormattivaUpdateRunner::runEvidenceScan);
+    }
+
+    NormattivaUpdateService(
+            LegalActQueryService queryService,
+            NormattivaRunner runner,
+            NormattivaDetailRunner detailRunner,
+            NormattivaEvidenceRunner evidenceRunner
     ) {
         this(queryService, runner, detailRunner, DEFAULT_UPDATES_OUTPUT, DEFAULT_DETAILS_OUTPUT, DEFAULT_EVIDENCE_OUTPUT, DEFAULT_RELATIONS_OUTPUT, DEFAULT_RDF_OUTPUT);
     }
@@ -98,9 +109,24 @@ public class NormattivaUpdateService {
             Path relationsOutput,
             Path rdfOutput
     ) {
+        this(queryService, runner, detailRunner, NormattivaUpdateRunner::runEvidenceScan, updatesOutput, detailsOutput, evidenceOutput, relationsOutput, rdfOutput);
+    }
+
+    NormattivaUpdateService(
+            LegalActQueryService queryService,
+            NormattivaRunner runner,
+            NormattivaDetailRunner detailRunner,
+            NormattivaEvidenceRunner evidenceRunner,
+            Path updatesOutput,
+            Path detailsOutput,
+            Path evidenceOutput,
+            Path relationsOutput,
+            Path rdfOutput
+    ) {
         this.queryService = queryService;
         this.runner = runner;
         this.detailRunner = detailRunner;
+        this.evidenceRunner = evidenceRunner;
         this.updatesOutput = updatesOutput;
         this.detailsOutput = detailsOutput;
         this.evidenceOutput = evidenceOutput;
@@ -215,6 +241,51 @@ public class NormattivaUpdateService {
             );
         } finally {
             detailRunning.set(false);
+        }
+    }
+
+    public NormattivaEvidenceScanResult runEvidenceScan(int limit) {
+        if (!evidenceRunning.compareAndSet(false, true)) {
+            return new NormattivaEvidenceScanResult(
+                    "RUNNING",
+                    null,
+                    null,
+                    0,
+                    0,
+                    "A Normattiva evidence scan is already running.",
+                    evidenceOutput.toAbsolutePath().normalize().toString()
+            );
+        }
+
+        OffsetDateTime startedAt = OffsetDateTime.now();
+        int boundedLimit = Math.max(1, Math.min(limit, 200));
+        try {
+            NormattivaUpdateRunner.EvidenceScanResult runnerResult = evidenceRunner.run(
+                    detailsOutput,
+                    evidenceOutput,
+                    boundedLimit
+            );
+            return new NormattivaEvidenceScanResult(
+                    "COMPLETED",
+                    startedAt.toString(),
+                    OffsetDateTime.now().toString(),
+                    runnerResult.detailsRead(),
+                    runnerResult.evidenceRows(),
+                    "Normattiva evidence scan completed.",
+                    runnerResult.evidencePath()
+            );
+        } catch (IOException | RuntimeException exception) {
+            return new NormattivaEvidenceScanResult(
+                    "FAILED",
+                    startedAt.toString(),
+                    OffsetDateTime.now().toString(),
+                    0,
+                    0,
+                    exception.getMessage() == null ? "Normattiva evidence scan failed." : exception.getMessage(),
+                    evidenceOutput.toAbsolutePath().normalize().toString()
+            );
+        } finally {
+            evidenceRunning.set(false);
         }
     }
 
@@ -384,5 +455,10 @@ public class NormattivaUpdateService {
     @FunctionalInterface
     interface NormattivaDetailRunner {
         NormattivaUpdateRunner.DetailFetchResult run(String sourceUrl, Path updatesInput, Path detailsOutput, int limit) throws IOException;
+    }
+
+    @FunctionalInterface
+    interface NormattivaEvidenceRunner {
+        NormattivaUpdateRunner.EvidenceScanResult run(Path detailsInput, Path evidenceOutput, int limit) throws IOException;
     }
 }

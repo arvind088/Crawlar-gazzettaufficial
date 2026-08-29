@@ -263,4 +263,51 @@ class NormattivaUpdateServiceTest {
         }
     }
 
+    @Test
+    void runsNormattivaEvidenceScan() throws Exception {
+        LegalActQueryService queryService = new LegalActQueryService(
+                List.of(tempDir.resolve("missing.ttl"))
+        );
+        Path detailsOutput = tempDir.resolve("details.tsv");
+        Path evidenceOutput = tempDir.resolve("evidence.tsv");
+        AtomicReference<Path> requestedDetailsPath = new AtomicReference<>();
+        AtomicReference<Path> requestedEvidencePath = new AtomicReference<>();
+        AtomicInteger requestedLimit = new AtomicInteger();
+
+        try {
+            NormattivaUpdateService service = new NormattivaUpdateService(
+                    queryService,
+                    (sourceUrl, updatesPath, relationsOutput, rdfOutput) -> null,
+                    NormattivaUpdateRunner::runDetails,
+                    (detailsPath, evidencePath, limit) -> {
+                        requestedDetailsPath.set(detailsPath);
+                        requestedEvidencePath.set(evidencePath);
+                        requestedLimit.set(limit);
+                        return new NormattivaUpdateRunner.EvidenceScanResult(
+                                detailsPath.toString(),
+                                4,
+                                2,
+                                evidencePath.toString()
+                        );
+                    },
+                    tempDir.resolve("updates.tsv"),
+                    detailsOutput,
+                    evidenceOutput,
+                    tempDir.resolve("relations.tsv"),
+                    tempDir.resolve("relations.ttl")
+            );
+
+            NormattivaEvidenceScanResult result = service.runEvidenceScan(10);
+
+            assertEquals("COMPLETED", result.state());
+            assertEquals(4, result.detailsRead());
+            assertEquals(2, result.evidenceRows());
+            assertEquals(detailsOutput, requestedDetailsPath.get());
+            assertEquals(evidenceOutput, requestedEvidencePath.get());
+            assertEquals(10, requestedLimit.get());
+        } finally {
+            queryService.closeForTests();
+        }
+    }
+
 }
