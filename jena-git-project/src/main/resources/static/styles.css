@@ -695,17 +695,41 @@ button:focus,
   grid-template-columns: minmax(112px, 0.35fr) minmax(0, 1fr);
 }
 
+.linked-relation-row.key-relation .relation-predicate {
+  background: var(--accent-soft);
+  border-color: #bfebe5;
+}
+
 .relation-predicate {
   background: var(--surface-soft);
   border: 1px solid var(--line);
   border-radius: 7px;
   color: var(--muted);
-  font-size: 12px;
-  font-weight: 700;
+  display: grid;
+  gap: 3px;
   line-height: 1.35;
   min-height: 34px;
   overflow-wrap: anywhere;
   padding: 8px 9px;
+}
+
+.relation-label {
+  color: var(--text);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.relation-code {
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.relation-importance {
+  color: var(--accent-dark);
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
 }
 
 .resource-link-button {
