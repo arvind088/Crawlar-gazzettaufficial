@@ -159,6 +159,72 @@ class NormattivaUpdateRunnerTest {
     }
 
     @Test
+    void readsOpenDataUpdateCandidatesFromTsv() throws Exception {
+        Path updatesPath = tempDir.resolve("normattiva_updates.tsv");
+        Files.write(updatesPath, List.of(
+                "codice_redazionale\tdata_gu\tdenominazione_atto\tnumero_atto\ttitolo_atto\tdata_emanazione\tdata_ultima_modifica\tultimi_atti_modificanti\tendpoint\tfetched_at",
+                "005G0104\t2005-05-16\tDECRETO LEGISLATIVO\t82\tCodice dell'amministrazione digitale\t2005-03-07\t2025-03-20\tVersione 52\thttps://api.normattiva.it/t/normattiva.api/api/v1/ricerca/aggiornati\t2026-08-29T10:00:00Z"
+        ), StandardCharsets.UTF_8);
+
+        List<NormattivaUpdateRunner.NormattivaOpenDataUpdate> updates =
+                NormattivaUpdateRunner.readOpenDataUpdates(updatesPath);
+
+        assertEquals(1, updates.size());
+        assertEquals("005G0104", updates.get(0).codiceRedazionale());
+        assertEquals("2005-05-16", updates.get(0).dataGu());
+        assertEquals("Versione 52", updates.get(0).ultimiAttiModificanti());
+    }
+
+    @Test
+    void fetchesAndWritesActDetailsFromCandidateTsv() throws Exception {
+        Path updatesPath = tempDir.resolve("normattiva_updates.tsv");
+        Path detailsPath = tempDir.resolve("normattiva_details.tsv");
+        AtomicReference<String> requestedUrl = new AtomicReference<>();
+        AtomicReference<String> requestBody = new AtomicReference<>();
+        Files.write(updatesPath, List.of(
+                "codice_redazionale\tdata_gu\tdenominazione_atto\tnumero_atto\ttitolo_atto\tdata_emanazione\tdata_ultima_modifica\tultimi_atti_modificanti\tendpoint\tfetched_at",
+                "005G0104\t2005-05-16\tDECRETO LEGISLATIVO\t82\tCodice dell'amministrazione digitale\t2005-03-07\t2025-03-20\tVersione 52\thttps://api.normattiva.it/t/normattiva.api/api/v1/ricerca/aggiornati\t2026-08-29T10:00:00Z"
+        ), StandardCharsets.UTF_8);
+
+        NormattivaUpdateRunner.DetailFetchResult result = NormattivaUpdateRunner.fetchAndWriteActDetails(
+                "https://api.normattiva.it/t/normattiva.api",
+                updatesPath,
+                detailsPath,
+                10,
+                (url, jsonBody) -> {
+                    requestedUrl.set(url);
+                    requestBody.set(jsonBody);
+                    return """
+                            {
+                              "data": {
+                                "atto": {
+                                  "titolo": "Codice dell'amministrazione digitale",
+                                  "tipoProvvedimentoDescrizione": "DECRETO LEGISLATIVO",
+                                  "annoProvvedimento": 2005,
+                                  "meseProvvedimento": 3,
+                                  "giornoProvvedimento": 7,
+                                  "numeroProvvedimento": 82,
+                                  "dataPubblicazioneInGazzetta": "2005-05-16",
+                                  "articoloDataInizioVigenza": "2025-03-20"
+                                }
+                              }
+                            }
+                            """;
+                }
+        );
+
+        String output = Files.readString(detailsPath, StandardCharsets.UTF_8);
+        assertEquals("https://api.normattiva.it/t/normattiva.api/api/v1/atto/dettaglio-atto", requestedUrl.get());
+        assertTrue(requestBody.get().contains("\"dataGU\":\"2005-05-16\""));
+        assertEquals(1, result.candidatesRead());
+        assertEquals(1, result.detailsWritten());
+        assertTrue(output.contains("codice_redazionale"));
+        assertTrue(output.contains("005G0104"));
+        assertTrue(output.contains("Codice dell'amministrazione digitale"));
+        assertTrue(output.contains("2025-03-20"));
+    }
+
+    @Test
     void runsOpenDataUpdateDiscoveryWithoutInferringRelations() throws Exception {
         Path updatesPath = tempDir.resolve("normattiva_updates.tsv");
         Path relationsPath = tempDir.resolve("normattiva_relations.tsv");
