@@ -117,6 +117,8 @@ The detail TSV can be inspected through the local API:
 GET /api/normattiva/details?limit=50
 ```
 
+The frontend shows these rows in the Normattiva tab as **Detail evidence**. They remain separate from the RDF relationship table.
+
 Optional configuration:
 
 ```text
@@ -197,6 +199,7 @@ Current tests verify:
 - update candidates can be read back from TSV,
 - detail rows can be fetched and written to a separate TSV,
 - detail rows can be served back through the web API,
+- detail evidence can be shown in the UI without mixing it with RDF relations,
 - update candidates are written to TSV,
 - relation RDF is not generated when the API response does not contain relation evidence.
 
