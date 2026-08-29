@@ -153,6 +153,7 @@ function App() {
   const [modifications, setModifications] = useState([]);
   const [normattivaUpdates, setNormattivaUpdates] = useState([]);
   const [normattivaDetails, setNormattivaDetails] = useState([]);
+  const [normattivaEvidence, setNormattivaEvidence] = useState([]);
   const [rdfSources, setRdfSources] = useState([]);
   const [acts, setActs] = useState([]);
   const [selected, setSelected] = useState(null);
@@ -238,6 +239,15 @@ function App() {
     }
     const rows = await response.json();
     setNormattivaDetails(Array.isArray(rows) ? rows : []);
+  }, []);
+
+  const loadNormattivaEvidence = useCallback(async () => {
+    const response = await fetch("/api/normattiva/evidence?limit=20");
+    if (!response.ok) {
+      throw new Error("Normattiva evidence request failed");
+    }
+    const rows = await response.json();
+    setNormattivaEvidence(Array.isArray(rows) ? rows : []);
   }, []);
 
   const loadNormattivaAutomationStatus = useCallback(async () => {
@@ -426,6 +436,7 @@ function App() {
       await loadModifications();
       await loadNormattivaUpdates();
       await loadNormattivaDetails();
+      await loadNormattivaEvidence();
       await loadRdfSources();
       await loadNormattivaAutomationStatus();
     } catch (err) {
@@ -433,7 +444,7 @@ function App() {
     } finally {
       setNormattivaRunning(false);
     }
-  }, [loadModifications, loadNormattivaAutomationStatus, loadNormattivaDetails, loadNormattivaUpdates, loadRdfSources, loadStatus]);
+  }, [loadModifications, loadNormattivaAutomationStatus, loadNormattivaDetails, loadNormattivaEvidence, loadNormattivaUpdates, loadRdfSources, loadStatus]);
 
   const runNormattivaDetailFetch = useCallback(async () => {
     setNormattivaDetailRunning(true);
@@ -449,12 +460,13 @@ function App() {
         setNormattivaDetailError(result.message || "Normattiva detail fetch failed");
       }
       await loadNormattivaDetails();
+      await loadNormattivaEvidence();
     } catch (err) {
       setNormattivaDetailError(err.message || "Normattiva detail fetch failed");
     } finally {
       setNormattivaDetailRunning(false);
     }
-  }, [loadNormattivaDetails]);
+  }, [loadNormattivaDetails, loadNormattivaEvidence]);
 
   const runSparqlForAct = useCallback((act) => {
     setActSparqlQuery(createActSparqlQuery(act));
@@ -487,9 +499,10 @@ function App() {
     loadModifications().catch((err) => setError(err.message || "Normattiva request failed"));
     loadNormattivaUpdates().catch((err) => setError(err.message || "Normattiva updates request failed"));
     loadNormattivaDetails().catch((err) => setError(err.message || "Normattiva details request failed"));
+    loadNormattivaEvidence().catch((err) => setError(err.message || "Normattiva evidence request failed"));
     loadRdfSources().catch((err) => setError(err.message || "RDF sources request failed"));
     runSearch("");
-  }, [loadAutomationStatus, loadCrawlStatus, loadLatestArchiveRun, loadLatestNormattivaUpdate, loadLatestUpdate, loadModifications, loadNormattivaAutomationStatus, loadNormattivaDetails, loadNormattivaUpdates, loadRdfSources, loadStatus, runSearch]);
+  }, [loadAutomationStatus, loadCrawlStatus, loadLatestArchiveRun, loadLatestNormattivaUpdate, loadLatestUpdate, loadModifications, loadNormattivaAutomationStatus, loadNormattivaDetails, loadNormattivaEvidence, loadNormattivaUpdates, loadRdfSources, loadStatus, runSearch]);
 
   useEffect(() => {
     loadResourceDetail(selected?.uri || displayLocalId(selected));
@@ -534,7 +547,7 @@ function App() {
     onSourceFilterChange: setSourceFilter,
     onTypeFilterChange: setTypeFilter,
     onYearFilterChange: setYearFilter
-  }) : activeTab === "normattiva" ? e(NormattivaPage, { modifications, normattivaDetails, normattivaUpdates })
+  }) : activeTab === "normattiva" ? e(NormattivaPage, { modifications, normattivaDetails, normattivaEvidence, normattivaUpdates })
     : activeTab === "sparql" ? e(SparqlPage, { initialQuery: actSparqlQuery })
       : e(TechnicalPage, {
           archiveEndDate,
@@ -972,7 +985,7 @@ function LinkButton({ href, icon, label }) {
   );
 }
 
-function NormattivaPage({ modifications, normattivaDetails, normattivaUpdates }) {
+function NormattivaPage({ modifications, normattivaDetails, normattivaEvidence, normattivaUpdates }) {
   return e(React.Fragment, null,
     e("section", { className: "panel normattiva-panel" },
       e("div", { className: "panel-heading" },
@@ -1045,6 +1058,40 @@ function NormattivaPage({ modifications, normattivaDetails, normattivaUpdates })
             )
           )
         : e("div", { className: "empty-state" }, "No Normattiva detail evidence loaded")
+    ),
+    e("section", { className: "panel normattiva-panel" },
+      e("div", { className: "panel-heading" },
+        e("div", null,
+          e("p", { className: "section-label" }, "Normattiva OpenData"),
+          e("h2", null, "Relation evidence"),
+          e("p", { className: "panel-subtitle" }, "Textual evidence found in fetched details. These rows still need review before RDF relations are created.")
+        ),
+        e("span", { className: "result-count" }, `${normattivaEvidence.length} evidence row${normattivaEvidence.length === 1 ? "" : "s"}`)
+      ),
+      normattivaEvidence.length
+        ? e("div", { className: "table-wrap" },
+            e("table", { className: "results-table evidence-candidates-table" },
+              e("thead", null,
+                e("tr", null,
+                  e("th", null, "Code"),
+                  e("th", null, "Title"),
+                  e("th", null, "Type"),
+                  e("th", null, "Evidence")
+                )
+              ),
+              e("tbody", null,
+                normattivaEvidence.map((row, index) =>
+                  e("tr", { key: `${row.code || "evidence"}-${row.evidenceType || index}` },
+                    e("td", { className: "mono relation-id-cell" }, row.code || "-"),
+                    e("td", null, e("span", { className: "table-title" }, row.detailTitle || row.candidateTitle || "-")),
+                    e("td", null, relationEvidenceLabel(row.evidenceType)),
+                    e("td", null, e("span", { className: "small-uri" }, row.evidenceText || "-"))
+                  )
+                )
+              )
+            )
+          )
+        : e("div", { className: "empty-state" }, "No Normattiva relation evidence loaded")
     ),
     e("section", { className: "panel normattiva-panel" },
       e("div", { className: "panel-heading" },
@@ -1627,6 +1674,16 @@ function sourceLabel(source) {
 
 function relationshipLabel(value) {
   return value === "conversion" ? "conversion" : "modifies";
+}
+
+function relationEvidenceLabel(value) {
+  const labels = {
+    conversion: "Conversion",
+    modification: "Modification",
+    repeal: "Repeal",
+    substitution: "Substitution"
+  };
+  return labels[value] || value || "-";
 }
 
 function formatBytes(bytes) {
