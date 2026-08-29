@@ -2,11 +2,16 @@ package it.legislation.crawler;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.time.LocalDate;
 import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
@@ -23,12 +28,16 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 public class NormattivaUpdateRunner {
 
-    private static final String DEFAULT_SOURCE_URL = "https://www.normattiva.it/";
+    private static final String DEFAULT_SOURCE_URL = "https://api.normattiva.it/t/normattiva.api";
     private static final Path DEFAULT_UPDATES_OUTPUT = Path.of("data", "clean", "normattiva_updates.tsv");
     private static final Path DEFAULT_RELATIONS_OUTPUT = Path.of("data", "clean", "normattiva_modifications_auto.tsv");
     private static final Path DEFAULT_RDF_OUTPUT = Path.of("data", "rdf", "normattiva_modifications_auto.ttl");
+    private static final ObjectMapper JSON = new ObjectMapper();
     private static final Pattern ITALIAN_DATE = Pattern.compile(
             "\\b\\d{1,2}\\s+(?:gennaio|febbraio|marzo|aprile|maggio|giugno|luglio|agosto|settembre|ottobre|novembre|dicembre)\\s+\\d{4}\\b",
             Pattern.CASE_INSENSITIVE
@@ -55,22 +64,89 @@ public class NormattivaUpdateRunner {
             Path relationsOutput,
             Path rdfOutput
     ) throws IOException {
-        String html = fetch(sourceUrl);
-        List<NormattivaUpdate> updates = parseUpdates(html, sourceUrl);
-        List<CleanModificationRecord> relations = inferRelations(updates);
+        OffsetDateTime end = envDate("NORMATTIVA_UPDATE_END")
+                .orElse(OffsetDateTime.now(ZoneOffset.UTC));
+        OffsetDateTime start = envDate("NORMATTIVA_UPDATE_START")
+                .orElse(end.minusDays(lookbackDays()));
 
-        writeUpdates(updates, updatesOutput, OffsetDateTime.now());
-        writeRelations(relations, relationsOutput);
-        writeRdf(relations, rdfOutput);
+        return runOpenData(
+                sourceUrl,
+                start,
+                end,
+                updatesOutput,
+                relationsOutput,
+                rdfOutput,
+                NormattivaUpdateRunner::postJson
+        );
+    }
+
+    static Result runOpenData(
+            String sourceUrl,
+            OffsetDateTime start,
+            OffsetDateTime end,
+            Path updatesOutput,
+            Path relationsOutput,
+            Path rdfOutput,
+            HttpJsonClient client
+    ) throws IOException {
+        String endpoint = updatedActsEndpoint(sourceUrl);
+        String requestBody = updatedActsRequestBody(start, end);
+        String json = client.postJson(endpoint, requestBody);
+        List<NormattivaOpenDataUpdate> updates = parseOpenDataUpdates(json);
+
+        writeOpenDataUpdates(updates, updatesOutput, endpoint, fetchedAt(start, end));
+
+        // The OpenData "aggiornati" endpoint discovers changed acts. Relation RDF is intentionally
+        // left untouched until a later detail/related-acts step can derive links without guessing.
+        int relationRows = 0;
 
         return new Result(
-                sourceUrl,
+                endpoint,
                 updates.size(),
-                relations.size(),
+                relationRows,
                 updatesOutput.toAbsolutePath().normalize().toString(),
                 relationsOutput.toAbsolutePath().normalize().toString(),
                 rdfOutput.toAbsolutePath().normalize().toString()
         );
+    }
+
+    static String updatedActsEndpoint(String sourceUrl) {
+        String base = sourceUrl == null || sourceUrl.isBlank() ? DEFAULT_SOURCE_URL : sourceUrl.trim();
+        return base.replaceAll("/+$", "") + "/api/v1/ricerca/aggiornati";
+    }
+
+    static String updatedActsRequestBody(OffsetDateTime start, OffsetDateTime end) {
+        String safeStart = start == null ? OffsetDateTime.now(ZoneOffset.UTC).minusDays(lookbackDays()).toString() : start.toString();
+        String safeEnd = end == null ? OffsetDateTime.now(ZoneOffset.UTC).toString() : end.toString();
+        return """
+                {"dataInizioAggiornamento":"%s","dataFineAggiornamento":"%s"}
+                """.formatted(safeStart, safeEnd).trim();
+    }
+
+    static List<NormattivaOpenDataUpdate> parseOpenDataUpdates(String json) throws IOException {
+        JsonNode root = JSON.readTree(json == null || json.isBlank() ? "{}" : json);
+        JsonNode acts = root.path("listaAtti");
+        if (!acts.isArray()) {
+            acts = root.path("data").path("listaAtti");
+        }
+        if (!acts.isArray()) {
+            return List.of();
+        }
+
+        List<NormattivaOpenDataUpdate> updates = new ArrayList<>();
+        for (JsonNode act : acts) {
+            updates.add(new NormattivaOpenDataUpdate(
+                    text(act, "codiceRedazionale"),
+                    firstText(act, "dataGU", "dataGUStr"),
+                    firstText(act, "denominazioneAtto", "tipoProvvedimentoDescrizione"),
+                    firstText(act, "numeroAtto", "numeroProvvedimento", "numeroAttoAlfanumerico"),
+                    firstText(act, "titoloAtto", "descrizioneAtto"),
+                    text(act, "dataEmanazione"),
+                    text(act, "dataUltimaModifica"),
+                    text(act, "ultimiAttiModificanti")
+            ));
+        }
+        return List.copyOf(updates);
     }
 
     static List<NormattivaUpdate> parseUpdates(String html, String baseUrl) {
@@ -129,6 +205,32 @@ public class NormattivaUpdateRunner {
                     cleanField(update.updateDate()),
                     cleanField(update.description()),
                     cleanField(String.join(" ", update.normattivaLinks())),
+                    fetchedAt.toString()
+            ));
+        }
+        Files.write(output, lines, StandardCharsets.UTF_8);
+    }
+
+    static void writeOpenDataUpdates(
+            List<NormattivaOpenDataUpdate> updates,
+            Path output,
+            String endpoint,
+            OffsetDateTime fetchedAt
+    ) throws IOException {
+        createParent(output);
+        List<String> lines = new ArrayList<>();
+        lines.add("codice_redazionale\tdata_gu\tdenominazione_atto\tnumero_atto\ttitolo_atto\tdata_emanazione\tdata_ultima_modifica\tultimi_atti_modificanti\tendpoint\tfetched_at");
+        for (NormattivaOpenDataUpdate update : updates) {
+            lines.add(String.join("\t",
+                    cleanField(update.codiceRedazionale()),
+                    cleanField(update.dataGu()),
+                    cleanField(update.denominazioneAtto()),
+                    cleanField(update.numeroAtto()),
+                    cleanField(update.titoloAtto()),
+                    cleanField(update.dataEmanazione()),
+                    cleanField(update.dataUltimaModifica()),
+                    cleanField(update.ultimiAttiModificanti()),
+                    cleanField(endpoint),
                     fetchedAt.toString()
             ));
         }
@@ -213,6 +315,25 @@ public class NormattivaUpdateRunner {
                 .outerHtml();
     }
 
+    private static String postJson(String url, String jsonBody) throws IOException {
+        HttpRequest request = HttpRequest.newBuilder(URI.create(url))
+                .header("Accept", "application/json")
+                .header("Content-Type", "application/json")
+                .POST(HttpRequest.BodyPublishers.ofString(jsonBody, StandardCharsets.UTF_8))
+                .build();
+        try {
+            HttpResponse<String> response = HttpClient.newHttpClient()
+                    .send(request, HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8));
+            if (response.statusCode() < 200 || response.statusCode() >= 300) {
+                throw new IOException("Normattiva OpenData update request failed with HTTP " + response.statusCode());
+            }
+            return response.body();
+        } catch (InterruptedException exception) {
+            Thread.currentThread().interrupt();
+            throw new IOException("Normattiva OpenData update request interrupted.", exception);
+        }
+    }
+
     private static String absoluteUrl(String baseUrl, String href) {
         if (href.startsWith("http://") || href.startsWith("https://")) {
             return href;
@@ -244,12 +365,90 @@ public class NormattivaUpdateRunner {
         return value;
     }
 
+    private static OptionalDate envDate(String environmentName) {
+        String value = System.getenv(environmentName);
+        if (value == null || value.isBlank()) {
+            return OptionalDate.empty();
+        }
+        try {
+            return OptionalDate.of(OffsetDateTime.parse(value));
+        } catch (RuntimeException exception) {
+            LocalDate date = LocalDate.parse(value);
+            return OptionalDate.of(date.atStartOfDay().atOffset(ZoneOffset.UTC));
+        }
+    }
+
+    private static int lookbackDays() {
+        String value = System.getenv("NORMATTIVA_UPDATE_LOOKBACK_DAYS");
+        if (value == null || value.isBlank()) {
+            return 7;
+        }
+        try {
+            return Math.max(1, Integer.parseInt(value));
+        } catch (NumberFormatException exception) {
+            return 7;
+        }
+    }
+
+    private static OffsetDateTime fetchedAt(OffsetDateTime start, OffsetDateTime end) {
+        return end == null ? OffsetDateTime.now(ZoneOffset.UTC) : end;
+    }
+
+    private static String firstText(JsonNode node, String... fieldNames) {
+        for (String fieldName : fieldNames) {
+            String value = text(node, fieldName);
+            if (!value.isBlank()) {
+                return value;
+            }
+        }
+        return "";
+    }
+
+    private static String text(JsonNode node, String fieldName) {
+        JsonNode value = node.path(fieldName);
+        if (value.isMissingNode() || value.isNull()) {
+            return "";
+        }
+        return value.isTextual() ? value.asText() : value.toString();
+    }
+
+    @FunctionalInterface
+    interface HttpJsonClient {
+        String postJson(String url, String jsonBody) throws IOException;
+    }
+
     public record NormattivaUpdate(
             String title,
             String updateDate,
             String description,
             List<String> normattivaLinks
     ) {
+    }
+
+    public record NormattivaOpenDataUpdate(
+            String codiceRedazionale,
+            String dataGu,
+            String denominazioneAtto,
+            String numeroAtto,
+            String titoloAtto,
+            String dataEmanazione,
+            String dataUltimaModifica,
+            String ultimiAttiModificanti
+    ) {
+    }
+
+    private record OptionalDate(OffsetDateTime value) {
+        static OptionalDate of(OffsetDateTime value) {
+            return new OptionalDate(value);
+        }
+
+        static OptionalDate empty() {
+            return new OptionalDate(null);
+        }
+
+        OffsetDateTime orElse(OffsetDateTime fallback) {
+            return value == null ? fallback : value;
+        }
     }
 
     public record Result(
