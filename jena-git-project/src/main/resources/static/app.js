@@ -148,6 +148,7 @@ function App() {
   const [archiveEndDate, setArchiveEndDate] = useState("2026-06-16");
   const [archiveLimit, setArchiveLimit] = useState("10");
   const [modifications, setModifications] = useState([]);
+  const [normattivaUpdates, setNormattivaUpdates] = useState([]);
   const [rdfSources, setRdfSources] = useState([]);
   const [acts, setActs] = useState([]);
   const [selected, setSelected] = useState(null);
@@ -215,6 +216,15 @@ function App() {
     }
     const rows = await response.json();
     setModifications(Array.isArray(rows) ? rows : []);
+  }, []);
+
+  const loadNormattivaUpdates = useCallback(async () => {
+    const response = await fetch("/api/normattiva/updates?limit=20");
+    if (!response.ok) {
+      throw new Error("Normattiva updates request failed");
+    }
+    const rows = await response.json();
+    setNormattivaUpdates(Array.isArray(rows) ? rows : []);
   }, []);
 
   const loadNormattivaAutomationStatus = useCallback(async () => {
@@ -401,6 +411,7 @@ function App() {
       }
       await loadStatus();
       await loadModifications();
+      await loadNormattivaUpdates();
       await loadRdfSources();
       await loadNormattivaAutomationStatus();
     } catch (err) {
@@ -408,7 +419,7 @@ function App() {
     } finally {
       setNormattivaRunning(false);
     }
-  }, [loadModifications, loadNormattivaAutomationStatus, loadRdfSources, loadStatus]);
+  }, [loadModifications, loadNormattivaAutomationStatus, loadNormattivaUpdates, loadRdfSources, loadStatus]);
 
   const runSparqlForAct = useCallback((act) => {
     setActSparqlQuery(createActSparqlQuery(act));
@@ -439,9 +450,10 @@ function App() {
     loadLatestNormattivaUpdate().catch(() => {});
     loadLatestArchiveRun().catch(() => {});
     loadModifications().catch((err) => setError(err.message || "Normattiva request failed"));
+    loadNormattivaUpdates().catch((err) => setError(err.message || "Normattiva updates request failed"));
     loadRdfSources().catch((err) => setError(err.message || "RDF sources request failed"));
     runSearch("");
-  }, [loadAutomationStatus, loadCrawlStatus, loadLatestArchiveRun, loadLatestNormattivaUpdate, loadLatestUpdate, loadModifications, loadNormattivaAutomationStatus, loadRdfSources, loadStatus, runSearch]);
+  }, [loadAutomationStatus, loadCrawlStatus, loadLatestArchiveRun, loadLatestNormattivaUpdate, loadLatestUpdate, loadModifications, loadNormattivaAutomationStatus, loadNormattivaUpdates, loadRdfSources, loadStatus, runSearch]);
 
   useEffect(() => {
     loadResourceDetail(selected?.uri || displayLocalId(selected));
@@ -486,7 +498,7 @@ function App() {
     onSourceFilterChange: setSourceFilter,
     onTypeFilterChange: setTypeFilter,
     onYearFilterChange: setYearFilter
-  }) : activeTab === "normattiva" ? e(NormattivaPage, { modifications })
+  }) : activeTab === "normattiva" ? e(NormattivaPage, { modifications, normattivaUpdates })
     : activeTab === "sparql" ? e(SparqlPage, { initialQuery: actSparqlQuery })
       : e(TechnicalPage, {
           archiveEndDate,
@@ -920,37 +932,75 @@ function LinkButton({ href, icon, label }) {
   );
 }
 
-function NormattivaPage({ modifications }) {
-  return e("section", { className: "panel normattiva-panel" },
-    e("div", { className: "panel-heading" },
-      e("div", null,
-        e("p", { className: "section-label" }, "Normattiva RDF"),
-        e("h2", null, "Legal relationships")
+function NormattivaPage({ modifications, normattivaUpdates }) {
+  return e(React.Fragment, null,
+    e("section", { className: "panel normattiva-panel" },
+      e("div", { className: "panel-heading" },
+        e("div", null,
+          e("p", { className: "section-label" }, "Normattiva OpenData"),
+          e("h2", null, "Update candidates"),
+          e("p", { className: "panel-subtitle" }, "Acts returned by the official updated-acts API. These are not RDF relations yet.")
+        ),
+        e("span", { className: "result-count" }, `${normattivaUpdates.length} candidate${normattivaUpdates.length === 1 ? "" : "s"}`)
       ),
-      e("span", { className: "result-count" }, `${modifications.length} link${modifications.length === 1 ? "" : "s"}`)
-    ),
-    modifications.length
-      ? e("div", { className: "table-wrap" },
-          e("table", { className: "results-table" },
-            e("thead", null,
-              e("tr", null,
-                e("th", null, "Source Act"),
-                e("th", null, "Relation"),
-                e("th", null, "Target Act")
-              )
-            ),
-            e("tbody", null,
-              modifications.map((row) =>
-                e("tr", { key: `${row.sourceUri}-${row.relationship}-${row.targetUri}` },
-                  e("td", { className: "mono relation-id-cell" }, displayRelationId(row.sourceLocalId, row.sourceUri)),
-                  e("td", null, relationshipLabel(row.relationship)),
-                  e("td", { className: "mono relation-id-cell" }, displayRelationId(row.targetLocalId, row.targetUri))
+      normattivaUpdates.length
+        ? e("div", { className: "table-wrap" },
+            e("table", { className: "results-table update-candidates-table" },
+              e("thead", null,
+                e("tr", null,
+                  e("th", null, "Code"),
+                  e("th", null, "Title"),
+                  e("th", null, "GU Date"),
+                  e("th", null, "Last Modified"),
+                  e("th", null, "Evidence")
+                )
+              ),
+              e("tbody", null,
+                normattivaUpdates.map((row, index) =>
+                  e("tr", { key: `${row.code || "candidate"}-${row.lastModifiedDate || index}` },
+                    e("td", { className: "mono relation-id-cell" }, row.code || "-"),
+                    e("td", null, e("span", { className: "table-title" }, row.title || row.actName || "-")),
+                    e("td", null, formatShortDate(row.gazzettaDate) || "-"),
+                    e("td", null, formatShortDate(row.lastModifiedDate) || "-"),
+                    e("td", null, e("span", { className: "small-uri" }, row.modifyingActs || row.source || "-"))
+                  )
                 )
               )
             )
           )
-        )
-      : e("div", { className: "empty-state" }, "No Normattiva relationships loaded")
+        : e("div", { className: "empty-state" }, "No Normattiva update candidates loaded")
+    ),
+    e("section", { className: "panel normattiva-panel" },
+      e("div", { className: "panel-heading" },
+        e("div", null,
+          e("p", { className: "section-label" }, "Normattiva RDF"),
+          e("h2", null, "Legal relationships")
+        ),
+        e("span", { className: "result-count" }, `${modifications.length} link${modifications.length === 1 ? "" : "s"}`)
+      ),
+      modifications.length
+        ? e("div", { className: "table-wrap" },
+            e("table", { className: "results-table" },
+              e("thead", null,
+                e("tr", null,
+                  e("th", null, "Source Act"),
+                  e("th", null, "Relation"),
+                  e("th", null, "Target Act")
+                )
+              ),
+              e("tbody", null,
+                modifications.map((row) =>
+                  e("tr", { key: `${row.sourceUri}-${row.relationship}-${row.targetUri}` },
+                    e("td", { className: "mono relation-id-cell" }, displayRelationId(row.sourceLocalId, row.sourceUri)),
+                    e("td", null, relationshipLabel(row.relationship)),
+                    e("td", { className: "mono relation-id-cell" }, displayRelationId(row.targetLocalId, row.targetUri))
+                  )
+                )
+              )
+            )
+          )
+        : e("div", { className: "empty-state" }, "No Normattiva relationships loaded")
+    )
   );
 }
 
@@ -1109,7 +1159,7 @@ function NormattivaAutomationPanel({
       e("div", null,
         e("p", { className: "section-label" }, "Normattiva"),
         e("h2", null, "Automatic update status"),
-        e("p", { className: "panel-subtitle" }, "Downloads Normattiva update cards, extracts act links, and generates automatic relationship RDF.")
+        e("p", { className: "panel-subtitle" }, "Fetches official Normattiva update candidates without inferring relationship RDF.")
       ),
       e("button", {
         className: "secondary-button",
