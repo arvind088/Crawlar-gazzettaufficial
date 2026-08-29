@@ -1,8 +1,14 @@
 package it.legislation.web;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.OffsetDateTime;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,6 +27,9 @@ public class NormattivaUpdateService {
     private final AtomicBoolean running = new AtomicBoolean(false);
     private final LegalActQueryService queryService;
     private final NormattivaRunner runner;
+    private final Path updatesOutput;
+    private final Path relationsOutput;
+    private final Path rdfOutput;
     private volatile NormattivaUpdateResult lastResult;
 
     @Autowired
@@ -29,8 +38,21 @@ public class NormattivaUpdateService {
     }
 
     NormattivaUpdateService(LegalActQueryService queryService, NormattivaRunner runner) {
+        this(queryService, runner, DEFAULT_UPDATES_OUTPUT, DEFAULT_RELATIONS_OUTPUT, DEFAULT_RDF_OUTPUT);
+    }
+
+    NormattivaUpdateService(
+            LegalActQueryService queryService,
+            NormattivaRunner runner,
+            Path updatesOutput,
+            Path relationsOutput,
+            Path rdfOutput
+    ) {
         this.queryService = queryService;
         this.runner = runner;
+        this.updatesOutput = updatesOutput;
+        this.relationsOutput = relationsOutput;
+        this.rdfOutput = rdfOutput;
     }
 
     public NormattivaUpdateResult runUpdate() throws IOException {
@@ -61,9 +83,9 @@ public class NormattivaUpdateService {
         try {
             NormattivaUpdateRunner.Result runnerResult = runner.run(
                     DEFAULT_SOURCE_URL,
-                    DEFAULT_UPDATES_OUTPUT,
-                    DEFAULT_RELATIONS_OUTPUT,
-                    DEFAULT_RDF_OUTPUT
+                    updatesOutput,
+                    relationsOutput,
+                    rdfOutput
             );
             NormattivaUpdateResult result = new NormattivaUpdateResult(
                     "COMPLETED",
@@ -95,6 +117,84 @@ public class NormattivaUpdateService {
 
     public NormattivaUpdateResult lastResult() {
         return lastResult;
+    }
+
+    public List<NormattivaUpdateCandidate> listUpdateCandidates(int limit) throws IOException {
+        int boundedLimit = Math.max(1, Math.min(limit, 200));
+        if (!Files.exists(updatesOutput)) {
+            return List.of();
+        }
+
+        List<String> lines = Files.readAllLines(updatesOutput, StandardCharsets.UTF_8);
+        if (lines.size() < 2) {
+            return List.of();
+        }
+
+        Map<String, Integer> header = headerIndex(lines.get(0));
+        List<NormattivaUpdateCandidate> candidates = new ArrayList<>();
+        for (int index = 1; index < lines.size() && candidates.size() < boundedLimit; index++) {
+            if (lines.get(index).isBlank()) {
+                continue;
+            }
+            List<String> fields = splitTsv(lines.get(index));
+            candidates.add(candidateFromRow(header, fields));
+        }
+        return candidates;
+    }
+
+    private static NormattivaUpdateCandidate candidateFromRow(Map<String, Integer> header, List<String> fields) {
+        String title = firstNonBlank(field(header, fields, "titolo_atto"), field(header, fields, "title"));
+        String actName = field(header, fields, "denominazione_atto");
+        return new NormattivaUpdateCandidate(
+                field(header, fields, "codice_redazionale"),
+                firstNonBlank(title, actName),
+                field(header, fields, "data_gu"),
+                field(header, fields, "data_emanazione"),
+                firstNonBlank(field(header, fields, "data_ultima_modifica"), field(header, fields, "update_date")),
+                actName,
+                field(header, fields, "numero_atto"),
+                firstNonBlank(field(header, fields, "ultimi_atti_modificanti"), field(header, fields, "description")),
+                firstNonBlank(field(header, fields, "endpoint"), field(header, fields, "normattiva_links")),
+                field(header, fields, "fetched_at")
+        );
+    }
+
+    private static Map<String, Integer> headerIndex(String line) {
+        List<String> headers = splitTsv(line);
+        Map<String, Integer> index = new LinkedHashMap<>();
+        for (int position = 0; position < headers.size(); position++) {
+            index.put(headers.get(position), position);
+        }
+        return index;
+    }
+
+    private static String field(Map<String, Integer> header, List<String> fields, String name) {
+        Integer position = header.get(name);
+        if (position == null || position >= fields.size()) {
+            return "";
+        }
+        return fields.get(position);
+    }
+
+    private static List<String> splitTsv(String line) {
+        String[] values = line.split("\t", -1);
+        List<String> fields = new ArrayList<>(values.length);
+        for (String value : values) {
+            fields.add(unquote(value));
+        }
+        return fields;
+    }
+
+    private static String unquote(String value) {
+        String trimmed = value.trim();
+        if (trimmed.length() >= 2 && trimmed.startsWith("\"") && trimmed.endsWith("\"")) {
+            return trimmed.substring(1, trimmed.length() - 1).replace("\"\"", "\"");
+        }
+        return trimmed;
+    }
+
+    private static String firstNonBlank(String first, String second) {
+        return first == null || first.isBlank() ? second : first;
     }
 
     @FunctionalInterface
