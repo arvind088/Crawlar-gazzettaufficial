@@ -28,6 +28,171 @@ DECRETOLEGISLATIVO_20050307_82
 20050516_005G0104_VIGENZA_20250320_V52
 ```
 
+## Multi-Version Sample Details
+
+The sample resource is:
+
+```text
+http://www.gazzettaufficiale.it/eli/id/2005/05/16/005G0104/sg
+```
+
+This represents the legal resource/work level for:
+
+```text
+Codice dell'amministrazione digitale
+Decreto legislativo 7 marzo 2005, n. 82
+Published in Gazzetta Ufficiale on 2005-05-16
+Redactional/local ID: 005G0104
+```
+
+The sample is intentionally small. It does not try to store the full legislative text. Its purpose is to validate the ELI linked-data structure that the UI must expose:
+
+```text
+LegalResource / work
+  -> LegalExpression / version
+      -> Format / manifestation
+```
+
+### Work / Legal Resource
+
+The work-level URI is:
+
+```text
+http://www.gazzettaufficiale.it/eli/id/2005/05/16/005G0104/sg
+```
+
+Important triples:
+
+```turtle
+<http://www.gazzettaufficiale.it/eli/id/2005/05/16/005G0104/sg>
+        rdf:type             eli:LegalResource ;
+        rdfs:label           "Codice dell'amministrazione digitale" ;
+        eli:date_document    "2005-03-07"^^xsd:date ;
+        eli:date_publication "2005-05-16"^^xsd:date ;
+        eli:id_local         "005G0104" ;
+        eli:number           "82" ;
+        eli:type_document    <http://www.gazzettaufficiale.it/eli/tables/resource-type#DECRETOLEGISLATIVO> ;
+        eli:is_realized_by   <.../original> ,
+                             <.../vigente/2025-03-20/v52> .
+```
+
+Meaning:
+
+- `eli:LegalResource` is the abstract legal act.
+- `eli:id_local` lets the UI find the resource by the familiar local ID `005G0104`.
+- `eli:is_realized_by` connects the legal act to its expressions/versions.
+- Having two `eli:is_realized_by` values is what makes this a multi-version demonstration.
+
+### Expression 1: Original Version
+
+The original expression URI is:
+
+```text
+http://www.gazzettaufficiale.it/eli/id/2005/05/16/005G0104/sg/ita/original
+```
+
+Important triples:
+
+```turtle
+<http://www.gazzettaufficiale.it/eli/id/2005/05/16/005G0104/sg/ita/original>
+        rdf:type           eli:LegalExpression ;
+        rdfs:label         "Codice dell'amministrazione digitale - testo originale" ;
+        eli:language       <http://publications.europa.eu/resource/authority/language/ITA> ;
+        eli:realizes       <http://www.gazzettaufficiale.it/eli/id/2005/05/16/005G0104/sg> ;
+        eli:version        <http://www.gazzettaufficiale.it/eli/tables/versions#ORIGINALE_V0> ;
+        eli:is_embodied_by <http://www.gazzettaufficiale.it/eli/id/2005/05/16/005G0104/sg/ita/original/html> .
+```
+
+Meaning:
+
+- This is one expression/version of the legal act.
+- `eli:version` records that this is the original version.
+- `eli:realizes` links the expression back to the legal resource/work.
+- `eli:is_embodied_by` links this expression to a concrete manifestation.
+
+### Expression 2: Vigente Version
+
+The later vigente expression URI is:
+
+```text
+http://www.gazzettaufficiale.it/eli/id/2005/05/16/005G0104/sg/ita/vigente/2025-03-20/v52
+```
+
+Important triples:
+
+```turtle
+<http://www.gazzettaufficiale.it/eli/id/2005/05/16/005G0104/sg/ita/vigente/2025-03-20/v52>
+        rdf:type           eli:LegalExpression ;
+        rdfs:label         "Codice dell'amministrazione digitale - testo vigente al 2025-03-20, versione 52" ;
+        eli:language       <http://publications.europa.eu/resource/authority/language/ITA> ;
+        eli:realizes       <http://www.gazzettaufficiale.it/eli/id/2005/05/16/005G0104/sg> ;
+        eli:version        <http://www.gazzettaufficiale.it/eli/tables/versions#VIGENZA_20250320_V52> ;
+        eli:is_embodied_by <http://www.gazzettaufficiale.it/eli/id/2005/05/16/005G0104/sg/ita/vigente/2025-03-20/v52/html> .
+```
+
+Meaning:
+
+- This is another expression/version of the same legal act.
+- The version name follows the Normattiva OpenData naming pattern:
+
+```text
+20050516_005G0104_VIGENZA_20250320_V52
+```
+
+- This lets the UI demonstrate that one legal act can expose multiple expressions.
+
+### Manifestations
+
+The two manifestation URIs are:
+
+```text
+http://www.gazzettaufficiale.it/eli/id/2005/05/16/005G0104/sg/ita/original/html
+http://www.gazzettaufficiale.it/eli/id/2005/05/16/005G0104/sg/ita/vigente/2025-03-20/v52/html
+```
+
+Important triples:
+
+```turtle
+<.../original/html>
+        rdf:type   eli:Format ;
+        eli:format <http://www.iana.org/assignments/media-types/text/html> .
+
+<.../vigente/2025-03-20/v52/html>
+        rdf:type   eli:Format ;
+        eli:format <http://www.iana.org/assignments/media-types/text/html> .
+```
+
+Meaning:
+
+- A manifestation is the concrete representation of an expression.
+- In this sample, both expressions have an HTML manifestation.
+- The UI can therefore show both the expression level and the manifestation level.
+
+### What This Proves
+
+This sample proves four important points:
+
+- The repository can store a legal resource with more than one expression.
+- The UI can query TDB2 and display those expressions.
+- The UI can query and display manifestations for each expression.
+- The user can navigate the linked-data chain inside the interface.
+
+The chain demonstrated by this sample is:
+
+```text
+005G0104 legal resource
+  -> original expression
+      -> original HTML manifestation
+  -> vigente V52 expression
+      -> vigente V52 HTML manifestation
+```
+
+### Current Limitation
+
+This is a curated RDF sample, not yet the result of a fully automated Normattiva API ingestion routine.
+
+That is acceptable for the current validation step because it makes the ELI model and UI behavior explicit and testable. The next data-engineering step is to replace or supplement this sample with records downloaded directly from the Normattiva OpenData APIs.
+
 ## 1. Count Loaded Legal Resources
 
 Purpose:
