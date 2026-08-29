@@ -199,6 +199,22 @@ class LegalActQueryServiceTest {
                         && "26G00099".equals(relation.resourceLocalId())));
     }
 
+    @Test
+    void loadsCommittedMultiVersionSample() throws Exception {
+        LegalActQueryService service = service(Path.of("data", "rdf", "normattiva_multiversion_sample.ttl"));
+
+        LinkedDataResource resource = service.findLinkedDataResource("005G0104").orElseThrow();
+
+        assertEquals("005G0104", resource.localId());
+        assertEquals("Codice dell'amministrazione digitale", resource.title());
+        assertEquals(2, resource.expressions().size());
+        assertEquals(2, resource.manifestations().size());
+        assertTrue(resource.expressions().stream()
+                .anyMatch(expression -> expression.version().endsWith("#ORIGINALE_V0")));
+        assertTrue(resource.expressions().stream()
+                .anyMatch(expression -> expression.version().endsWith("#VIGENZA_20250320_V52")));
+    }
+
     private LegalActQueryService service(Path turtle) throws Exception {
         LegalActQueryService service = new LegalActQueryService(List.of(turtle));
         services.add(service);

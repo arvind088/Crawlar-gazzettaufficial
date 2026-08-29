@@ -91,13 +91,14 @@ LIMIT 20`
     query: `PREFIX eli: <http://data.europa.eu/eli/ontology#>
 
 SELECT ?act ?expression ?manifestation ?version ?language ?format WHERE {
-  ?act eli:id_local "26A03275" ;
+  ?act eli:id_local "005G0104" ;
        eli:is_realized_by ?expression .
-  OPTIONAL { ?act eli:version ?version . }
+  OPTIONAL { ?expression eli:version ?version . }
   OPTIONAL { ?expression eli:language ?language . }
   OPTIONAL { ?expression eli:is_embodied_by ?manifestation . }
   OPTIONAL { ?manifestation eli:format ?format . }
-}`
+}
+ORDER BY ?version`
   },
   {
     id: "conversion",
