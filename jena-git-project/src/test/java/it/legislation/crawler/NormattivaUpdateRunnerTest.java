@@ -225,6 +225,44 @@ class NormattivaUpdateRunnerTest {
     }
 
     @Test
+    void scansRelationEvidenceFromDetailTsv() throws Exception {
+        Path detailsPath = tempDir.resolve("normattiva_details.tsv");
+        Files.write(detailsPath, List.of(
+                "codice_redazionale\tdata_gu\ttitolo_atto\tdenominazione_atto\tnumero_atto\tdetail_title\tdetail_subtitle\tact_type\tact_type_code\tact_date\tact_number\tpublication_date\tforce_start_date\tforce_end_date\ttext_in_force\tarticle_html\tendpoint\tfetched_at",
+                "005G0104\t2005-05-16\tCodice dell'amministrazione digitale\tDECRETO LEGISLATIVO\t82\tCodice dell'amministrazione digitale\tTesto vigente\tDECRETO LEGISLATIVO\tDLGS\t2005-03-07\t82\t2005-05-16\t2025-03-20\t\tvigente\t<p>Il decreto-legge e' convertito, con modificazioni, dalla legge.</p>\thttps://api.normattiva.it/t/normattiva.api/api/v1/atto/dettaglio-atto\t2026-08-29T10:00:00Z"
+        ), StandardCharsets.UTF_8);
+
+        List<NormattivaUpdateRunner.NormattivaRelationEvidence> evidence =
+                NormattivaUpdateRunner.scanRelationEvidence(detailsPath, 10);
+
+        assertEquals(1, evidence.size());
+        assertEquals("005G0104", evidence.get(0).code());
+        assertEquals("conversion", evidence.get(0).evidenceType());
+        assertTrue(evidence.get(0).evidenceText().contains("convertito"));
+    }
+
+    @Test
+    void writesRelationEvidenceReportWithoutWritingRdf() throws Exception {
+        Path detailsPath = tempDir.resolve("normattiva_details.tsv");
+        Path evidencePath = tempDir.resolve("normattiva_relation_evidence.tsv");
+        Files.write(detailsPath, List.of(
+                "codice_redazionale\tdata_gu\ttitolo_atto\tdenominazione_atto\tnumero_atto\tdetail_title\tdetail_subtitle\tact_type\tact_type_code\tact_date\tact_number\tpublication_date\tforce_start_date\tforce_end_date\ttext_in_force\tarticle_html\tendpoint\tfetched_at",
+                "005G0104\t2005-05-16\tCodice dell'amministrazione digitale\tDECRETO LEGISLATIVO\t82\tCodice dell'amministrazione digitale\tTesto vigente\tDECRETO LEGISLATIVO\tDLGS\t2005-03-07\t82\t2005-05-16\t2025-03-20\t\tvigente\t<p>Testo modificato dalla legge successiva.</p>\thttps://api.normattiva.it/t/normattiva.api/api/v1/atto/dettaglio-atto\t2026-08-29T10:00:00Z",
+                "25G00041\t2025-03-24\tDisposizioni urgenti\tDECRETO LEGGE\t32\tDisposizioni urgenti\tTesto vigente\tDECRETO LEGGE\tDL\t2025-03-11\t32\t2025-03-24\t2025-05-08\t\tvigente\t<p>Testo senza parole relazionali.</p>\thttps://api.normattiva.it/t/normattiva.api/api/v1/atto/dettaglio-atto\t2026-08-29T10:00:00Z"
+        ), StandardCharsets.UTF_8);
+
+        NormattivaUpdateRunner.EvidenceScanResult result =
+                NormattivaUpdateRunner.runEvidenceScan(detailsPath, evidencePath, 10);
+
+        String output = Files.readString(evidencePath, StandardCharsets.UTF_8);
+        assertEquals(2, result.detailsRead());
+        assertEquals(1, result.evidenceRows());
+        assertTrue(output.contains("evidence_type"));
+        assertTrue(output.contains("modification"));
+        assertTrue(output.contains("005G0104"));
+    }
+
+    @Test
     void runsOpenDataUpdateDiscoveryWithoutInferringRelations() throws Exception {
         Path updatesPath = tempDir.resolve("normattiva_updates.tsv");
         Path relationsPath = tempDir.resolve("normattiva_relations.tsv");

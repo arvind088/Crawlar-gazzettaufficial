@@ -36,6 +36,7 @@ public class NormattivaUpdateRunner {
     private static final String DEFAULT_SOURCE_URL = "https://api.normattiva.it/t/normattiva.api";
     private static final Path DEFAULT_UPDATES_OUTPUT = Path.of("data", "clean", "normattiva_updates.tsv");
     private static final Path DEFAULT_DETAILS_OUTPUT = Path.of("data", "clean", "normattiva_details.tsv");
+    private static final Path DEFAULT_EVIDENCE_OUTPUT = Path.of("data", "clean", "normattiva_relation_evidence.tsv");
     private static final Path DEFAULT_RELATIONS_OUTPUT = Path.of("data", "clean", "normattiva_modifications_auto.tsv");
     private static final Path DEFAULT_RDF_OUTPUT = Path.of("data", "rdf", "normattiva_modifications_auto.ttl");
     private static final ObjectMapper JSON = new ObjectMapper();
@@ -48,6 +49,7 @@ public class NormattivaUpdateRunner {
         String sourceUrl = valueOrDefault("NORMATTIVA_SOURCE_URL", DEFAULT_SOURCE_URL);
         Path updatesOutput = Path.of(valueOrDefault("NORMATTIVA_UPDATES_OUTPUT", DEFAULT_UPDATES_OUTPUT.toString()));
         Path detailsOutput = Path.of(valueOrDefault("NORMATTIVA_DETAILS_OUTPUT", DEFAULT_DETAILS_OUTPUT.toString()));
+        Path evidenceOutput = Path.of(valueOrDefault("NORMATTIVA_EVIDENCE_OUTPUT", DEFAULT_EVIDENCE_OUTPUT.toString()));
         Path relationsOutput = Path.of(valueOrDefault("NORMATTIVA_RELATIONS_OUTPUT", DEFAULT_RELATIONS_OUTPUT.toString()));
         Path rdfOutput = Path.of(valueOrDefault("NORMATTIVA_RDF_OUTPUT", DEFAULT_RDF_OUTPUT.toString()));
 
@@ -62,6 +64,14 @@ public class NormattivaUpdateRunner {
             System.out.println("Read Normattiva update candidates: " + result.candidatesRead());
             System.out.println("Wrote Normattiva detail rows: " + result.detailsWritten());
             System.out.println("Details TSV: " + detailsOutput.toAbsolutePath().normalize());
+            return;
+        }
+
+        if (args.length > 0 && "evidence".equalsIgnoreCase(args[0])) {
+            EvidenceScanResult result = runEvidenceScan(detailsOutput, evidenceOutput, evidenceLimit());
+            System.out.println("Scanned Normattiva detail rows: " + result.detailsRead());
+            System.out.println("Wrote relation evidence rows: " + result.evidenceRows());
+            System.out.println("Evidence TSV: " + evidenceOutput.toAbsolutePath().normalize());
             return;
         }
 
@@ -93,6 +103,21 @@ public class NormattivaUpdateRunner {
                 relationsOutput,
                 rdfOutput,
                 NormattivaUpdateRunner::postJson
+        );
+    }
+
+    public static EvidenceScanResult runEvidenceScan(
+            Path detailsInput,
+            Path evidenceOutput,
+            int limit
+    ) throws IOException {
+        List<NormattivaRelationEvidence> evidence = scanRelationEvidence(detailsInput, limit);
+        writeRelationEvidence(evidence, evidenceOutput);
+        return new EvidenceScanResult(
+                detailsInput.toAbsolutePath().normalize().toString(),
+                countDataRows(detailsInput),
+                evidence.size(),
+                evidenceOutput.toAbsolutePath().normalize().toString()
         );
     }
 
@@ -299,6 +324,41 @@ public class NormattivaUpdateRunner {
         return List.copyOf(updates);
     }
 
+    static List<NormattivaRelationEvidence> scanRelationEvidence(Path detailsInput, int limit) throws IOException {
+        if (detailsInput == null || !Files.exists(detailsInput)) {
+            return List.of();
+        }
+
+        List<String> lines = Files.readAllLines(detailsInput, StandardCharsets.UTF_8);
+        if (lines.size() < 2) {
+            return List.of();
+        }
+
+        int boundedLimit = Math.max(1, Math.min(limit, 200));
+        Map<String, Integer> header = headerIndex(lines.get(0));
+        List<NormattivaRelationEvidence> evidenceRows = new ArrayList<>();
+        for (int index = 1; index < lines.size() && evidenceRows.size() < boundedLimit; index++) {
+            if (lines.get(index).isBlank()) {
+                continue;
+            }
+            List<String> fields = splitTsv(lines.get(index));
+            String evidenceText = evidenceText(header, fields);
+            String evidenceType = evidenceType(evidenceText);
+            if (evidenceType.isBlank()) {
+                continue;
+            }
+            evidenceRows.add(new NormattivaRelationEvidence(
+                    field(header, fields, "codice_redazionale"),
+                    field(header, fields, "data_gu"),
+                    field(header, fields, "titolo_atto"),
+                    field(header, fields, "detail_title"),
+                    evidenceType,
+                    evidenceSnippet(evidenceText, evidenceType)
+            ));
+        }
+        return List.copyOf(evidenceRows);
+    }
+
     static List<NormattivaUpdate> parseUpdates(String html, String baseUrl) {
         Document document = Jsoup.parse(html == null ? "" : html, baseUrl);
         Map<String, NormattivaUpdate> updates = new LinkedHashMap<>();
@@ -413,6 +473,23 @@ public class NormattivaUpdateRunner {
                     cleanField(detail.articleHtml()),
                     cleanField(fetched.endpoint()),
                     cleanField(fetched.fetchedAt())
+            ));
+        }
+        Files.write(output, lines, StandardCharsets.UTF_8);
+    }
+
+    static void writeRelationEvidence(List<NormattivaRelationEvidence> evidenceRows, Path output) throws IOException {
+        createParent(output);
+        List<String> lines = new ArrayList<>();
+        lines.add("codice_redazionale\tdata_gu\ttitolo_atto\tdetail_title\tevidence_type\tevidence_text");
+        for (NormattivaRelationEvidence evidence : evidenceRows) {
+            lines.add(String.join("\t",
+                    cleanField(evidence.code()),
+                    cleanField(evidence.gazzettaDate()),
+                    cleanField(evidence.candidateTitle()),
+                    cleanField(evidence.detailTitle()),
+                    cleanField(evidence.evidenceType()),
+                    cleanField(evidence.evidenceText())
             ));
         }
         Files.write(output, lines, StandardCharsets.UTF_8);
@@ -583,8 +660,73 @@ public class NormattivaUpdateRunner {
         }
     }
 
+    private static int evidenceLimit() {
+        String value = System.getenv("NORMATTIVA_EVIDENCE_LIMIT");
+        if (value == null || value.isBlank()) {
+            return 50;
+        }
+        try {
+            return Math.max(1, Integer.parseInt(value));
+        } catch (NumberFormatException exception) {
+            return 50;
+        }
+    }
+
     private static OffsetDateTime fetchedAt(OffsetDateTime start, OffsetDateTime end) {
         return end == null ? OffsetDateTime.now(ZoneOffset.UTC) : end;
+    }
+
+    private static int countDataRows(Path input) throws IOException {
+        if (input == null || !Files.exists(input)) {
+            return 0;
+        }
+        return Math.max(0, Files.readAllLines(input, StandardCharsets.UTF_8).size() - 1);
+    }
+
+    private static String evidenceText(Map<String, Integer> header, List<String> fields) {
+        String htmlText = Jsoup.parse(field(header, fields, "article_html")).text();
+        return cleanText(String.join(" ",
+                field(header, fields, "titolo_atto"),
+                field(header, fields, "detail_title"),
+                field(header, fields, "detail_subtitle"),
+                field(header, fields, "text_in_force"),
+                htmlText
+        ));
+    }
+
+    private static String evidenceType(String text) {
+        String lower = text == null ? "" : text.toLowerCase();
+        if (lower.contains("convertit") || lower.contains("conversione")) {
+            return "conversion";
+        }
+        if (lower.contains("abrogat")) {
+            return "repeal";
+        }
+        if (lower.contains("sostitui")) {
+            return "substitution";
+        }
+        if (lower.contains("modif")) {
+            return "modification";
+        }
+        return "";
+    }
+
+    private static String evidenceSnippet(String text, String evidenceType) {
+        String clean = cleanText(text);
+        String lower = clean.toLowerCase();
+        String keyword = switch (evidenceType) {
+            case "conversion" -> lower.contains("conversione") ? "conversione" : "convertit";
+            case "repeal" -> "abrogat";
+            case "substitution" -> "sostitui";
+            default -> "modif";
+        };
+        int index = lower.indexOf(keyword);
+        if (index < 0) {
+            return clean.length() > 220 ? clean.substring(0, 220) : clean;
+        }
+        int start = Math.max(0, index - 80);
+        int end = Math.min(clean.length(), index + 140);
+        return clean.substring(start, end);
     }
 
     private static void addActNode(List<JsonNode> actNodes, JsonNode act) {
@@ -710,6 +852,24 @@ public class NormattivaUpdateRunner {
             int candidatesRead,
             int detailsWritten,
             String detailsPath
+    ) {
+    }
+
+    public record NormattivaRelationEvidence(
+            String code,
+            String gazzettaDate,
+            String candidateTitle,
+            String detailTitle,
+            String evidenceType,
+            String evidenceText
+    ) {
+    }
+
+    public record EvidenceScanResult(
+            String detailsPath,
+            int detailsRead,
+            int evidenceRows,
+            String evidencePath
     ) {
     }
 
