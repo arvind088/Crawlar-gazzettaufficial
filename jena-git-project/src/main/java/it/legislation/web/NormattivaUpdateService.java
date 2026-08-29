@@ -26,8 +26,10 @@ public class NormattivaUpdateService {
     private static final Path DEFAULT_RDF_OUTPUT = Path.of("data", "rdf", "normattiva_modifications_auto.ttl");
 
     private final AtomicBoolean running = new AtomicBoolean(false);
+    private final AtomicBoolean detailRunning = new AtomicBoolean(false);
     private final LegalActQueryService queryService;
     private final NormattivaRunner runner;
+    private final NormattivaDetailRunner detailRunner;
     private final Path updatesOutput;
     private final Path detailsOutput;
     private final Path relationsOutput;
@@ -36,11 +38,19 @@ public class NormattivaUpdateService {
 
     @Autowired
     public NormattivaUpdateService(LegalActQueryService queryService) {
-        this(queryService, NormattivaUpdateRunner::run);
+        this(queryService, NormattivaUpdateRunner::run, NormattivaUpdateRunner::runDetails);
     }
 
     NormattivaUpdateService(LegalActQueryService queryService, NormattivaRunner runner) {
-        this(queryService, runner, DEFAULT_UPDATES_OUTPUT, DEFAULT_DETAILS_OUTPUT, DEFAULT_RELATIONS_OUTPUT, DEFAULT_RDF_OUTPUT);
+        this(queryService, runner, NormattivaUpdateRunner::runDetails);
+    }
+
+    NormattivaUpdateService(
+            LegalActQueryService queryService,
+            NormattivaRunner runner,
+            NormattivaDetailRunner detailRunner
+    ) {
+        this(queryService, runner, detailRunner, DEFAULT_UPDATES_OUTPUT, DEFAULT_DETAILS_OUTPUT, DEFAULT_RELATIONS_OUTPUT, DEFAULT_RDF_OUTPUT);
     }
 
     NormattivaUpdateService(
@@ -50,7 +60,7 @@ public class NormattivaUpdateService {
             Path relationsOutput,
             Path rdfOutput
     ) {
-        this(queryService, runner, updatesOutput, DEFAULT_DETAILS_OUTPUT, relationsOutput, rdfOutput);
+        this(queryService, runner, NormattivaUpdateRunner::runDetails, updatesOutput, DEFAULT_DETAILS_OUTPUT, relationsOutput, rdfOutput);
     }
 
     NormattivaUpdateService(
@@ -61,8 +71,21 @@ public class NormattivaUpdateService {
             Path relationsOutput,
             Path rdfOutput
     ) {
+        this(queryService, runner, NormattivaUpdateRunner::runDetails, updatesOutput, detailsOutput, relationsOutput, rdfOutput);
+    }
+
+    NormattivaUpdateService(
+            LegalActQueryService queryService,
+            NormattivaRunner runner,
+            NormattivaDetailRunner detailRunner,
+            Path updatesOutput,
+            Path detailsOutput,
+            Path relationsOutput,
+            Path rdfOutput
+    ) {
         this.queryService = queryService;
         this.runner = runner;
+        this.detailRunner = detailRunner;
         this.updatesOutput = updatesOutput;
         this.detailsOutput = detailsOutput;
         this.relationsOutput = relationsOutput;
@@ -131,6 +154,52 @@ public class NormattivaUpdateService {
 
     public NormattivaUpdateResult lastResult() {
         return lastResult;
+    }
+
+    public NormattivaDetailFetchResult runDetailFetch(int limit) {
+        if (!detailRunning.compareAndSet(false, true)) {
+            return new NormattivaDetailFetchResult(
+                    "RUNNING",
+                    null,
+                    null,
+                    0,
+                    0,
+                    "A Normattiva detail fetch is already running.",
+                    detailsOutput.toAbsolutePath().normalize().toString()
+            );
+        }
+
+        OffsetDateTime startedAt = OffsetDateTime.now();
+        int boundedLimit = Math.max(1, Math.min(limit, 200));
+        try {
+            NormattivaUpdateRunner.DetailFetchResult runnerResult = detailRunner.run(
+                    DEFAULT_SOURCE_URL,
+                    updatesOutput,
+                    detailsOutput,
+                    boundedLimit
+            );
+            return new NormattivaDetailFetchResult(
+                    "COMPLETED",
+                    startedAt.toString(),
+                    OffsetDateTime.now().toString(),
+                    runnerResult.candidatesRead(),
+                    runnerResult.detailsWritten(),
+                    "Normattiva detail fetch completed.",
+                    runnerResult.detailsPath()
+            );
+        } catch (IOException | RuntimeException exception) {
+            return new NormattivaDetailFetchResult(
+                    "FAILED",
+                    startedAt.toString(),
+                    OffsetDateTime.now().toString(),
+                    0,
+                    0,
+                    exception.getMessage() == null ? "Normattiva detail fetch failed." : exception.getMessage(),
+                    detailsOutput.toAbsolutePath().normalize().toString()
+            );
+        } finally {
+            detailRunning.set(false);
+        }
     }
 
     public List<NormattivaUpdateCandidate> listUpdateCandidates(int limit) throws IOException {
@@ -260,5 +329,10 @@ public class NormattivaUpdateService {
     @FunctionalInterface
     interface NormattivaRunner {
         NormattivaUpdateRunner.Result run(String sourceUrl, Path updatesOutput, Path relationsOutput, Path rdfOutput) throws IOException;
+    }
+
+    @FunctionalInterface
+    interface NormattivaDetailRunner {
+        NormattivaUpdateRunner.DetailFetchResult run(String sourceUrl, Path updatesInput, Path detailsOutput, int limit) throws IOException;
     }
 }

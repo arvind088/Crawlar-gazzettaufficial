@@ -96,6 +96,21 @@ public class NormattivaUpdateRunner {
         );
     }
 
+    public static DetailFetchResult runDetails(
+            String sourceUrl,
+            Path updatesInput,
+            Path detailsOutput,
+            int limit
+    ) throws IOException {
+        return fetchAndWriteActDetails(
+                sourceUrl,
+                updatesInput,
+                detailsOutput,
+                limit,
+                NormattivaUpdateRunner::postJson
+        );
+    }
+
     static Result runOpenData(
             String sourceUrl,
             OffsetDateTime start,

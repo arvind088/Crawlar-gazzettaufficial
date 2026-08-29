@@ -7,6 +7,8 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -152,6 +154,51 @@ class NormattivaUpdateServiceTest {
             );
 
             assertTrue(service.listDetailCandidates(10).isEmpty());
+        } finally {
+            queryService.closeForTests();
+        }
+    }
+
+    @Test
+    void runsNormattivaDetailFetch() throws Exception {
+        LegalActQueryService queryService = new LegalActQueryService(
+                List.of(tempDir.resolve("missing.ttl"))
+        );
+        Path updatesOutput = tempDir.resolve("updates.tsv");
+        Path detailsOutput = tempDir.resolve("details.tsv");
+        AtomicReference<Path> requestedUpdatesPath = new AtomicReference<>();
+        AtomicReference<Path> requestedDetailsPath = new AtomicReference<>();
+        AtomicInteger requestedLimit = new AtomicInteger();
+
+        try {
+            NormattivaUpdateService service = new NormattivaUpdateService(
+                    queryService,
+                    (sourceUrl, updatesPath, relationsOutput, rdfOutput) -> null,
+                    (sourceUrl, updatesPath, detailsPath, limit) -> {
+                        requestedUpdatesPath.set(updatesPath);
+                        requestedDetailsPath.set(detailsPath);
+                        requestedLimit.set(limit);
+                        return new NormattivaUpdateRunner.DetailFetchResult(
+                                sourceUrl,
+                                2,
+                                1,
+                                detailsPath.toString()
+                        );
+                    },
+                    updatesOutput,
+                    detailsOutput,
+                    tempDir.resolve("relations.tsv"),
+                    tempDir.resolve("relations.ttl")
+            );
+
+            NormattivaDetailFetchResult result = service.runDetailFetch(10);
+
+            assertEquals("COMPLETED", result.state());
+            assertEquals(2, result.candidatesRead());
+            assertEquals(1, result.detailsWritten());
+            assertEquals(updatesOutput, requestedUpdatesPath.get());
+            assertEquals(detailsOutput, requestedDetailsPath.get());
+            assertEquals(10, requestedLimit.get());
         } finally {
             queryService.closeForTests();
         }
