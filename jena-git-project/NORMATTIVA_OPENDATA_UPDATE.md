@@ -137,6 +137,27 @@ NORMATTIVA_DETAILS_LIMIT
 
 The detail TSV stores the candidate metadata beside the structured fields returned by the official detail API. It is a cache/staging file for inspection and later relation validation.
 
+The detail TSV can be scanned for textual relation evidence:
+
+```bash
+mvn -B exec:java -Dexec.mainClass=it.legislation.crawler.NormattivaUpdateRunner -Dexec.args=evidence
+```
+
+Default evidence output:
+
+```text
+data/clean/normattiva_relation_evidence.tsv
+```
+
+Optional configuration:
+
+```text
+NORMATTIVA_EVIDENCE_OUTPUT
+NORMATTIVA_EVIDENCE_LIMIT
+```
+
+The evidence scan only reports rows where the detail text contains clear relation terms such as conversion, modification, repeal, or substitution. It does not identify final source/target legal resources and does not emit RDF.
+
 ## Configuration
 
 The update interval can be controlled with environment variables:
@@ -211,6 +232,7 @@ Current tests verify:
 - the detail TSV routine can be triggered through the web API,
 - the detail TSV routine can be triggered from the UI,
 - detail evidence can be shown in the UI without mixing it with RDF relations,
+- relation evidence can be reported from detail text without emitting RDF,
 - update candidates are written to TSV,
 - relation RDF is not generated when the API response does not contain relation evidence.
 
