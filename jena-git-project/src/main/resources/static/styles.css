@@ -589,6 +589,35 @@ button:focus,
   width: 27%;
 }
 
+.normattiva-panel .detail-candidates-table {
+  min-width: 820px;
+}
+
+.normattiva-panel .detail-candidates-table th:nth-child(1),
+.normattiva-panel .detail-candidates-table td:nth-child(1) {
+  width: 13%;
+}
+
+.normattiva-panel .detail-candidates-table th:nth-child(2),
+.normattiva-panel .detail-candidates-table td:nth-child(2) {
+  width: 34%;
+}
+
+.normattiva-panel .detail-candidates-table th:nth-child(3),
+.normattiva-panel .detail-candidates-table td:nth-child(3) {
+  width: 20%;
+}
+
+.normattiva-panel .detail-candidates-table th:nth-child(4),
+.normattiva-panel .detail-candidates-table td:nth-child(4) {
+  width: 13%;
+}
+
+.normattiva-panel .detail-candidates-table th:nth-child(5),
+.normattiva-panel .detail-candidates-table td:nth-child(5) {
+  width: 20%;
+}
+
 .relation-id-cell {
   color: var(--accent-dark);
   font-weight: 700;

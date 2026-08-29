@@ -149,6 +149,7 @@ function App() {
   const [archiveLimit, setArchiveLimit] = useState("10");
   const [modifications, setModifications] = useState([]);
   const [normattivaUpdates, setNormattivaUpdates] = useState([]);
+  const [normattivaDetails, setNormattivaDetails] = useState([]);
   const [rdfSources, setRdfSources] = useState([]);
   const [acts, setActs] = useState([]);
   const [selected, setSelected] = useState(null);
@@ -225,6 +226,15 @@ function App() {
     }
     const rows = await response.json();
     setNormattivaUpdates(Array.isArray(rows) ? rows : []);
+  }, []);
+
+  const loadNormattivaDetails = useCallback(async () => {
+    const response = await fetch("/api/normattiva/details?limit=20");
+    if (!response.ok) {
+      throw new Error("Normattiva details request failed");
+    }
+    const rows = await response.json();
+    setNormattivaDetails(Array.isArray(rows) ? rows : []);
   }, []);
 
   const loadNormattivaAutomationStatus = useCallback(async () => {
@@ -412,6 +422,7 @@ function App() {
       await loadStatus();
       await loadModifications();
       await loadNormattivaUpdates();
+      await loadNormattivaDetails();
       await loadRdfSources();
       await loadNormattivaAutomationStatus();
     } catch (err) {
@@ -419,7 +430,7 @@ function App() {
     } finally {
       setNormattivaRunning(false);
     }
-  }, [loadModifications, loadNormattivaAutomationStatus, loadNormattivaUpdates, loadRdfSources, loadStatus]);
+  }, [loadModifications, loadNormattivaAutomationStatus, loadNormattivaDetails, loadNormattivaUpdates, loadRdfSources, loadStatus]);
 
   const runSparqlForAct = useCallback((act) => {
     setActSparqlQuery(createActSparqlQuery(act));
@@ -451,9 +462,10 @@ function App() {
     loadLatestArchiveRun().catch(() => {});
     loadModifications().catch((err) => setError(err.message || "Normattiva request failed"));
     loadNormattivaUpdates().catch((err) => setError(err.message || "Normattiva updates request failed"));
+    loadNormattivaDetails().catch((err) => setError(err.message || "Normattiva details request failed"));
     loadRdfSources().catch((err) => setError(err.message || "RDF sources request failed"));
     runSearch("");
-  }, [loadAutomationStatus, loadCrawlStatus, loadLatestArchiveRun, loadLatestNormattivaUpdate, loadLatestUpdate, loadModifications, loadNormattivaAutomationStatus, loadNormattivaUpdates, loadRdfSources, loadStatus, runSearch]);
+  }, [loadAutomationStatus, loadCrawlStatus, loadLatestArchiveRun, loadLatestNormattivaUpdate, loadLatestUpdate, loadModifications, loadNormattivaAutomationStatus, loadNormattivaDetails, loadNormattivaUpdates, loadRdfSources, loadStatus, runSearch]);
 
   useEffect(() => {
     loadResourceDetail(selected?.uri || displayLocalId(selected));
@@ -498,7 +510,7 @@ function App() {
     onSourceFilterChange: setSourceFilter,
     onTypeFilterChange: setTypeFilter,
     onYearFilterChange: setYearFilter
-  }) : activeTab === "normattiva" ? e(NormattivaPage, { modifications, normattivaUpdates })
+  }) : activeTab === "normattiva" ? e(NormattivaPage, { modifications, normattivaDetails, normattivaUpdates })
     : activeTab === "sparql" ? e(SparqlPage, { initialQuery: actSparqlQuery })
       : e(TechnicalPage, {
           archiveEndDate,
@@ -932,7 +944,7 @@ function LinkButton({ href, icon, label }) {
   );
 }
 
-function NormattivaPage({ modifications, normattivaUpdates }) {
+function NormattivaPage({ modifications, normattivaDetails, normattivaUpdates }) {
   return e(React.Fragment, null,
     e("section", { className: "panel normattiva-panel" },
       e("div", { className: "panel-heading" },
@@ -969,6 +981,42 @@ function NormattivaPage({ modifications, normattivaUpdates }) {
             )
           )
         : e("div", { className: "empty-state" }, "No Normattiva update candidates loaded")
+    ),
+    e("section", { className: "panel normattiva-panel" },
+      e("div", { className: "panel-heading" },
+        e("div", null,
+          e("p", { className: "section-label" }, "Normattiva OpenData"),
+          e("h2", null, "Detail evidence"),
+          e("p", { className: "panel-subtitle" }, "Structured act details fetched from update candidates. These are still source evidence, not RDF relations.")
+        ),
+        e("span", { className: "result-count" }, `${normattivaDetails.length} detail${normattivaDetails.length === 1 ? "" : "s"}`)
+      ),
+      normattivaDetails.length
+        ? e("div", { className: "table-wrap" },
+            e("table", { className: "results-table detail-candidates-table" },
+              e("thead", null,
+                e("tr", null,
+                  e("th", null, "Code"),
+                  e("th", null, "Detail Title"),
+                  e("th", null, "Act Type"),
+                  e("th", null, "Act Date"),
+                  e("th", null, "Vigency")
+                )
+              ),
+              e("tbody", null,
+                normattivaDetails.map((row, index) =>
+                  e("tr", { key: `${row.code || "detail"}-${row.forceStartDate || index}` },
+                    e("td", { className: "mono relation-id-cell" }, row.code || "-"),
+                    e("td", null, e("span", { className: "table-title" }, row.detailTitle || row.candidateTitle || "-")),
+                    e("td", null, row.actType || row.actTypeCode || "-"),
+                    e("td", null, formatShortDate(row.actDate) || "-"),
+                    e("td", null, e("span", { className: "small-uri" }, vigencyLabel(row)))
+                  )
+                )
+              )
+            )
+          )
+        : e("div", { className: "empty-state" }, "No Normattiva detail evidence loaded")
     ),
     e("section", { className: "panel normattiva-panel" },
       e("div", { className: "panel-heading" },
@@ -1530,6 +1578,19 @@ function formatShortDate(value) {
     return "";
   }
   return String(value).replace("T", " ").slice(0, 16);
+}
+
+function vigencyLabel(row) {
+  const start = formatShortDate(row?.forceStartDate);
+  const end = formatShortDate(row?.forceEndDate);
+  const state = row?.textInForce || "";
+  if (start && end) {
+    return `${state ? `${state} ` : ""}${start} to ${end}`;
+  }
+  if (start) {
+    return `${state ? `${state} from ` : "from "}${start}`;
+  }
+  return state || "-";
 }
 
 function formatDisplayDate(value) {
