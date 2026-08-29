@@ -138,6 +138,9 @@ function App() {
   const [normattivaUpdateResult, setNormattivaUpdateResult] = useState(null);
   const [normattivaRunning, setNormattivaRunning] = useState(false);
   const [normattivaError, setNormattivaError] = useState("");
+  const [normattivaDetailFetchResult, setNormattivaDetailFetchResult] = useState(null);
+  const [normattivaDetailRunning, setNormattivaDetailRunning] = useState(false);
+  const [normattivaDetailError, setNormattivaDetailError] = useState("");
   const [updateResult, setUpdateResult] = useState(null);
   const [updateRunning, setUpdateRunning] = useState(false);
   const [updateError, setUpdateError] = useState("");
@@ -432,6 +435,27 @@ function App() {
     }
   }, [loadModifications, loadNormattivaAutomationStatus, loadNormattivaDetails, loadNormattivaUpdates, loadRdfSources, loadStatus]);
 
+  const runNormattivaDetailFetch = useCallback(async () => {
+    setNormattivaDetailRunning(true);
+    setNormattivaDetailError("");
+    try {
+      const response = await fetch("/api/normattiva/details/run?limit=20", { method: "POST" });
+      if (!response.ok) {
+        throw new Error("Normattiva detail fetch request failed");
+      }
+      const result = await response.json();
+      setNormattivaDetailFetchResult(result);
+      if (result.state === "FAILED") {
+        setNormattivaDetailError(result.message || "Normattiva detail fetch failed");
+      }
+      await loadNormattivaDetails();
+    } catch (err) {
+      setNormattivaDetailError(err.message || "Normattiva detail fetch failed");
+    } finally {
+      setNormattivaDetailRunning(false);
+    }
+  }, [loadNormattivaDetails]);
+
   const runSparqlForAct = useCallback((act) => {
     setActSparqlQuery(createActSparqlQuery(act));
     setActiveTab("sparql");
@@ -524,6 +548,9 @@ function App() {
           loadedFileCount,
           missingFileCount,
           normattivaAutomationStatus,
+          normattivaDetailError,
+          normattivaDetailFetchResult,
+          normattivaDetailRunning,
           normattivaError,
           normattivaRunning,
           normattivaUpdateResult,
@@ -537,6 +564,7 @@ function App() {
           onArchiveStartDateChange: setArchiveStartDate,
           onRunArchiveCrawl: runArchiveCrawl,
           onRunArchiveDiscover: runArchiveDiscover,
+          onRunNormattivaDetailFetch: runNormattivaDetailFetch,
           onRunNormattivaUpdate: runNormattivaUpdate,
           onRunUpdate: runCrawlerUpdate
         });
@@ -1168,6 +1196,9 @@ function TechnicalPage({
   loadedFileCount,
   missingFileCount,
   normattivaAutomationStatus,
+  normattivaDetailError,
+  normattivaDetailFetchResult,
+  normattivaDetailRunning,
   normattivaError,
   normattivaRunning,
   normattivaUpdateResult,
@@ -1181,6 +1212,7 @@ function TechnicalPage({
   onArchiveStartDateChange,
   onRunArchiveCrawl,
   onRunArchiveDiscover,
+  onRunNormattivaDetailFetch,
   onRunNormattivaUpdate,
   onRunUpdate
 }) {
@@ -1191,15 +1223,30 @@ function TechnicalPage({
       e(MetricTile, { icon: "registry", label: "Registry", value: crawlStatus?.registryRecords ?? "...", note: "tracked acts" })
     ),
     e(CrawlerStatusPanel, { automationStatus, crawlStatus, updateError, updateResult, updateRunning, onRunUpdate }),
+    e(NormattivaAutomationPanel, {
+      normattivaAutomationStatus,
+      normattivaDetailError,
+      normattivaDetailFetchResult,
+      normattivaDetailRunning,
+      normattivaError,
+      normattivaRunning,
+      normattivaUpdateResult,
+      onRunNormattivaDetailFetch,
+      onRunNormattivaUpdate
+    }),
     e(SourcePanel, { rdfSources })
   );
 }
 
 function NormattivaAutomationPanel({
   normattivaAutomationStatus,
+  normattivaDetailError,
+  normattivaDetailFetchResult,
+  normattivaDetailRunning,
   normattivaError,
   normattivaRunning,
   normattivaUpdateResult,
+  onRunNormattivaDetailFetch,
   onRunNormattivaUpdate
 }) {
   return e("section", { className: "panel crawler-panel" },
@@ -1209,12 +1256,20 @@ function NormattivaAutomationPanel({
         e("h2", null, "Automatic update status"),
         e("p", { className: "panel-subtitle" }, "Fetches official Normattiva update candidates without inferring relationship RDF.")
       ),
-      e("button", {
-        className: "secondary-button",
-        disabled: normattivaRunning,
-        onClick: onRunNormattivaUpdate,
-        type: "button"
-      }, normattivaRunning ? "Running..." : "Run Normattiva Update")
+      e("div", { className: "panel-actions" },
+        e("button", {
+          className: "secondary-button",
+          disabled: normattivaRunning,
+          onClick: onRunNormattivaUpdate,
+          type: "button"
+        }, normattivaRunning ? "Running..." : "Run Normattiva Update"),
+        e("button", {
+          className: "secondary-button",
+          disabled: normattivaDetailRunning,
+          onClick: onRunNormattivaDetailFetch,
+          type: "button"
+        }, normattivaDetailRunning ? "Fetching..." : "Fetch Details")
+      )
     ),
     e("div", { className: "automation-summary" },
       e("div", { className: normattivaAutomationStatus?.enabled ? "automation-badge" : "automation-badge muted" },
@@ -1239,6 +1294,17 @@ function NormattivaAutomationPanel({
               e("span", null, "relations: ", e("strong", null, normattivaUpdateResult.relationRows))
             )
           : e("span", { className: "muted-line" }, "Manual Normattiva update has not been run from this screen yet.")
+    ),
+    e("div", { className: "update-result" },
+      normattivaDetailError
+        ? e("span", { className: "update-error" }, normattivaDetailError)
+        : normattivaDetailFetchResult
+          ? e("div", { className: "run-summary" },
+              e("span", null, "Detail fetch: ", e("strong", null, normattivaDetailFetchResult.state)),
+              e("span", null, "candidates: ", e("strong", null, normattivaDetailFetchResult.candidatesRead)),
+              e("span", null, "details: ", e("strong", null, normattivaDetailFetchResult.detailsWritten))
+            )
+          : e("span", { className: "muted-line" }, "Detail evidence has not been fetched from this screen yet.")
     )
   );
 }
