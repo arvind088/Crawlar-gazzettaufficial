@@ -21,6 +21,7 @@ public class NormattivaUpdateService {
 
     private static final String DEFAULT_SOURCE_URL = "https://api.normattiva.it/t/normattiva.api";
     private static final Path DEFAULT_UPDATES_OUTPUT = Path.of("data", "clean", "normattiva_updates.tsv");
+    private static final Path DEFAULT_DETAILS_OUTPUT = Path.of("data", "clean", "normattiva_details.tsv");
     private static final Path DEFAULT_RELATIONS_OUTPUT = Path.of("data", "clean", "normattiva_modifications_auto.tsv");
     private static final Path DEFAULT_RDF_OUTPUT = Path.of("data", "rdf", "normattiva_modifications_auto.ttl");
 
@@ -28,6 +29,7 @@ public class NormattivaUpdateService {
     private final LegalActQueryService queryService;
     private final NormattivaRunner runner;
     private final Path updatesOutput;
+    private final Path detailsOutput;
     private final Path relationsOutput;
     private final Path rdfOutput;
     private volatile NormattivaUpdateResult lastResult;
@@ -38,7 +40,7 @@ public class NormattivaUpdateService {
     }
 
     NormattivaUpdateService(LegalActQueryService queryService, NormattivaRunner runner) {
-        this(queryService, runner, DEFAULT_UPDATES_OUTPUT, DEFAULT_RELATIONS_OUTPUT, DEFAULT_RDF_OUTPUT);
+        this(queryService, runner, DEFAULT_UPDATES_OUTPUT, DEFAULT_DETAILS_OUTPUT, DEFAULT_RELATIONS_OUTPUT, DEFAULT_RDF_OUTPUT);
     }
 
     NormattivaUpdateService(
@@ -48,9 +50,21 @@ public class NormattivaUpdateService {
             Path relationsOutput,
             Path rdfOutput
     ) {
+        this(queryService, runner, updatesOutput, DEFAULT_DETAILS_OUTPUT, relationsOutput, rdfOutput);
+    }
+
+    NormattivaUpdateService(
+            LegalActQueryService queryService,
+            NormattivaRunner runner,
+            Path updatesOutput,
+            Path detailsOutput,
+            Path relationsOutput,
+            Path rdfOutput
+    ) {
         this.queryService = queryService;
         this.runner = runner;
         this.updatesOutput = updatesOutput;
+        this.detailsOutput = detailsOutput;
         this.relationsOutput = relationsOutput;
         this.rdfOutput = rdfOutput;
     }
@@ -142,6 +156,29 @@ public class NormattivaUpdateService {
         return candidates;
     }
 
+    public List<NormattivaDetailCandidate> listDetailCandidates(int limit) throws IOException {
+        int boundedLimit = Math.max(1, Math.min(limit, 200));
+        if (!Files.exists(detailsOutput)) {
+            return List.of();
+        }
+
+        List<String> lines = Files.readAllLines(detailsOutput, StandardCharsets.UTF_8);
+        if (lines.size() < 2) {
+            return List.of();
+        }
+
+        Map<String, Integer> header = headerIndex(lines.get(0));
+        List<NormattivaDetailCandidate> details = new ArrayList<>();
+        for (int index = 1; index < lines.size() && details.size() < boundedLimit; index++) {
+            if (lines.get(index).isBlank()) {
+                continue;
+            }
+            List<String> fields = splitTsv(lines.get(index));
+            details.add(detailFromRow(header, fields));
+        }
+        return details;
+    }
+
     private static NormattivaUpdateCandidate candidateFromRow(Map<String, Integer> header, List<String> fields) {
         String title = firstNonBlank(field(header, fields, "titolo_atto"), field(header, fields, "title"));
         String actName = field(header, fields, "denominazione_atto");
@@ -155,6 +192,29 @@ public class NormattivaUpdateService {
                 field(header, fields, "numero_atto"),
                 firstNonBlank(field(header, fields, "ultimi_atti_modificanti"), field(header, fields, "description")),
                 firstNonBlank(field(header, fields, "endpoint"), field(header, fields, "normattiva_links")),
+                field(header, fields, "fetched_at")
+        );
+    }
+
+    private static NormattivaDetailCandidate detailFromRow(Map<String, Integer> header, List<String> fields) {
+        return new NormattivaDetailCandidate(
+                field(header, fields, "codice_redazionale"),
+                field(header, fields, "data_gu"),
+                field(header, fields, "titolo_atto"),
+                field(header, fields, "denominazione_atto"),
+                field(header, fields, "numero_atto"),
+                field(header, fields, "detail_title"),
+                field(header, fields, "detail_subtitle"),
+                field(header, fields, "act_type"),
+                field(header, fields, "act_type_code"),
+                field(header, fields, "act_date"),
+                field(header, fields, "act_number"),
+                field(header, fields, "publication_date"),
+                field(header, fields, "force_start_date"),
+                field(header, fields, "force_end_date"),
+                field(header, fields, "text_in_force"),
+                field(header, fields, "article_html"),
+                field(header, fields, "endpoint"),
                 field(header, fields, "fetched_at")
         );
     }

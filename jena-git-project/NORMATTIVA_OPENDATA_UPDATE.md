@@ -111,6 +111,12 @@ Default detail output:
 data/clean/normattiva_details.tsv
 ```
 
+The detail TSV can be inspected through the local API:
+
+```text
+GET /api/normattiva/details?limit=50
+```
+
 Optional configuration:
 
 ```text
@@ -190,6 +196,7 @@ Current tests verify:
 - detail fetch uses the official endpoint without writing RDF,
 - update candidates can be read back from TSV,
 - detail rows can be fetched and written to a separate TSV,
+- detail rows can be served back through the web API,
 - update candidates are written to TSV,
 - relation RDF is not generated when the API response does not contain relation evidence.
 

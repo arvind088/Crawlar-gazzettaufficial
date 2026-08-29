@@ -101,4 +101,60 @@ class NormattivaUpdateServiceTest {
         }
     }
 
+    @Test
+    void listsNormattivaDetailCandidates() throws Exception {
+        LegalActQueryService queryService = new LegalActQueryService(
+                List.of(tempDir.resolve("missing.ttl"))
+        );
+        Path detailsOutput = tempDir.resolve("normattiva_details.tsv");
+        Files.write(detailsOutput, List.of(
+                "codice_redazionale\tdata_gu\ttitolo_atto\tdenominazione_atto\tnumero_atto\tdetail_title\tdetail_subtitle\tact_type\tact_type_code\tact_date\tact_number\tpublication_date\tforce_start_date\tforce_end_date\ttext_in_force\tarticle_html\tendpoint\tfetched_at",
+                "005G0104\t2005-05-16\tCodice dell'amministrazione digitale\tDECRETO LEGISLATIVO\t82\tCodice dell'amministrazione digitale\tTesto vigente\tDECRETO LEGISLATIVO\tDLGS\t2005-03-07\t82\t2005-05-16\t2025-03-20\t\tvigente\t<p>Articolo 1</p>\thttps://api.normattiva.it/t/normattiva.api/api/v1/atto/dettaglio-atto\t2026-08-29T10:00:00Z"
+        ), StandardCharsets.UTF_8);
+
+        try {
+            NormattivaUpdateService service = new NormattivaUpdateService(
+                    queryService,
+                    (sourceUrl, updatesPath, relationsOutput, rdfOutput) -> null,
+                    tempDir.resolve("updates.tsv"),
+                    detailsOutput,
+                    tempDir.resolve("relations.tsv"),
+                    tempDir.resolve("relations.ttl")
+            );
+
+            List<NormattivaDetailCandidate> details = service.listDetailCandidates(10);
+
+            assertEquals(1, details.size());
+            NormattivaDetailCandidate detail = details.get(0);
+            assertEquals("005G0104", detail.code());
+            assertEquals("Codice dell'amministrazione digitale", detail.detailTitle());
+            assertEquals("2005-03-07", detail.actDate());
+            assertEquals("2025-03-20", detail.forceStartDate());
+            assertTrue(detail.articleHtml().contains("Articolo 1"));
+        } finally {
+            queryService.closeForTests();
+        }
+    }
+
+    @Test
+    void returnsEmptyDetailCandidatesWhenFileIsMissing() throws Exception {
+        LegalActQueryService queryService = new LegalActQueryService(
+                List.of(tempDir.resolve("missing.ttl"))
+        );
+        try {
+            NormattivaUpdateService service = new NormattivaUpdateService(
+                    queryService,
+                    (sourceUrl, updatesPath, relationsOutput, rdfOutput) -> null,
+                    tempDir.resolve("updates.tsv"),
+                    tempDir.resolve("missing-details.tsv"),
+                    tempDir.resolve("relations.tsv"),
+                    tempDir.resolve("relations.ttl")
+            );
+
+            assertTrue(service.listDetailCandidates(10).isEmpty());
+        } finally {
+            queryService.closeForTests();
+        }
+    }
+
 }
