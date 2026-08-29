@@ -178,6 +178,13 @@ public class LegalActApiController {
         return normattivaUpdateService.listRelationEvidence(limit);
     }
 
+    @PostMapping("/normattiva/evidence/run")
+    public NormattivaEvidenceScanResult runNormattivaEvidence(
+            @RequestParam(defaultValue = "20") int limit
+    ) {
+        return normattivaUpdateService.runEvidenceScan(limit);
+    }
+
     @PostMapping("/normattiva/details/run")
     public NormattivaDetailFetchResult runNormattivaDetails(
             @RequestParam(defaultValue = "20") int limit

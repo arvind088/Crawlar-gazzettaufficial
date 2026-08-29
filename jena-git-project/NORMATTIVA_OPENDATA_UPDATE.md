@@ -168,6 +168,14 @@ This endpoint reads `data/clean/normattiva_relation_evidence.tsv` and returns th
 
 The frontend shows these rows in the Normattiva tab as **Relation evidence**, positioned between fetched detail evidence and confirmed RDF relationships.
 
+The evidence scan can also be triggered through the local API:
+
+```text
+POST /api/normattiva/evidence/run?limit=20
+```
+
+This reads the detail TSV, rewrites the evidence TSV, and returns the number of detail rows scanned and evidence rows found. The frontend exposes this as a **Scan Evidence** button in the technical Normattiva panel.
+
 ## Configuration
 
 The update interval can be controlled with environment variables:
@@ -245,6 +253,7 @@ Current tests verify:
 - relation evidence can be reported from detail text without emitting RDF,
 - relation evidence rows can be served back through the web API,
 - relation evidence rows can be shown in the UI without mixing them with confirmed RDF relations,
+- the relation evidence scan can be triggered through the web API and UI,
 - update candidates are written to TSV,
 - relation RDF is not generated when the API response does not contain relation evidence.
 
