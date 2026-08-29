@@ -99,6 +99,27 @@ parseActDetails(...)
 
 These helpers fetch and parse act detail responses. They do not write RDF.
 
+The detail stage can be run explicitly after update discovery:
+
+```bash
+mvn -B exec:java -Dexec.mainClass=it.legislation.crawler.NormattivaUpdateRunner -Dexec.args=details
+```
+
+Default detail output:
+
+```text
+data/clean/normattiva_details.tsv
+```
+
+Optional configuration:
+
+```text
+NORMATTIVA_DETAILS_OUTPUT
+NORMATTIVA_DETAILS_LIMIT
+```
+
+The detail TSV stores the candidate metadata beside the structured fields returned by the official detail API. It is a cache/staging file for inspection and later relation validation.
+
 ## Configuration
 
 The update interval can be controlled with environment variables:
@@ -167,6 +188,8 @@ Current tests verify:
 - the official detail endpoint and request body are built correctly,
 - detail `atto` responses are parsed,
 - detail fetch uses the official endpoint without writing RDF,
+- update candidates can be read back from TSV,
+- detail rows can be fetched and written to a separate TSV,
 - update candidates are written to TSV,
 - relation RDF is not generated when the API response does not contain relation evidence.
 

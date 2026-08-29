@@ -35,6 +35,7 @@ public class NormattivaUpdateRunner {
 
     private static final String DEFAULT_SOURCE_URL = "https://api.normattiva.it/t/normattiva.api";
     private static final Path DEFAULT_UPDATES_OUTPUT = Path.of("data", "clean", "normattiva_updates.tsv");
+    private static final Path DEFAULT_DETAILS_OUTPUT = Path.of("data", "clean", "normattiva_details.tsv");
     private static final Path DEFAULT_RELATIONS_OUTPUT = Path.of("data", "clean", "normattiva_modifications_auto.tsv");
     private static final Path DEFAULT_RDF_OUTPUT = Path.of("data", "rdf", "normattiva_modifications_auto.ttl");
     private static final ObjectMapper JSON = new ObjectMapper();
@@ -46,8 +47,23 @@ public class NormattivaUpdateRunner {
     public static void main(String[] args) throws IOException {
         String sourceUrl = valueOrDefault("NORMATTIVA_SOURCE_URL", DEFAULT_SOURCE_URL);
         Path updatesOutput = Path.of(valueOrDefault("NORMATTIVA_UPDATES_OUTPUT", DEFAULT_UPDATES_OUTPUT.toString()));
+        Path detailsOutput = Path.of(valueOrDefault("NORMATTIVA_DETAILS_OUTPUT", DEFAULT_DETAILS_OUTPUT.toString()));
         Path relationsOutput = Path.of(valueOrDefault("NORMATTIVA_RELATIONS_OUTPUT", DEFAULT_RELATIONS_OUTPUT.toString()));
         Path rdfOutput = Path.of(valueOrDefault("NORMATTIVA_RDF_OUTPUT", DEFAULT_RDF_OUTPUT.toString()));
+
+        if (args.length > 0 && "details".equalsIgnoreCase(args[0])) {
+            DetailFetchResult result = fetchAndWriteActDetails(
+                    sourceUrl,
+                    updatesOutput,
+                    detailsOutput,
+                    detailLimit(),
+                    NormattivaUpdateRunner::postJson
+            );
+            System.out.println("Read Normattiva update candidates: " + result.candidatesRead());
+            System.out.println("Wrote Normattiva detail rows: " + result.detailsWritten());
+            System.out.println("Details TSV: " + detailsOutput.toAbsolutePath().normalize());
+            return;
+        }
 
         Result result = run(sourceUrl, updatesOutput, relationsOutput, rdfOutput);
 
@@ -143,6 +159,38 @@ public class NormattivaUpdateRunner {
         return parseActDetails(json);
     }
 
+    static DetailFetchResult fetchAndWriteActDetails(
+            String sourceUrl,
+            Path updatesInput,
+            Path detailsOutput,
+            int limit,
+            HttpJsonClient client
+    ) throws IOException {
+        List<NormattivaOpenDataUpdate> candidates = readOpenDataUpdates(updatesInput);
+        int boundedLimit = Math.min(Math.max(1, limit), candidates.size());
+        String endpoint = actDetailEndpoint(sourceUrl);
+        OffsetDateTime fetchedAt = OffsetDateTime.now(ZoneOffset.UTC);
+        List<NormattivaFetchedActDetail> fetchedDetails = new ArrayList<>();
+
+        for (int index = 0; index < boundedLimit; index++) {
+            NormattivaOpenDataUpdate candidate = candidates.get(index);
+            if (candidate.codiceRedazionale().isBlank() || candidate.dataGu().isBlank()) {
+                continue;
+            }
+            for (NormattivaActDetail detail : fetchActDetails(sourceUrl, candidate, client)) {
+                fetchedDetails.add(new NormattivaFetchedActDetail(candidate, detail, endpoint, fetchedAt.toString()));
+            }
+        }
+
+        writeActDetails(fetchedDetails, detailsOutput);
+        return new DetailFetchResult(
+                endpoint,
+                candidates.size(),
+                fetchedDetails.size(),
+                detailsOutput.toAbsolutePath().normalize().toString()
+        );
+    }
+
     static List<NormattivaOpenDataUpdate> parseOpenDataUpdates(String json) throws IOException {
         JsonNode root = JSON.readTree(json == null || json.isBlank() ? "{}" : json);
         JsonNode acts = root.path("listaAtti");
@@ -203,6 +251,37 @@ public class NormattivaUpdateRunner {
             ));
         }
         return List.copyOf(details);
+    }
+
+    static List<NormattivaOpenDataUpdate> readOpenDataUpdates(Path input) throws IOException {
+        if (input == null || !Files.exists(input)) {
+            return List.of();
+        }
+
+        List<String> lines = Files.readAllLines(input, StandardCharsets.UTF_8);
+        if (lines.size() < 2) {
+            return List.of();
+        }
+
+        Map<String, Integer> header = headerIndex(lines.get(0));
+        List<NormattivaOpenDataUpdate> updates = new ArrayList<>();
+        for (int index = 1; index < lines.size(); index++) {
+            if (lines.get(index).isBlank()) {
+                continue;
+            }
+            List<String> fields = splitTsv(lines.get(index));
+            updates.add(new NormattivaOpenDataUpdate(
+                    field(header, fields, "codice_redazionale"),
+                    field(header, fields, "data_gu"),
+                    field(header, fields, "denominazione_atto"),
+                    field(header, fields, "numero_atto"),
+                    field(header, fields, "titolo_atto"),
+                    field(header, fields, "data_emanazione"),
+                    field(header, fields, "data_ultima_modifica"),
+                    field(header, fields, "ultimi_atti_modificanti")
+            ));
+        }
+        return List.copyOf(updates);
     }
 
     static List<NormattivaUpdate> parseUpdates(String html, String baseUrl) {
@@ -288,6 +367,37 @@ public class NormattivaUpdateRunner {
                     cleanField(update.ultimiAttiModificanti()),
                     cleanField(endpoint),
                     fetchedAt.toString()
+            ));
+        }
+        Files.write(output, lines, StandardCharsets.UTF_8);
+    }
+
+    static void writeActDetails(List<NormattivaFetchedActDetail> details, Path output) throws IOException {
+        createParent(output);
+        List<String> lines = new ArrayList<>();
+        lines.add("codice_redazionale\tdata_gu\ttitolo_atto\tdenominazione_atto\tnumero_atto\tdetail_title\tdetail_subtitle\tact_type\tact_type_code\tact_date\tact_number\tpublication_date\tforce_start_date\tforce_end_date\ttext_in_force\tarticle_html\tendpoint\tfetched_at");
+        for (NormattivaFetchedActDetail fetched : details) {
+            NormattivaOpenDataUpdate candidate = fetched.candidate();
+            NormattivaActDetail detail = fetched.detail();
+            lines.add(String.join("\t",
+                    cleanField(candidate.codiceRedazionale()),
+                    cleanField(candidate.dataGu()),
+                    cleanField(candidate.titoloAtto()),
+                    cleanField(candidate.denominazioneAtto()),
+                    cleanField(candidate.numeroAtto()),
+                    cleanField(detail.title()),
+                    cleanField(detail.subtitle()),
+                    cleanField(detail.actType()),
+                    cleanField(detail.actTypeCode()),
+                    cleanField(detail.actDate()),
+                    cleanField(detail.actNumber()),
+                    cleanField(detail.publicationDate()),
+                    cleanField(detail.forceStartDate()),
+                    cleanField(detail.forceEndDate()),
+                    cleanField(detail.textInForce()),
+                    cleanField(detail.articleHtml()),
+                    cleanField(fetched.endpoint()),
+                    cleanField(fetched.fetchedAt())
             ));
         }
         Files.write(output, lines, StandardCharsets.UTF_8);
@@ -446,6 +556,18 @@ public class NormattivaUpdateRunner {
         }
     }
 
+    private static int detailLimit() {
+        String value = System.getenv("NORMATTIVA_DETAILS_LIMIT");
+        if (value == null || value.isBlank()) {
+            return 20;
+        }
+        try {
+            return Math.max(1, Integer.parseInt(value));
+        } catch (NumberFormatException exception) {
+            return 20;
+        }
+    }
+
     private static OffsetDateTime fetchedAt(OffsetDateTime start, OffsetDateTime end) {
         return end == null ? OffsetDateTime.now(ZoneOffset.UTC) : end;
     }
@@ -474,6 +596,32 @@ public class NormattivaUpdateRunner {
         return cleanText(value)
                 .replace("\\", "\\\\")
                 .replace("\"", "\\\"");
+    }
+
+    private static Map<String, Integer> headerIndex(String line) {
+        List<String> headers = splitTsv(line);
+        Map<String, Integer> index = new LinkedHashMap<>();
+        for (int position = 0; position < headers.size(); position++) {
+            index.put(headers.get(position), position);
+        }
+        return index;
+    }
+
+    private static String field(Map<String, Integer> header, List<String> fields, String name) {
+        Integer position = header.get(name);
+        if (position == null || position >= fields.size()) {
+            return "";
+        }
+        return fields.get(position);
+    }
+
+    private static List<String> splitTsv(String line) {
+        String[] values = line.split("\t", -1);
+        List<String> fields = new ArrayList<>(values.length);
+        for (String value : values) {
+            fields.add(value.trim());
+        }
+        return fields;
     }
 
     private static String firstText(JsonNode node, String... fieldNames) {
@@ -531,6 +679,22 @@ public class NormattivaUpdateRunner {
             String forceEndDate,
             String textInForce,
             String articleHtml
+    ) {
+    }
+
+    public record NormattivaFetchedActDetail(
+            NormattivaOpenDataUpdate candidate,
+            NormattivaActDetail detail,
+            String endpoint,
+            String fetchedAt
+    ) {
+    }
+
+    public record DetailFetchResult(
+            String sourceUrl,
+            int candidatesRead,
+            int detailsWritten,
+            String detailsPath
     ) {
     }
 
