@@ -15,9 +15,17 @@ Current local verification date: 2026-08-29.
 Current dataset status from `GET /api/health`:
 
 ```text
-triples: 1633
-loaded files: 3
+triples: 1659
+loaded files: 4
 missing files: 0
+```
+
+The multi-version example is a small RDF sample derived from the official Normattiva OpenData download documentation. That documentation gives the Codice dell'amministrazione digitale as an example with:
+
+```text
+DECRETOLEGISLATIVO_20050307_82
+20050516_005G0104_ORIGINALE_V0
+20050516_005G0104_VIGENZA_20250320_V52
 ```
 
 ## 1. Count Loaded Legal Resources
@@ -39,14 +47,15 @@ SELECT (COUNT(DISTINCT ?act) AS ?legalResources) WHERE {
 Expected true result:
 
 ```text
-legalResources = 99
+legalResources = 100
 ```
 
 ## 2. Validate Work, Expression, And Manifestation
 
 Purpose:
 
-- Confirms that the UI can show the ELI work/resource level, expression level, and manifestation level for one loaded Gazzetta act.
+- Confirms that the UI can show the ELI work/resource level, expression level, and manifestation level.
+- The selected example has two expressions: original text and a later vigente version.
 
 Query:
 
@@ -54,22 +63,30 @@ Query:
 PREFIX eli: <http://data.europa.eu/eli/ontology#>
 
 SELECT ?act ?expression ?manifestation ?version ?language ?format WHERE {
-  ?act eli:id_local "26A03275" ;
+  ?act eli:id_local "005G0104" ;
        eli:is_realized_by ?expression .
-  OPTIONAL { ?act eli:version ?version . }
+  OPTIONAL { ?expression eli:version ?version . }
   OPTIONAL { ?expression eli:language ?language . }
   OPTIONAL { ?expression eli:is_embodied_by ?manifestation . }
   OPTIONAL { ?manifestation eli:format ?format . }
 }
+ORDER BY ?version
 ```
 
-Expected true result:
+Expected true results:
 
 ```text
-act = http://www.gazzettaufficiale.it/eli/id/2026/07/09/26A03275/sg
-expression = http://www.gazzettaufficiale.it/eli/id/2026/07/09/26A03275/sg/ita
-manifestation = http://www.gazzettaufficiale.it/eli/id/2026/07/09/26A03275/sg/ita/html
-version = http://www.gazzettaufficiale.it/eli/tables/versions#ORIGINAL
+act = http://www.gazzettaufficiale.it/eli/id/2005/05/16/005G0104/sg
+expression = http://www.gazzettaufficiale.it/eli/id/2005/05/16/005G0104/sg/ita/original
+manifestation = http://www.gazzettaufficiale.it/eli/id/2005/05/16/005G0104/sg/ita/original/html
+version = http://www.gazzettaufficiale.it/eli/tables/versions#ORIGINALE_V0
+language = http://publications.europa.eu/resource/authority/language/ITA
+format = http://www.iana.org/assignments/media-types/text/html
+
+act = http://www.gazzettaufficiale.it/eli/id/2005/05/16/005G0104/sg
+expression = http://www.gazzettaufficiale.it/eli/id/2005/05/16/005G0104/sg/ita/vigente/2025-03-20/v52
+manifestation = http://www.gazzettaufficiale.it/eli/id/2005/05/16/005G0104/sg/ita/vigente/2025-03-20/v52/html
+version = http://www.gazzettaufficiale.it/eli/tables/versions#VIGENZA_20250320_V52
 language = http://publications.europa.eu/resource/authority/language/ITA
 format = http://www.iana.org/assignments/media-types/text/html
 ```
@@ -173,14 +190,15 @@ LIMIT 20
 Expected true result for the current demo dataset:
 
 ```text
-0 rows
+act = http://www.gazzettaufficiale.it/eli/id/2005/05/16/005G0104/sg
+expressionCount = 2
 ```
 
 Interpretation:
 
-- The current demo validates the ELI work/expression/manifestation chain.
-- It does not yet contain a real legislative act with multiple expressions.
-- To fully satisfy the professor's multi-version requirement, the next data task must load a Normattiva/OpenData example where one act has multiple versions/expressions, then this query should return that act and its expression count.
+- The current demo now validates the ELI work/expression/manifestation chain.
+- It also contains one concrete multi-version example based on Normattiva OpenData naming.
+- The next data task is to replace or supplement this curated sample with data downloaded directly from the Normattiva OpenData API.
 
 ## UI Validation Flow
 
@@ -193,9 +211,9 @@ http://localhost:8082
 Recommended checks:
 
 ```text
-Search 26A03275
-Confirm Expression Level has 1 item
-Confirm Manifestation Level has 1 item
+Search 005G0104
+Confirm Expression Level has 2 items
+Confirm Manifestation Level has 2 items
 Click the expression and manifestation resources
 ```
 

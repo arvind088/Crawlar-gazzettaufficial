@@ -27,6 +27,7 @@ public class Tdb2DatasetService {
     static final Path GAZZETTA_DELTA = Path.of("data", "rdf", "gazzetta_metadata_delta.ttl");
     static final Path NORMATTIVA_MODIFICATIONS = Path.of("data", "rdf", "normattiva_modifications.ttl");
     static final Path NORMATTIVA_AUTO_MODIFICATIONS = Path.of("data", "rdf", "normattiva_modifications_auto.ttl");
+    static final Path NORMATTIVA_MULTIVERSION_SAMPLE = Path.of("data", "rdf", "normattiva_multiversion_sample.ttl");
 
     private static final String GRAPH_BASE = "http://example.org/italian-legislation/graph/";
 
@@ -72,7 +73,8 @@ public class Tdb2DatasetService {
         return List.of(
                 new RdfGraphSource(GRAPH_BASE + "gazzetta", GAZZETTA_DELTA),
                 new RdfGraphSource(GRAPH_BASE + "normattiva/manual", NORMATTIVA_MODIFICATIONS),
-                new RdfGraphSource(GRAPH_BASE + "normattiva/auto", NORMATTIVA_AUTO_MODIFICATIONS)
+                new RdfGraphSource(GRAPH_BASE + "normattiva/auto", NORMATTIVA_AUTO_MODIFICATIONS),
+                new RdfGraphSource(GRAPH_BASE + "normattiva/multiversion-sample", NORMATTIVA_MULTIVERSION_SAMPLE)
         );
     }
 

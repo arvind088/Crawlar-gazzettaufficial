@@ -43,6 +43,11 @@ public class LegalActApiController {
             new RdfFileDefinition(
                     Path.of("data", "rdf", "normattiva_modifications_auto.ttl"),
                     "Automatically downloaded Normattiva update relationships"
+            ),
+            "normattiva_multiversion_sample.ttl",
+            new RdfFileDefinition(
+                    Path.of("data", "rdf", "normattiva_multiversion_sample.ttl"),
+                    "Small Normattiva OpenData-inspired multi-version ELI sample"
             )
     );
 
@@ -256,6 +261,7 @@ public class LegalActApiController {
         sorted.put("gazzetta_metadata_delta.ttl", RDF_FILES.get("gazzetta_metadata_delta.ttl"));
         sorted.put("normattiva_modifications.ttl", RDF_FILES.get("normattiva_modifications.ttl"));
         sorted.put("normattiva_modifications_auto.ttl", RDF_FILES.get("normattiva_modifications_auto.ttl"));
+        sorted.put("normattiva_multiversion_sample.ttl", RDF_FILES.get("normattiva_multiversion_sample.ttl"));
         return sorted;
     }
 

@@ -1,0 +1,41 @@
+@prefix dcterms: <http://purl.org/dc/terms/> .
+@prefix eli:     <http://data.europa.eu/eli/ontology#> .
+@prefix rdf:     <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs:    <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd:     <http://www.w3.org/2001/XMLSchema#> .
+
+<http://www.gazzettaufficiale.it/eli/id/2005/05/16/005G0104/sg>
+        rdf:type                eli:LegalResource;
+        rdfs:label              "Codice dell'amministrazione digitale";
+        eli:date_document       "2005-03-07"^^xsd:date;
+        eli:date_publication    "2005-05-16"^^xsd:date;
+        eli:id_local            "005G0104";
+        eli:number              "82";
+        eli:type_document       <http://www.gazzettaufficiale.it/eli/tables/resource-type#DECRETOLEGISLATIVO>;
+        eli:is_realized_by      <http://www.gazzettaufficiale.it/eli/id/2005/05/16/005G0104/sg/ita/original> ,
+                                <http://www.gazzettaufficiale.it/eli/id/2005/05/16/005G0104/sg/ita/vigente/2025-03-20/v52>;
+        dcterms:source          <https://dati.normattiva.it/Come-scaricare-i-dati> .
+
+<http://www.gazzettaufficiale.it/eli/id/2005/05/16/005G0104/sg/ita/original>
+        rdf:type                eli:LegalExpression;
+        rdfs:label              "Codice dell'amministrazione digitale - testo originale";
+        eli:language            <http://publications.europa.eu/resource/authority/language/ITA>;
+        eli:realizes            <http://www.gazzettaufficiale.it/eli/id/2005/05/16/005G0104/sg>;
+        eli:version             <http://www.gazzettaufficiale.it/eli/tables/versions#ORIGINALE_V0>;
+        eli:is_embodied_by      <http://www.gazzettaufficiale.it/eli/id/2005/05/16/005G0104/sg/ita/original/html> .
+
+<http://www.gazzettaufficiale.it/eli/id/2005/05/16/005G0104/sg/ita/vigente/2025-03-20/v52>
+        rdf:type                eli:LegalExpression;
+        rdfs:label              "Codice dell'amministrazione digitale - testo vigente al 2025-03-20, versione 52";
+        eli:language            <http://publications.europa.eu/resource/authority/language/ITA>;
+        eli:realizes            <http://www.gazzettaufficiale.it/eli/id/2005/05/16/005G0104/sg>;
+        eli:version             <http://www.gazzettaufficiale.it/eli/tables/versions#VIGENZA_20250320_V52>;
+        eli:is_embodied_by      <http://www.gazzettaufficiale.it/eli/id/2005/05/16/005G0104/sg/ita/vigente/2025-03-20/v52/html> .
+
+<http://www.gazzettaufficiale.it/eli/id/2005/05/16/005G0104/sg/ita/original/html>
+        rdf:type                eli:Format;
+        eli:format              <http://www.iana.org/assignments/media-types/text/html> .
+
+<http://www.gazzettaufficiale.it/eli/id/2005/05/16/005G0104/sg/ita/vigente/2025-03-20/v52/html>
+        rdf:type                eli:Format;
+        eli:format              <http://www.iana.org/assignments/media-types/text/html> .
