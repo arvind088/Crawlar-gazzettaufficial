@@ -51,6 +51,21 @@ class NormattivaUpdateRunnerTest {
     }
 
     @Test
+    void includesResponseBodyInOpenDataFailureMessage() {
+        String message = NormattivaUpdateRunner.openDataFailureMessage(
+                409,
+                """
+                        {
+                          "error": "Date range conflict"
+                        }
+                        """
+        );
+
+        assertTrue(message.contains("HTTP 409"));
+        assertTrue(message.contains("Date range conflict"));
+    }
+
+    @Test
     void parsesOpenDataUpdatedActsResponse() throws Exception {
         String json = """
                 {

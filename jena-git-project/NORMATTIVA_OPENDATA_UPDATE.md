@@ -210,6 +210,10 @@ Reason:
 
 This is why the runner leaves existing relation RDF untouched.
 
+If the official API rejects a request, the runner reports the HTTP status plus a shortened response body. This is important for thesis/debug work because failures such as date-window conflicts, API policy errors, or contract changes should be visible instead of hidden behind a generic status code.
+
+The HTTP request also sends a clear project `User-Agent` and Italian `Accept-Language` header. If the service still returns a protection-system block, the next architecture decision should be operational rather than parser-related: run the API routine from an allowed server, ask for access/whitelisting, or import official OpenData files produced outside the blocked environment.
+
 ## How This Answers The Feedback
 
 The professor suggested the newer Normattiva OpenData APIs and specifically mentioned:
@@ -240,6 +244,7 @@ Current tests verify:
 
 - the endpoint path is built correctly,
 - the official request body fields are used,
+- OpenData API failures keep the HTTP status and response body visible,
 - `listaAtti` JSON responses are parsed,
 - the official detail endpoint and request body are built correctly,
 - detail `atto` responses are parsed,
