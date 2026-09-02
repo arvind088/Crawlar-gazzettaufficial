@@ -9,6 +9,7 @@ import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
@@ -37,9 +38,13 @@ public class NormattivaUpdateRunner {
     private static final Path DEFAULT_UPDATES_OUTPUT = Path.of("data", "clean", "normattiva_updates.tsv");
     private static final Path DEFAULT_DETAILS_OUTPUT = Path.of("data", "clean", "normattiva_details.tsv");
     private static final Path DEFAULT_EVIDENCE_OUTPUT = Path.of("data", "clean", "normattiva_relation_evidence.tsv");
+    private static final Path DEFAULT_RELATION_CANDIDATES_OUTPUT = Path.of("data", "clean", "normattiva_relation_candidates.tsv");
+    private static final Path DEFAULT_UPDATES_IMPORT = Path.of("data", "import", "normattiva_updates.json");
+    private static final Path DEFAULT_DETAILS_IMPORT = Path.of("data", "import", "normattiva_details.tsv");
     private static final Path DEFAULT_RELATIONS_OUTPUT = Path.of("data", "clean", "normattiva_modifications_auto.tsv");
     private static final Path DEFAULT_RDF_OUTPUT = Path.of("data", "rdf", "normattiva_modifications_auto.ttl");
     private static final String USER_AGENT = "Crawlar-gazzettaufficial thesis demo; https://github.com/arvind088/Crawlar-gazzettaufficial";
+    private static final Pattern ELI_HTTP_URI = Pattern.compile("https?://www\\.gazzettaufficiale\\.it/eli/id/\\d{4}/\\d{2}/\\d{2}/[^\\s\"'<>]+", Pattern.CASE_INSENSITIVE);
     private static final ObjectMapper JSON = new ObjectMapper();
     private static final Pattern ITALIAN_DATE = Pattern.compile(
             "\\b\\d{1,2}\\s+(?:gennaio|febbraio|marzo|aprile|maggio|giugno|luglio|agosto|settembre|ottobre|novembre|dicembre)\\s+\\d{4}\\b",
@@ -51,8 +56,25 @@ public class NormattivaUpdateRunner {
         Path updatesOutput = Path.of(valueOrDefault("NORMATTIVA_UPDATES_OUTPUT", DEFAULT_UPDATES_OUTPUT.toString()));
         Path detailsOutput = Path.of(valueOrDefault("NORMATTIVA_DETAILS_OUTPUT", DEFAULT_DETAILS_OUTPUT.toString()));
         Path evidenceOutput = Path.of(valueOrDefault("NORMATTIVA_EVIDENCE_OUTPUT", DEFAULT_EVIDENCE_OUTPUT.toString()));
+        Path relationCandidatesOutput = Path.of(valueOrDefault("NORMATTIVA_RELATION_CANDIDATES_OUTPUT", DEFAULT_RELATION_CANDIDATES_OUTPUT.toString()));
         Path relationsOutput = Path.of(valueOrDefault("NORMATTIVA_RELATIONS_OUTPUT", DEFAULT_RELATIONS_OUTPUT.toString()));
         Path rdfOutput = Path.of(valueOrDefault("NORMATTIVA_RDF_OUTPUT", DEFAULT_RDF_OUTPUT.toString()));
+
+        if (args.length > 0 && "import-updates".equalsIgnoreCase(args[0])) {
+            Path importInput = args.length > 1 ? Path.of(args[1]) : Path.of(valueOrDefault("NORMATTIVA_UPDATES_IMPORT", DEFAULT_UPDATES_IMPORT.toString()));
+            ImportResult result = importOpenDataUpdates(importInput, updatesOutput);
+            System.out.println("Imported Normattiva update rows: " + result.rowsWritten());
+            System.out.println("Updates TSV: " + result.outputPath());
+            return;
+        }
+
+        if (args.length > 0 && "import-details".equalsIgnoreCase(args[0])) {
+            Path importInput = args.length > 1 ? Path.of(args[1]) : Path.of(valueOrDefault("NORMATTIVA_DETAILS_IMPORT", DEFAULT_DETAILS_IMPORT.toString()));
+            ImportResult result = importActDetails(importInput, detailsOutput);
+            System.out.println("Imported Normattiva detail rows: " + result.rowsWritten());
+            System.out.println("Details TSV: " + result.outputPath());
+            return;
+        }
 
         if (args.length > 0 && "details".equalsIgnoreCase(args[0])) {
             DetailFetchResult result = fetchAndWriteActDetails(
@@ -73,6 +95,14 @@ public class NormattivaUpdateRunner {
             System.out.println("Scanned Normattiva detail rows: " + result.detailsRead());
             System.out.println("Wrote relation evidence rows: " + result.evidenceRows());
             System.out.println("Evidence TSV: " + evidenceOutput.toAbsolutePath().normalize());
+            return;
+        }
+
+        if (args.length > 0 && "candidates".equalsIgnoreCase(args[0])) {
+            RelationCandidateResult result = runRelationCandidateExtraction(evidenceOutput, relationCandidatesOutput, evidenceLimit());
+            System.out.println("Read relation evidence rows: " + result.evidenceRowsRead());
+            System.out.println("Wrote relation candidate rows: " + result.candidatesWritten());
+            System.out.println("Relation candidates TSV: " + relationCandidatesOutput.toAbsolutePath().normalize());
             return;
         }
 
@@ -134,6 +164,60 @@ public class NormattivaUpdateRunner {
                 detailsOutput,
                 limit,
                 NormattivaUpdateRunner::postJson
+        );
+    }
+
+    public static ImportResult importOpenDataUpdates(Path input, Path updatesOutput) throws IOException {
+        requireExistingInput(input);
+        List<NormattivaOpenDataUpdate> updates;
+        if (isJson(input)) {
+            updates = parseOpenDataUpdates(Files.readString(input, StandardCharsets.UTF_8));
+        } else {
+            updates = readOpenDataUpdates(input);
+        }
+        writeOpenDataUpdates(updates, updatesOutput, input.toAbsolutePath().normalize().toUri().toString(), OffsetDateTime.now(ZoneOffset.UTC));
+        return new ImportResult(
+                input.toAbsolutePath().normalize().toString(),
+                updates.size(),
+                updatesOutput.toAbsolutePath().normalize().toString()
+        );
+    }
+
+    public static ImportResult importActDetails(Path input, Path detailsOutput) throws IOException {
+        requireExistingInput(input);
+        int rowsWritten;
+        if (isJson(input)) {
+            List<NormattivaFetchedActDetail> details = parseImportedActDetails(
+                    Files.readString(input, StandardCharsets.UTF_8),
+                    input.toAbsolutePath().normalize().toUri().toString(),
+                    OffsetDateTime.now(ZoneOffset.UTC).toString()
+            );
+            writeActDetails(details, detailsOutput);
+            rowsWritten = details.size();
+        } else {
+            createParent(detailsOutput);
+            Files.copy(input, detailsOutput, StandardCopyOption.REPLACE_EXISTING);
+            rowsWritten = countDataRows(detailsOutput);
+        }
+        return new ImportResult(
+                input.toAbsolutePath().normalize().toString(),
+                rowsWritten,
+                detailsOutput.toAbsolutePath().normalize().toString()
+        );
+    }
+
+    public static RelationCandidateResult runRelationCandidateExtraction(
+            Path evidenceInput,
+            Path relationCandidatesOutput,
+            int limit
+    ) throws IOException {
+        List<NormattivaRelationCandidate> candidates = extractRelationCandidates(evidenceInput, limit);
+        writeRelationCandidates(candidates, relationCandidatesOutput);
+        return new RelationCandidateResult(
+                evidenceInput.toAbsolutePath().normalize().toString(),
+                countDataRows(evidenceInput),
+                candidates.size(),
+                relationCandidatesOutput.toAbsolutePath().normalize().toString()
         );
     }
 
@@ -294,6 +378,37 @@ public class NormattivaUpdateRunner {
         return List.copyOf(details);
     }
 
+    static List<NormattivaFetchedActDetail> parseImportedActDetails(
+            String json,
+            String endpoint,
+            String fetchedAt
+    ) throws IOException {
+        JsonNode root = JSON.readTree(json == null || json.isBlank() ? "{}" : json);
+        JsonNode rows = root.isArray() ? root : firstArray(root, "details", "items", "rows");
+        if (!rows.isArray()) {
+            rows = JSON.createArrayNode().add(root);
+        }
+
+        List<NormattivaFetchedActDetail> details = new ArrayList<>();
+        for (JsonNode row : rows) {
+            NormattivaOpenDataUpdate candidate = openDataUpdate(firstPresent(row, "candidate", "update", "attoAggiornato"));
+            JsonNode response = firstPresent(row, "response", "detailResponse", "rawResponse");
+            JsonNode detailNode = firstPresent(row, "detail", "atto");
+            List<NormattivaActDetail> parsedDetails;
+            if (!response.isMissingNode() && !response.isNull()) {
+                parsedDetails = parseActDetails(response.toString());
+            } else if (!detailNode.isMissingNode() && !detailNode.isNull()) {
+                parsedDetails = parseActDetails(JSON.createObjectNode().set("atto", detailNode).toString());
+            } else {
+                parsedDetails = parseActDetails(row.toString());
+            }
+            for (NormattivaActDetail detail : parsedDetails) {
+                details.add(new NormattivaFetchedActDetail(candidate, detail, endpoint, fetchedAt));
+            }
+        }
+        return List.copyOf(details);
+    }
+
     static List<NormattivaOpenDataUpdate> readOpenDataUpdates(Path input) throws IOException {
         if (input == null || !Files.exists(input)) {
             return List.of();
@@ -358,6 +473,45 @@ public class NormattivaUpdateRunner {
             ));
         }
         return List.copyOf(evidenceRows);
+    }
+
+    static List<NormattivaRelationCandidate> extractRelationCandidates(Path evidenceInput, int limit) throws IOException {
+        if (evidenceInput == null || !Files.exists(evidenceInput)) {
+            return List.of();
+        }
+
+        List<String> lines = Files.readAllLines(evidenceInput, StandardCharsets.UTF_8);
+        if (lines.size() < 2) {
+            return List.of();
+        }
+
+        int boundedLimit = Math.max(1, Math.min(limit, 200));
+        Map<String, Integer> header = headerIndex(lines.get(0));
+        List<NormattivaRelationCandidate> candidates = new ArrayList<>();
+        for (int index = 1; index < lines.size() && candidates.size() < boundedLimit; index++) {
+            if (lines.get(index).isBlank()) {
+                continue;
+            }
+            List<String> fields = splitTsv(lines.get(index));
+            String evidenceText = field(header, fields, "evidence_text");
+            List<String> eliUris = eliHttpUris(evidenceText);
+            if (eliUris.size() < 2) {
+                continue;
+            }
+            String sourceUri = eliUris.get(eliUris.size() - 1);
+            String relationType = relationPredicate(field(header, fields, "evidence_type"));
+            for (int uriIndex = 0; uriIndex < eliUris.size() - 1 && candidates.size() < boundedLimit; uriIndex++) {
+                candidates.add(new NormattivaRelationCandidate(
+                        sourceUri,
+                        eliUris.get(uriIndex),
+                        relationType,
+                        field(header, fields, "evidence_type"),
+                        evidenceText,
+                        "needs_review"
+                ));
+            }
+        }
+        return List.copyOf(candidates);
     }
 
     static List<NormattivaUpdate> parseUpdates(String html, String baseUrl) {
@@ -496,6 +650,23 @@ public class NormattivaUpdateRunner {
         Files.write(output, lines, StandardCharsets.UTF_8);
     }
 
+    static void writeRelationCandidates(List<NormattivaRelationCandidate> candidates, Path output) throws IOException {
+        createParent(output);
+        List<String> lines = new ArrayList<>();
+        lines.add("source_uri\ttarget_uri\trelation_type\tevidence_type\tevidence_text\treview_status");
+        for (NormattivaRelationCandidate candidate : candidates) {
+            lines.add(String.join("\t",
+                    cleanField(candidate.sourceUri()),
+                    cleanField(candidate.targetUri()),
+                    cleanField(candidate.relationType()),
+                    cleanField(candidate.evidenceType()),
+                    cleanField(candidate.evidenceText()),
+                    cleanField(candidate.reviewStatus())
+            ));
+        }
+        Files.write(output, lines, StandardCharsets.UTF_8);
+    }
+
     static void writeRelations(List<CleanModificationRecord> relations, Path output) throws IOException {
         createParent(output);
         List<String> lines = new ArrayList<>();
@@ -620,6 +791,71 @@ public class NormattivaUpdateRunner {
         if (parent != null) {
             Files.createDirectories(parent);
         }
+    }
+
+    private static void requireExistingInput(Path input) throws IOException {
+        if (input == null || !Files.exists(input)) {
+            throw new IOException("Normattiva import input not found: " + (input == null ? "" : input.toAbsolutePath().normalize()));
+        }
+    }
+
+    private static boolean isJson(Path input) {
+        String fileName = input.getFileName() == null ? "" : input.getFileName().toString().toLowerCase();
+        return fileName.endsWith(".json");
+    }
+
+    private static JsonNode firstArray(JsonNode node, String... names) {
+        for (String name : names) {
+            JsonNode value = node.path(name);
+            if (value.isArray()) {
+                return value;
+            }
+        }
+        return JSON.createArrayNode();
+    }
+
+    private static JsonNode firstPresent(JsonNode node, String... names) {
+        for (String name : names) {
+            JsonNode value = node.path(name);
+            if (!value.isMissingNode() && !value.isNull()) {
+                return value;
+            }
+        }
+        return JSON.getNodeFactory().missingNode();
+    }
+
+    private static NormattivaOpenDataUpdate openDataUpdate(JsonNode act) {
+        if (act == null || act.isMissingNode() || act.isNull()) {
+            return new NormattivaOpenDataUpdate("", "", "", "", "", "", "", "");
+        }
+        return new NormattivaOpenDataUpdate(
+                text(act, "codiceRedazionale"),
+                firstText(act, "dataGU", "dataGUStr"),
+                firstText(act, "denominazioneAtto", "tipoProvvedimentoDescrizione"),
+                firstText(act, "numeroAtto", "numeroProvvedimento", "numeroAttoAlfanumerico"),
+                firstText(act, "titoloAtto", "descrizioneAtto"),
+                text(act, "dataEmanazione"),
+                text(act, "dataUltimaModifica"),
+                text(act, "ultimiAttiModificanti")
+        );
+    }
+
+    private static List<String> eliHttpUris(String text) {
+        Set<String> uris = new LinkedHashSet<>();
+        Matcher matcher = ELI_HTTP_URI.matcher(text == null ? "" : text);
+        while (matcher.find()) {
+            uris.add(matcher.group().replaceAll("[),.;]+$", ""));
+        }
+        return List.copyOf(uris);
+    }
+
+    private static String relationPredicate(String evidenceType) {
+        return switch (evidenceType == null ? "" : evidenceType) {
+            case "conversion" -> "eli:commences";
+            case "repeal" -> "ilg:repeals";
+            case "substitution" -> "ilg:substitutes";
+            default -> "ilg:modifies";
+        };
     }
 
     private static String cleanText(String value) {
@@ -880,11 +1116,36 @@ public class NormattivaUpdateRunner {
     ) {
     }
 
+    public record NormattivaRelationCandidate(
+            String sourceUri,
+            String targetUri,
+            String relationType,
+            String evidenceType,
+            String evidenceText,
+            String reviewStatus
+    ) {
+    }
+
+    public record ImportResult(
+            String inputPath,
+            int rowsWritten,
+            String outputPath
+    ) {
+    }
+
     public record EvidenceScanResult(
             String detailsPath,
             int detailsRead,
             int evidenceRows,
             String evidencePath
+    ) {
+    }
+
+    public record RelationCandidateResult(
+            String evidencePath,
+            int evidenceRowsRead,
+            int candidatesWritten,
+            String relationCandidatesPath
     ) {
     }
 

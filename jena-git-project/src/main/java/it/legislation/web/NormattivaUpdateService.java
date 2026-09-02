@@ -23,6 +23,9 @@ public class NormattivaUpdateService {
     private static final Path DEFAULT_UPDATES_OUTPUT = Path.of("data", "clean", "normattiva_updates.tsv");
     private static final Path DEFAULT_DETAILS_OUTPUT = Path.of("data", "clean", "normattiva_details.tsv");
     private static final Path DEFAULT_EVIDENCE_OUTPUT = Path.of("data", "clean", "normattiva_relation_evidence.tsv");
+    private static final Path DEFAULT_RELATION_CANDIDATES_OUTPUT = Path.of("data", "clean", "normattiva_relation_candidates.tsv");
+    private static final Path DEFAULT_UPDATES_IMPORT = Path.of("data", "import", "normattiva_updates.json");
+    private static final Path DEFAULT_DETAILS_IMPORT = Path.of("data", "import", "normattiva_details.json");
     private static final Path DEFAULT_RELATIONS_OUTPUT = Path.of("data", "clean", "normattiva_modifications_auto.tsv");
     private static final Path DEFAULT_RDF_OUTPUT = Path.of("data", "rdf", "normattiva_modifications_auto.ttl");
 
@@ -36,6 +39,9 @@ public class NormattivaUpdateService {
     private final Path updatesOutput;
     private final Path detailsOutput;
     private final Path evidenceOutput;
+    private final Path relationCandidatesOutput;
+    private final Path updatesImport;
+    private final Path detailsImport;
     private final Path relationsOutput;
     private final Path rdfOutput;
     private volatile NormattivaUpdateResult lastResult;
@@ -63,7 +69,7 @@ public class NormattivaUpdateService {
             NormattivaDetailRunner detailRunner,
             NormattivaEvidenceRunner evidenceRunner
     ) {
-        this(queryService, runner, detailRunner, DEFAULT_UPDATES_OUTPUT, DEFAULT_DETAILS_OUTPUT, DEFAULT_EVIDENCE_OUTPUT, DEFAULT_RELATIONS_OUTPUT, DEFAULT_RDF_OUTPUT);
+        this(queryService, runner, detailRunner, evidenceRunner, DEFAULT_UPDATES_OUTPUT, DEFAULT_DETAILS_OUTPUT, DEFAULT_EVIDENCE_OUTPUT, DEFAULT_RELATION_CANDIDATES_OUTPUT, DEFAULT_UPDATES_IMPORT, DEFAULT_DETAILS_IMPORT, DEFAULT_RELATIONS_OUTPUT, DEFAULT_RDF_OUTPUT);
     }
 
     NormattivaUpdateService(
@@ -73,7 +79,7 @@ public class NormattivaUpdateService {
             Path relationsOutput,
             Path rdfOutput
     ) {
-        this(queryService, runner, NormattivaUpdateRunner::runDetails, updatesOutput, DEFAULT_DETAILS_OUTPUT, DEFAULT_EVIDENCE_OUTPUT, relationsOutput, rdfOutput);
+        this(queryService, runner, NormattivaUpdateRunner::runDetails, updatesOutput, DEFAULT_DETAILS_OUTPUT, DEFAULT_EVIDENCE_OUTPUT, DEFAULT_RELATION_CANDIDATES_OUTPUT, DEFAULT_UPDATES_IMPORT, DEFAULT_DETAILS_IMPORT, relationsOutput, rdfOutput);
     }
 
     NormattivaUpdateService(
@@ -84,7 +90,7 @@ public class NormattivaUpdateService {
             Path relationsOutput,
             Path rdfOutput
     ) {
-        this(queryService, runner, NormattivaUpdateRunner::runDetails, updatesOutput, detailsOutput, DEFAULT_EVIDENCE_OUTPUT, relationsOutput, rdfOutput);
+        this(queryService, runner, NormattivaUpdateRunner::runDetails, updatesOutput, detailsOutput, DEFAULT_EVIDENCE_OUTPUT, DEFAULT_RELATION_CANDIDATES_OUTPUT, DEFAULT_UPDATES_IMPORT, DEFAULT_DETAILS_IMPORT, relationsOutput, rdfOutput);
     }
 
     NormattivaUpdateService(
@@ -96,7 +102,7 @@ public class NormattivaUpdateService {
             Path relationsOutput,
             Path rdfOutput
     ) {
-        this(queryService, runner, detailRunner, updatesOutput, detailsOutput, DEFAULT_EVIDENCE_OUTPUT, relationsOutput, rdfOutput);
+        this(queryService, runner, detailRunner, updatesOutput, detailsOutput, DEFAULT_EVIDENCE_OUTPUT, DEFAULT_RELATION_CANDIDATES_OUTPUT, DEFAULT_UPDATES_IMPORT, DEFAULT_DETAILS_IMPORT, relationsOutput, rdfOutput);
     }
 
     NormattivaUpdateService(
@@ -109,7 +115,7 @@ public class NormattivaUpdateService {
             Path relationsOutput,
             Path rdfOutput
     ) {
-        this(queryService, runner, detailRunner, NormattivaUpdateRunner::runEvidenceScan, updatesOutput, detailsOutput, evidenceOutput, relationsOutput, rdfOutput);
+        this(queryService, runner, detailRunner, NormattivaUpdateRunner::runEvidenceScan, updatesOutput, detailsOutput, evidenceOutput, DEFAULT_RELATION_CANDIDATES_OUTPUT, DEFAULT_UPDATES_IMPORT, DEFAULT_DETAILS_IMPORT, relationsOutput, rdfOutput);
     }
 
     NormattivaUpdateService(
@@ -123,6 +129,39 @@ public class NormattivaUpdateService {
             Path relationsOutput,
             Path rdfOutput
     ) {
+        this(queryService, runner, detailRunner, evidenceRunner, updatesOutput, detailsOutput, evidenceOutput, DEFAULT_RELATION_CANDIDATES_OUTPUT, DEFAULT_UPDATES_IMPORT, DEFAULT_DETAILS_IMPORT, relationsOutput, rdfOutput);
+    }
+
+    NormattivaUpdateService(
+            LegalActQueryService queryService,
+            NormattivaRunner runner,
+            NormattivaDetailRunner detailRunner,
+            Path updatesOutput,
+            Path detailsOutput,
+            Path evidenceOutput,
+            Path relationCandidatesOutput,
+            Path updatesImport,
+            Path detailsImport,
+            Path relationsOutput,
+            Path rdfOutput
+    ) {
+        this(queryService, runner, detailRunner, NormattivaUpdateRunner::runEvidenceScan, updatesOutput, detailsOutput, evidenceOutput, relationCandidatesOutput, updatesImport, detailsImport, relationsOutput, rdfOutput);
+    }
+
+    NormattivaUpdateService(
+            LegalActQueryService queryService,
+            NormattivaRunner runner,
+            NormattivaDetailRunner detailRunner,
+            NormattivaEvidenceRunner evidenceRunner,
+            Path updatesOutput,
+            Path detailsOutput,
+            Path evidenceOutput,
+            Path relationCandidatesOutput,
+            Path updatesImport,
+            Path detailsImport,
+            Path relationsOutput,
+            Path rdfOutput
+    ) {
         this.queryService = queryService;
         this.runner = runner;
         this.detailRunner = detailRunner;
@@ -130,6 +169,9 @@ public class NormattivaUpdateService {
         this.updatesOutput = updatesOutput;
         this.detailsOutput = detailsOutput;
         this.evidenceOutput = evidenceOutput;
+        this.relationCandidatesOutput = relationCandidatesOutput;
+        this.updatesImport = updatesImport;
+        this.detailsImport = detailsImport;
         this.relationsOutput = relationsOutput;
         this.rdfOutput = rdfOutput;
     }
@@ -289,6 +331,95 @@ public class NormattivaUpdateService {
         }
     }
 
+    public NormattivaImportResult importUpdateCandidates() {
+        OffsetDateTime startedAt = OffsetDateTime.now();
+        try {
+            NormattivaUpdateRunner.ImportResult result = NormattivaUpdateRunner.importOpenDataUpdates(
+                    importPath(updatesImport),
+                    updatesOutput
+            );
+            return new NormattivaImportResult(
+                    "COMPLETED",
+                    startedAt.toString(),
+                    OffsetDateTime.now().toString(),
+                    result.rowsWritten(),
+                    "Normattiva update import completed.",
+                    result.inputPath(),
+                    result.outputPath()
+            );
+        } catch (IOException | RuntimeException exception) {
+            return new NormattivaImportResult(
+                    "FAILED",
+                    startedAt.toString(),
+                    OffsetDateTime.now().toString(),
+                    0,
+                    exception.getMessage() == null ? "Normattiva update import failed." : exception.getMessage(),
+                    updatesImport.toAbsolutePath().normalize().toString(),
+                    updatesOutput.toAbsolutePath().normalize().toString()
+            );
+        }
+    }
+
+    public NormattivaImportResult importDetailCandidates() {
+        OffsetDateTime startedAt = OffsetDateTime.now();
+        try {
+            NormattivaUpdateRunner.ImportResult result = NormattivaUpdateRunner.importActDetails(
+                    importPath(detailsImport),
+                    detailsOutput
+            );
+            return new NormattivaImportResult(
+                    "COMPLETED",
+                    startedAt.toString(),
+                    OffsetDateTime.now().toString(),
+                    result.rowsWritten(),
+                    "Normattiva detail import completed.",
+                    result.inputPath(),
+                    result.outputPath()
+            );
+        } catch (IOException | RuntimeException exception) {
+            return new NormattivaImportResult(
+                    "FAILED",
+                    startedAt.toString(),
+                    OffsetDateTime.now().toString(),
+                    0,
+                    exception.getMessage() == null ? "Normattiva detail import failed." : exception.getMessage(),
+                    detailsImport.toAbsolutePath().normalize().toString(),
+                    detailsOutput.toAbsolutePath().normalize().toString()
+            );
+        }
+    }
+
+    public NormattivaRelationCandidateRunResult runRelationCandidateExtraction(int limit) {
+        OffsetDateTime startedAt = OffsetDateTime.now();
+        int boundedLimit = Math.max(1, Math.min(limit, 200));
+        try {
+            NormattivaUpdateRunner.RelationCandidateResult result = NormattivaUpdateRunner.runRelationCandidateExtraction(
+                    evidenceOutput,
+                    relationCandidatesOutput,
+                    boundedLimit
+            );
+            return new NormattivaRelationCandidateRunResult(
+                    "COMPLETED",
+                    startedAt.toString(),
+                    OffsetDateTime.now().toString(),
+                    result.evidenceRowsRead(),
+                    result.candidatesWritten(),
+                    "Normattiva relation candidate extraction completed.",
+                    result.relationCandidatesPath()
+            );
+        } catch (IOException | RuntimeException exception) {
+            return new NormattivaRelationCandidateRunResult(
+                    "FAILED",
+                    startedAt.toString(),
+                    OffsetDateTime.now().toString(),
+                    0,
+                    0,
+                    exception.getMessage() == null ? "Normattiva relation candidate extraction failed." : exception.getMessage(),
+                    relationCandidatesOutput.toAbsolutePath().normalize().toString()
+            );
+        }
+    }
+
     public List<NormattivaUpdateCandidate> listUpdateCandidates(int limit) throws IOException {
         int boundedLimit = Math.max(1, Math.min(limit, 200));
         if (!Files.exists(updatesOutput)) {
@@ -358,6 +489,29 @@ public class NormattivaUpdateService {
         return evidence;
     }
 
+    public List<NormattivaRelationCandidate> listRelationCandidates(int limit) throws IOException {
+        int boundedLimit = Math.max(1, Math.min(limit, 200));
+        if (!Files.exists(relationCandidatesOutput)) {
+            return List.of();
+        }
+
+        List<String> lines = Files.readAllLines(relationCandidatesOutput, StandardCharsets.UTF_8);
+        if (lines.size() < 2) {
+            return List.of();
+        }
+
+        Map<String, Integer> header = headerIndex(lines.get(0));
+        List<NormattivaRelationCandidate> candidates = new ArrayList<>();
+        for (int index = 1; index < lines.size() && candidates.size() < boundedLimit; index++) {
+            if (lines.get(index).isBlank()) {
+                continue;
+            }
+            List<String> fields = splitTsv(lines.get(index));
+            candidates.add(relationCandidateFromRow(header, fields));
+        }
+        return candidates;
+    }
+
     private static NormattivaUpdateCandidate candidateFromRow(Map<String, Integer> header, List<String> fields) {
         String title = firstNonBlank(field(header, fields, "titolo_atto"), field(header, fields, "title"));
         String actName = field(header, fields, "denominazione_atto");
@@ -409,6 +563,17 @@ public class NormattivaUpdateService {
         );
     }
 
+    private static NormattivaRelationCandidate relationCandidateFromRow(Map<String, Integer> header, List<String> fields) {
+        return new NormattivaRelationCandidate(
+                field(header, fields, "source_uri"),
+                field(header, fields, "target_uri"),
+                field(header, fields, "relation_type"),
+                field(header, fields, "evidence_type"),
+                field(header, fields, "evidence_text"),
+                field(header, fields, "review_status")
+        );
+    }
+
     private static Map<String, Integer> headerIndex(String line) {
         List<String> headers = splitTsv(line);
         Map<String, Integer> index = new LinkedHashMap<>();
@@ -445,6 +610,24 @@ public class NormattivaUpdateService {
 
     private static String firstNonBlank(String first, String second) {
         return first == null || first.isBlank() ? second : first;
+    }
+
+    private static Path importPath(Path preferred) {
+        if (Files.exists(preferred)) {
+            return preferred;
+        }
+        String fileName = preferred.getFileName() == null ? "" : preferred.getFileName().toString();
+        String alternateName;
+        if (fileName.endsWith(".json")) {
+            alternateName = fileName.substring(0, fileName.length() - 5) + ".tsv";
+        } else if (fileName.endsWith(".tsv")) {
+            alternateName = fileName.substring(0, fileName.length() - 4) + ".json";
+        } else {
+            return preferred;
+        }
+        Path parent = preferred.getParent();
+        Path alternate = parent == null ? Path.of(alternateName) : parent.resolve(alternateName);
+        return Files.exists(alternate) ? alternate : preferred;
     }
 
     @FunctionalInterface

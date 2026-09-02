@@ -144,6 +144,12 @@ function App() {
   const [normattivaEvidenceScanResult, setNormattivaEvidenceScanResult] = useState(null);
   const [normattivaEvidenceRunning, setNormattivaEvidenceRunning] = useState(false);
   const [normattivaEvidenceError, setNormattivaEvidenceError] = useState("");
+  const [normattivaImportResult, setNormattivaImportResult] = useState(null);
+  const [normattivaImportRunning, setNormattivaImportRunning] = useState(false);
+  const [normattivaImportError, setNormattivaImportError] = useState("");
+  const [normattivaCandidateRunResult, setNormattivaCandidateRunResult] = useState(null);
+  const [normattivaCandidateRunning, setNormattivaCandidateRunning] = useState(false);
+  const [normattivaCandidateError, setNormattivaCandidateError] = useState("");
   const [updateResult, setUpdateResult] = useState(null);
   const [updateRunning, setUpdateRunning] = useState(false);
   const [updateError, setUpdateError] = useState("");
@@ -157,6 +163,7 @@ function App() {
   const [normattivaUpdates, setNormattivaUpdates] = useState([]);
   const [normattivaDetails, setNormattivaDetails] = useState([]);
   const [normattivaEvidence, setNormattivaEvidence] = useState([]);
+  const [normattivaRelationCandidates, setNormattivaRelationCandidates] = useState([]);
   const [rdfSources, setRdfSources] = useState([]);
   const [acts, setActs] = useState([]);
   const [selected, setSelected] = useState(null);
@@ -251,6 +258,15 @@ function App() {
     }
     const rows = await response.json();
     setNormattivaEvidence(Array.isArray(rows) ? rows : []);
+  }, []);
+
+  const loadNormattivaRelationCandidates = useCallback(async () => {
+    const response = await fetch("/api/normattiva/relation-candidates?limit=20");
+    if (!response.ok) {
+      throw new Error("Normattiva relation candidates request failed");
+    }
+    const rows = await response.json();
+    setNormattivaRelationCandidates(Array.isArray(rows) ? rows : []);
   }, []);
 
   const loadNormattivaAutomationStatus = useCallback(async () => {
@@ -440,6 +456,7 @@ function App() {
       await loadNormattivaUpdates();
       await loadNormattivaDetails();
       await loadNormattivaEvidence();
+      await loadNormattivaRelationCandidates();
       await loadRdfSources();
       await loadNormattivaAutomationStatus();
     } catch (err) {
@@ -447,7 +464,7 @@ function App() {
     } finally {
       setNormattivaRunning(false);
     }
-  }, [loadModifications, loadNormattivaAutomationStatus, loadNormattivaDetails, loadNormattivaEvidence, loadNormattivaUpdates, loadRdfSources, loadStatus]);
+  }, [loadModifications, loadNormattivaAutomationStatus, loadNormattivaDetails, loadNormattivaEvidence, loadNormattivaRelationCandidates, loadNormattivaUpdates, loadRdfSources, loadStatus]);
 
   const runNormattivaDetailFetch = useCallback(async () => {
     setNormattivaDetailRunning(true);
@@ -464,12 +481,13 @@ function App() {
       }
       await loadNormattivaDetails();
       await loadNormattivaEvidence();
+      await loadNormattivaRelationCandidates();
     } catch (err) {
       setNormattivaDetailError(err.message || "Normattiva detail fetch failed");
     } finally {
       setNormattivaDetailRunning(false);
     }
-  }, [loadNormattivaDetails, loadNormattivaEvidence]);
+  }, [loadNormattivaDetails, loadNormattivaEvidence, loadNormattivaRelationCandidates]);
 
   const runNormattivaEvidenceScan = useCallback(async () => {
     setNormattivaEvidenceRunning(true);
@@ -485,12 +503,78 @@ function App() {
         setNormattivaEvidenceError(result.message || "Normattiva evidence scan failed");
       }
       await loadNormattivaEvidence();
+      await loadNormattivaRelationCandidates();
     } catch (err) {
       setNormattivaEvidenceError(err.message || "Normattiva evidence scan failed");
     } finally {
       setNormattivaEvidenceRunning(false);
     }
-  }, [loadNormattivaEvidence]);
+  }, [loadNormattivaEvidence, loadNormattivaRelationCandidates]);
+
+  const importNormattivaUpdates = useCallback(async () => {
+    setNormattivaImportRunning(true);
+    setNormattivaImportError("");
+    try {
+      const response = await fetch("/api/normattiva/import/updates", { method: "POST" });
+      if (!response.ok) {
+        throw new Error("Normattiva update import request failed");
+      }
+      const result = await response.json();
+      setNormattivaImportResult(result);
+      if (result.state === "FAILED") {
+        setNormattivaImportError(result.message || "Normattiva update import failed");
+      }
+      await loadNormattivaUpdates();
+    } catch (err) {
+      setNormattivaImportError(err.message || "Normattiva update import failed");
+    } finally {
+      setNormattivaImportRunning(false);
+    }
+  }, [loadNormattivaUpdates]);
+
+  const importNormattivaDetails = useCallback(async () => {
+    setNormattivaImportRunning(true);
+    setNormattivaImportError("");
+    try {
+      const response = await fetch("/api/normattiva/import/details", { method: "POST" });
+      if (!response.ok) {
+        throw new Error("Normattiva detail import request failed");
+      }
+      const result = await response.json();
+      setNormattivaImportResult(result);
+      if (result.state === "FAILED") {
+        setNormattivaImportError(result.message || "Normattiva detail import failed");
+      }
+      await loadNormattivaDetails();
+      await loadNormattivaEvidence();
+      await loadNormattivaRelationCandidates();
+    } catch (err) {
+      setNormattivaImportError(err.message || "Normattiva detail import failed");
+    } finally {
+      setNormattivaImportRunning(false);
+    }
+  }, [loadNormattivaDetails, loadNormattivaEvidence, loadNormattivaRelationCandidates]);
+
+  const runNormattivaRelationCandidates = useCallback(async () => {
+    setNormattivaCandidateRunning(true);
+    setNormattivaCandidateError("");
+    try {
+      const response = await fetch("/api/normattiva/relation-candidates/run?limit=20", { method: "POST" });
+      if (!response.ok) {
+        throw new Error("Normattiva relation candidate request failed");
+      }
+      const result = await response.json();
+      setNormattivaCandidateRunResult(result);
+      if (result.state === "FAILED") {
+        setNormattivaCandidateError(result.message || "Normattiva relation candidate extraction failed");
+      }
+      await loadNormattivaRelationCandidates();
+    } catch (err) {
+      setNormattivaCandidateError(err.message || "Normattiva relation candidate extraction failed");
+    } finally {
+      setNormattivaCandidateRunning(false);
+    }
+  }, [loadNormattivaRelationCandidates]);
 
   const runSparqlForAct = useCallback((act) => {
     setActSparqlQuery(createActSparqlQuery(act));
@@ -524,9 +608,10 @@ function App() {
     loadNormattivaUpdates().catch((err) => setError(err.message || "Normattiva updates request failed"));
     loadNormattivaDetails().catch((err) => setError(err.message || "Normattiva details request failed"));
     loadNormattivaEvidence().catch((err) => setError(err.message || "Normattiva evidence request failed"));
+    loadNormattivaRelationCandidates().catch((err) => setError(err.message || "Normattiva relation candidates request failed"));
     loadRdfSources().catch((err) => setError(err.message || "RDF sources request failed"));
     runSearch("");
-  }, [loadAutomationStatus, loadCrawlStatus, loadLatestArchiveRun, loadLatestNormattivaUpdate, loadLatestUpdate, loadModifications, loadNormattivaAutomationStatus, loadNormattivaDetails, loadNormattivaEvidence, loadNormattivaUpdates, loadRdfSources, loadStatus, runSearch]);
+  }, [loadAutomationStatus, loadCrawlStatus, loadLatestArchiveRun, loadLatestNormattivaUpdate, loadLatestUpdate, loadModifications, loadNormattivaAutomationStatus, loadNormattivaDetails, loadNormattivaEvidence, loadNormattivaRelationCandidates, loadNormattivaUpdates, loadRdfSources, loadStatus, runSearch]);
 
   useEffect(() => {
     loadResourceDetail(selected?.uri || displayLocalId(selected));
@@ -571,7 +656,7 @@ function App() {
     onSourceFilterChange: setSourceFilter,
     onTypeFilterChange: setTypeFilter,
     onYearFilterChange: setYearFilter
-  }) : activeTab === "normattiva" ? e(NormattivaPage, { modifications, normattivaDetails, normattivaEvidence, normattivaUpdates })
+  }) : activeTab === "normattiva" ? e(NormattivaPage, { modifications, normattivaDetails, normattivaEvidence, normattivaRelationCandidates, normattivaUpdates })
     : activeTab === "sparql" ? e(SparqlPage, { initialQuery: actSparqlQuery })
       : e(TechnicalPage, {
           archiveEndDate,
@@ -591,7 +676,13 @@ function App() {
           normattivaEvidenceError,
           normattivaEvidenceRunning,
           normattivaEvidenceScanResult,
+          normattivaCandidateError,
+          normattivaCandidateRunResult,
+          normattivaCandidateRunning,
           normattivaError,
+          normattivaImportError,
+          normattivaImportResult,
+          normattivaImportRunning,
           normattivaRunning,
           normattivaUpdateResult,
           rdfSources,
@@ -604,8 +695,11 @@ function App() {
           onArchiveStartDateChange: setArchiveStartDate,
           onRunArchiveCrawl: runArchiveCrawl,
           onRunArchiveDiscover: runArchiveDiscover,
+          onImportNormattivaDetails: importNormattivaDetails,
+          onImportNormattivaUpdates: importNormattivaUpdates,
           onRunNormattivaDetailFetch: runNormattivaDetailFetch,
           onRunNormattivaEvidenceScan: runNormattivaEvidenceScan,
+          onRunNormattivaRelationCandidates: runNormattivaRelationCandidates,
           onRunNormattivaUpdate: runNormattivaUpdate,
           onRunUpdate: runCrawlerUpdate
         });
@@ -1013,7 +1107,7 @@ function LinkButton({ href, icon, label }) {
   );
 }
 
-function NormattivaPage({ modifications, normattivaDetails, normattivaEvidence, normattivaUpdates }) {
+function NormattivaPage({ modifications, normattivaDetails, normattivaEvidence, normattivaRelationCandidates, normattivaUpdates }) {
   return e(React.Fragment, null,
     e("section", { className: "panel normattiva-panel" },
       e("div", { className: "panel-heading" },
@@ -1120,6 +1214,40 @@ function NormattivaPage({ modifications, normattivaDetails, normattivaEvidence, 
             )
           )
         : e("div", { className: "empty-state" }, "No Normattiva relation evidence loaded")
+    ),
+    e("section", { className: "panel normattiva-panel" },
+      e("div", { className: "panel-heading" },
+        e("div", null,
+          e("p", { className: "section-label" }, "Normattiva Review"),
+          e("h2", null, "Relation candidates"),
+          e("p", { className: "panel-subtitle" }, "Source and target links extracted only when evidence text contains ELI HTTP resource URLs. These rows still require review.")
+        ),
+        e("span", { className: "result-count" }, `${normattivaRelationCandidates.length} candidate${normattivaRelationCandidates.length === 1 ? "" : "s"}`)
+      ),
+      normattivaRelationCandidates.length
+        ? e("div", { className: "table-wrap" },
+            e("table", { className: "results-table relation-candidates-table" },
+              e("thead", null,
+                e("tr", null,
+                  e("th", null, "Source"),
+                  e("th", null, "Relation"),
+                  e("th", null, "Target"),
+                  e("th", null, "Review")
+                )
+              ),
+              e("tbody", null,
+                normattivaRelationCandidates.map((row, index) =>
+                  e("tr", { key: `${row.sourceUri || "source"}-${row.targetUri || "target"}-${index}` },
+                    e("td", { className: "mono relation-id-cell" }, displayRelationId(localIdFromUri(row.sourceUri), row.sourceUri)),
+                    e("td", null, relationCandidateLabel(row.relationType)),
+                    e("td", { className: "mono relation-id-cell" }, displayRelationId(localIdFromUri(row.targetUri), row.targetUri)),
+                    e("td", null, e("span", { className: "small-uri" }, row.reviewStatus || "needs_review"))
+                  )
+                )
+              )
+            )
+          )
+        : e("div", { className: "empty-state" }, "No reviewed relation candidates extracted")
     ),
     e("section", { className: "panel normattiva-panel" },
       e("div", { className: "panel-heading" },
@@ -1277,7 +1405,13 @@ function TechnicalPage({
   normattivaEvidenceError,
   normattivaEvidenceRunning,
   normattivaEvidenceScanResult,
+  normattivaCandidateError,
+  normattivaCandidateRunResult,
+  normattivaCandidateRunning,
   normattivaError,
+  normattivaImportError,
+  normattivaImportResult,
+  normattivaImportRunning,
   normattivaRunning,
   normattivaUpdateResult,
   rdfSources,
@@ -1288,10 +1422,13 @@ function TechnicalPage({
   onArchiveEndDateChange,
   onArchiveLimitChange,
   onArchiveStartDateChange,
+  onImportNormattivaDetails,
+  onImportNormattivaUpdates,
   onRunArchiveCrawl,
   onRunArchiveDiscover,
   onRunNormattivaDetailFetch,
   onRunNormattivaEvidenceScan,
+  onRunNormattivaRelationCandidates,
   onRunNormattivaUpdate,
   onRunUpdate
 }) {
@@ -1310,11 +1447,20 @@ function TechnicalPage({
       normattivaEvidenceError,
       normattivaEvidenceRunning,
       normattivaEvidenceScanResult,
+      normattivaCandidateError,
+      normattivaCandidateRunResult,
+      normattivaCandidateRunning,
       normattivaError,
+      normattivaImportError,
+      normattivaImportResult,
+      normattivaImportRunning,
       normattivaRunning,
       normattivaUpdateResult,
+      onImportNormattivaDetails,
+      onImportNormattivaUpdates,
       onRunNormattivaDetailFetch,
       onRunNormattivaEvidenceScan,
+      onRunNormattivaRelationCandidates,
       onRunNormattivaUpdate
     }),
     e(SourcePanel, { rdfSources })
@@ -1329,11 +1475,20 @@ function NormattivaAutomationPanel({
   normattivaEvidenceError,
   normattivaEvidenceRunning,
   normattivaEvidenceScanResult,
+  normattivaCandidateError,
+  normattivaCandidateRunResult,
+  normattivaCandidateRunning,
   normattivaError,
+  normattivaImportError,
+  normattivaImportResult,
+  normattivaImportRunning,
   normattivaRunning,
   normattivaUpdateResult,
+  onImportNormattivaDetails,
+  onImportNormattivaUpdates,
   onRunNormattivaDetailFetch,
   onRunNormattivaEvidenceScan,
+  onRunNormattivaRelationCandidates,
   onRunNormattivaUpdate
 }) {
   return e("section", { className: "panel crawler-panel" },
@@ -1344,6 +1499,18 @@ function NormattivaAutomationPanel({
         e("p", { className: "panel-subtitle" }, "Fetches official Normattiva update candidates without inferring relationship RDF.")
       ),
       e("div", { className: "panel-actions" },
+        e("button", {
+          className: "secondary-button",
+          disabled: normattivaImportRunning,
+          onClick: onImportNormattivaUpdates,
+          type: "button"
+        }, normattivaImportRunning ? "Importing..." : "Import Updates"),
+        e("button", {
+          className: "secondary-button",
+          disabled: normattivaImportRunning,
+          onClick: onImportNormattivaDetails,
+          type: "button"
+        }, normattivaImportRunning ? "Importing..." : "Import Details"),
         e("button", {
           className: "secondary-button",
           disabled: normattivaRunning,
@@ -1361,7 +1528,13 @@ function NormattivaAutomationPanel({
           disabled: normattivaEvidenceRunning,
           onClick: onRunNormattivaEvidenceScan,
           type: "button"
-        }, normattivaEvidenceRunning ? "Scanning..." : "Scan Evidence")
+        }, normattivaEvidenceRunning ? "Scanning..." : "Scan Evidence"),
+        e("button", {
+          className: "secondary-button",
+          disabled: normattivaCandidateRunning,
+          onClick: onRunNormattivaRelationCandidates,
+          type: "button"
+        }, normattivaCandidateRunning ? "Extracting..." : "Extract Candidates")
       )
     ),
     e("div", { className: "automation-summary" },
@@ -1389,6 +1562,17 @@ function NormattivaAutomationPanel({
           : e("span", { className: "muted-line" }, "Manual Normattiva update has not been run from this screen yet.")
     ),
     e("div", { className: "update-result" },
+      normattivaImportError
+        ? e("span", { className: "update-error" }, normattivaImportError)
+        : normattivaImportResult
+          ? e("div", { className: "run-summary" },
+              e("span", null, "Import: ", e("strong", null, normattivaImportResult.state)),
+              e("span", null, "rows: ", e("strong", null, normattivaImportResult.rowsWritten)),
+              e("span", null, "output: ", e("strong", null, compactPath(normattivaImportResult.outputPath)))
+            )
+          : e("span", { className: "muted-line" }, "Saved Normattiva files have not been imported from this screen yet.")
+    ),
+    e("div", { className: "update-result" },
       normattivaDetailError
         ? e("span", { className: "update-error" }, normattivaDetailError)
         : normattivaDetailFetchResult
@@ -1409,6 +1593,17 @@ function NormattivaAutomationPanel({
               e("span", null, "evidence: ", e("strong", null, normattivaEvidenceScanResult.evidenceRows))
             )
           : e("span", { className: "muted-line" }, "Relation evidence has not been scanned from this screen yet.")
+    ),
+    e("div", { className: "update-result" },
+      normattivaCandidateError
+        ? e("span", { className: "update-error" }, normattivaCandidateError)
+        : normattivaCandidateRunResult
+          ? e("div", { className: "run-summary" },
+              e("span", null, "Candidates: ", e("strong", null, normattivaCandidateRunResult.state)),
+              e("span", null, "evidence rows: ", e("strong", null, normattivaCandidateRunResult.evidenceRowsRead)),
+              e("span", null, "candidates: ", e("strong", null, normattivaCandidateRunResult.candidatesWritten))
+            )
+          : e("span", { className: "muted-line" }, "Reviewed relation candidates have not been extracted from this screen yet.")
     )
   );
 }
@@ -1741,6 +1936,24 @@ function relationEvidenceLabel(value) {
     substitution: "Substitution"
   };
   return labels[value] || value || "-";
+}
+
+function relationCandidateLabel(value) {
+  const labels = {
+    "eli:commences": "Commences / converts",
+    "ilg:modifies": "Modifies",
+    "ilg:repeals": "Repeals",
+    "ilg:substitutes": "Substitutes"
+  };
+  return labels[value] || value || "-";
+}
+
+function compactPath(value) {
+  if (!value) {
+    return "-";
+  }
+  const parts = String(value).replaceAll("\\", "/").split("/");
+  return parts.slice(-3).join("/");
 }
 
 function formatBytes(bytes) {
