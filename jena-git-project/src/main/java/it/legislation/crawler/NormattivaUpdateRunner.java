@@ -39,6 +39,7 @@ public class NormattivaUpdateRunner {
     private static final Path DEFAULT_EVIDENCE_OUTPUT = Path.of("data", "clean", "normattiva_relation_evidence.tsv");
     private static final Path DEFAULT_RELATIONS_OUTPUT = Path.of("data", "clean", "normattiva_modifications_auto.tsv");
     private static final Path DEFAULT_RDF_OUTPUT = Path.of("data", "rdf", "normattiva_modifications_auto.ttl");
+    private static final String USER_AGENT = "Crawlar-gazzettaufficial thesis demo; https://github.com/arvind088/Crawlar-gazzettaufficial";
     private static final ObjectMapper JSON = new ObjectMapper();
     private static final Pattern ITALIAN_DATE = Pattern.compile(
             "\\b\\d{1,2}\\s+(?:gennaio|febbraio|marzo|aprile|maggio|giugno|luglio|agosto|settembre|ottobre|novembre|dicembre)\\s+\\d{4}\\b",
@@ -576,20 +577,34 @@ public class NormattivaUpdateRunner {
     private static String postJson(String url, String jsonBody) throws IOException {
         HttpRequest request = HttpRequest.newBuilder(URI.create(url))
                 .header("Accept", "application/json")
+                .header("Accept-Language", "it-IT,it;q=0.9,en;q=0.8")
                 .header("Content-Type", "application/json")
+                .header("User-Agent", USER_AGENT)
                 .POST(HttpRequest.BodyPublishers.ofString(jsonBody, StandardCharsets.UTF_8))
                 .build();
         try {
             HttpResponse<String> response = HttpClient.newHttpClient()
                     .send(request, HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8));
             if (response.statusCode() < 200 || response.statusCode() >= 300) {
-                throw new IOException("Normattiva OpenData update request failed with HTTP " + response.statusCode());
+                throw new IOException(openDataFailureMessage(response.statusCode(), response.body()));
             }
             return response.body();
         } catch (InterruptedException exception) {
             Thread.currentThread().interrupt();
             throw new IOException("Normattiva OpenData update request interrupted.", exception);
         }
+    }
+
+    static String openDataFailureMessage(int statusCode, String body) {
+        String message = "Normattiva OpenData request failed with HTTP " + statusCode;
+        String detail = body == null ? "" : body.replaceAll("\\s+", " ").trim();
+        if (detail.isBlank()) {
+            return message;
+        }
+        if (detail.length() > 500) {
+            detail = detail.substring(0, 500) + "...";
+        }
+        return message + ": " + detail;
     }
 
     private static String absoluteUrl(String baseUrl, String href) {
