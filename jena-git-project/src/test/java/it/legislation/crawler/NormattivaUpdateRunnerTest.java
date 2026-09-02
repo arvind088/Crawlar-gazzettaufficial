@@ -94,6 +94,36 @@ class NormattivaUpdateRunnerTest {
     }
 
     @Test
+    void importsSavedOpenDataUpdateJson() throws Exception {
+        Path input = tempDir.resolve("normattiva_updates.json");
+        Path output = tempDir.resolve("normattiva_updates.tsv");
+        Files.writeString(input, """
+                {
+                  "listaAtti": [
+                    {
+                      "codiceRedazionale": "005G0104",
+                      "dataGU": "2005-05-16",
+                      "denominazioneAtto": "DECRETO LEGISLATIVO",
+                      "numeroAtto": "82",
+                      "titoloAtto": "Codice dell'amministrazione digitale",
+                      "dataEmanazione": "2005-03-07",
+                      "dataUltimaModifica": "2025-03-20",
+                      "ultimiAttiModificanti": "Versione 52"
+                    }
+                  ]
+                }
+                """, StandardCharsets.UTF_8);
+
+        NormattivaUpdateRunner.ImportResult result = NormattivaUpdateRunner.importOpenDataUpdates(input, output);
+
+        String tsv = Files.readString(output, StandardCharsets.UTF_8);
+        assertEquals(1, result.rowsWritten());
+        assertTrue(tsv.contains("codice_redazionale"));
+        assertTrue(tsv.contains("005G0104"));
+        assertTrue(tsv.contains("Codice dell'amministrazione digitale"));
+    }
+
+    @Test
     void parsesActDetailResponse() throws Exception {
         String json = """
                 {
@@ -171,6 +201,48 @@ class NormattivaUpdateRunnerTest {
         assertTrue(requestBody.get().contains("\"codiceRedazionale\":\"005G0104\""));
         assertEquals(1, details.size());
         assertEquals("Codice dell'amministrazione digitale", details.get(0).title());
+    }
+
+    @Test
+    void importsSavedActDetailJsonWithCandidateMetadata() throws Exception {
+        Path input = tempDir.resolve("normattiva_details.json");
+        Path output = tempDir.resolve("normattiva_details.tsv");
+        Files.writeString(input, """
+                {
+                  "details": [
+                    {
+                      "candidate": {
+                        "codiceRedazionale": "005G0104",
+                        "dataGU": "2005-05-16",
+                        "denominazioneAtto": "DECRETO LEGISLATIVO",
+                        "numeroAtto": "82",
+                        "titoloAtto": "Codice dell'amministrazione digitale"
+                      },
+                      "response": {
+                        "data": {
+                          "atto": {
+                            "titolo": "Codice dell'amministrazione digitale",
+                            "tipoProvvedimentoDescrizione": "DECRETO LEGISLATIVO",
+                            "annoProvvedimento": 2005,
+                            "meseProvvedimento": 3,
+                            "giornoProvvedimento": 7,
+                            "numeroProvvedimento": 82,
+                            "articoloHtml": "<p>Testo modificato.</p>"
+                          }
+                        }
+                      }
+                    }
+                  ]
+                }
+                """, StandardCharsets.UTF_8);
+
+        NormattivaUpdateRunner.ImportResult result = NormattivaUpdateRunner.importActDetails(input, output);
+
+        String tsv = Files.readString(output, StandardCharsets.UTF_8);
+        assertEquals(1, result.rowsWritten());
+        assertTrue(tsv.contains("005G0104"));
+        assertTrue(tsv.contains("Codice dell'amministrazione digitale"));
+        assertTrue(tsv.contains("Testo modificato."));
     }
 
     @Test
@@ -275,6 +347,26 @@ class NormattivaUpdateRunnerTest {
         assertTrue(output.contains("evidence_type"));
         assertTrue(output.contains("modification"));
         assertTrue(output.contains("005G0104"));
+    }
+
+    @Test
+    void extractsRelationCandidatesOnlyFromEvidenceRowsWithEliHttpUris() throws Exception {
+        Path evidencePath = tempDir.resolve("normattiva_relation_evidence.tsv");
+        Files.write(evidencePath, List.of(
+                "codice_redazionale\tdata_gu\ttitolo_atto\tdetail_title\tevidence_type\tevidence_text",
+                "25G00041\t2025-03-24\tConversione\tConversione\tconversion\tIl decreto https://www.gazzettaufficiale.it/eli/id/2025/03/01/25G00028/sg e' convertito dalla legge https://www.gazzettaufficiale.it/eli/id/2025/03/24/25G00041/sg",
+                "005G0104\t2005-05-16\tCAD\tCAD\tmodification\tTesto con urn:nir:stato:legge:2025-01-01;1 ma senza ELI HTTP."
+        ), StandardCharsets.UTF_8);
+
+        List<NormattivaUpdateRunner.NormattivaRelationCandidate> candidates =
+                NormattivaUpdateRunner.extractRelationCandidates(evidencePath, 10);
+
+        assertEquals(1, candidates.size());
+        NormattivaUpdateRunner.NormattivaRelationCandidate candidate = candidates.get(0);
+        assertEquals("https://www.gazzettaufficiale.it/eli/id/2025/03/24/25G00041/sg", candidate.sourceUri());
+        assertEquals("https://www.gazzettaufficiale.it/eli/id/2025/03/01/25G00028/sg", candidate.targetUri());
+        assertEquals("eli:commences", candidate.relationType());
+        assertEquals("needs_review", candidate.reviewStatus());
     }
 
     @Test

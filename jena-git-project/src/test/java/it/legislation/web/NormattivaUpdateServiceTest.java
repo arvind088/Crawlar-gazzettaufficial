@@ -310,4 +310,41 @@ class NormattivaUpdateServiceTest {
         }
     }
 
+    @Test
+    void listsNormattivaRelationCandidates() throws Exception {
+        LegalActQueryService queryService = new LegalActQueryService(
+                List.of(tempDir.resolve("missing.ttl"))
+        );
+        Path relationCandidatesOutput = tempDir.resolve("normattiva_relation_candidates.tsv");
+        Files.write(relationCandidatesOutput, List.of(
+                "source_uri\ttarget_uri\trelation_type\tevidence_type\tevidence_text\treview_status",
+                "https://www.gazzettaufficiale.it/eli/id/2025/03/24/25G00041/sg\thttps://www.gazzettaufficiale.it/eli/id/2025/03/01/25G00028/sg\teli:commences\tconversion\tConversion evidence\tneeds_review"
+        ), StandardCharsets.UTF_8);
+
+        try {
+            NormattivaUpdateService service = new NormattivaUpdateService(
+                    queryService,
+                    (sourceUrl, updatesPath, relationsOutput, rdfOutput) -> null,
+                    NormattivaUpdateRunner::runDetails,
+                    NormattivaUpdateRunner::runEvidenceScan,
+                    tempDir.resolve("updates.tsv"),
+                    tempDir.resolve("details.tsv"),
+                    tempDir.resolve("evidence.tsv"),
+                    relationCandidatesOutput,
+                    tempDir.resolve("import-updates.json"),
+                    tempDir.resolve("import-details.tsv"),
+                    tempDir.resolve("relations.tsv"),
+                    tempDir.resolve("relations.ttl")
+            );
+
+            List<NormattivaRelationCandidate> candidates = service.listRelationCandidates(10);
+
+            assertEquals(1, candidates.size());
+            assertEquals("eli:commences", candidates.get(0).relationType());
+            assertEquals("needs_review", candidates.get(0).reviewStatus());
+        } finally {
+            queryService.closeForTests();
+        }
+    }
+
 }

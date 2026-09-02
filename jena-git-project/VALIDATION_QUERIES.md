@@ -388,3 +388,39 @@ Confirm outgoing relations show Commences / converts and Modifies
 Confirm incoming relations show Commenced / converted by and Modified by
 Click related resources and confirm the panel navigates inside the app
 ```
+
+## Reviewed Relation Candidate Validation
+
+Relation candidates produced from `data/clean/normattiva_relation_candidates.tsv` are not loaded into TDB2 and are not RDF yet. They are a review queue.
+
+After a later reviewed RDF promotion step, validate the promoted relation with SPARQL before treating it as true graph data:
+
+```sparql
+PREFIX eli: <http://data.europa.eu/eli/ontology#>
+PREFIX ilg: <http://example.org/italian-legislation/ontology#>
+
+SELECT ?source ?predicate ?target WHERE {
+  VALUES (?source ?predicate ?target) {
+    (
+      <http://www.gazzettaufficiale.it/eli/id/2025/03/24/25G00041/sg>
+      eli:commences
+      <http://www.gazzettaufficiale.it/eli/id/2025/03/01/25G00028/sg>
+    )
+  }
+  ?source ?predicate ?target .
+}
+```
+
+Expected result before reviewed RDF promotion:
+
+```text
+0 rows
+```
+
+Expected result after reviewed RDF promotion:
+
+```text
+source = http://www.gazzettaufficiale.it/eli/id/2025/03/24/25G00041/sg
+predicate = http://data.europa.eu/eli/ontology#commences
+target = http://www.gazzettaufficiale.it/eli/id/2025/03/01/25G00028/sg
+```

@@ -176,6 +176,25 @@ POST /api/normattiva/evidence/run?limit=20
 
 This reads the detail TSV, rewrites the evidence TSV, and returns the number of detail rows scanned and evidence rows found. The frontend exposes this as a **Scan Evidence** button in the technical Normattiva panel.
 
+When the official API is blocked in a local environment, saved data can be imported instead:
+
+```text
+POST /api/normattiva/import/updates
+POST /api/normattiva/import/details
+```
+
+The update import reads `data/import/normattiva_updates.json` or, if present, `data/import/normattiva_updates.tsv`.
+The detail import reads `data/import/normattiva_details.json` or, if present, `data/import/normattiva_details.tsv`.
+
+Relation candidates can then be extracted from scanned evidence:
+
+```text
+POST /api/normattiva/relation-candidates/run?limit=20
+GET /api/normattiva/relation-candidates?limit=50
+```
+
+This creates review-only rows in `data/clean/normattiva_relation_candidates.tsv`. It only extracts candidates when the evidence text contains at least two Gazzetta ELI HTTP URLs. URNs are not promoted as resource identifiers.
+
 ## Configuration
 
 The update interval can be controlled with environment variables:
@@ -213,6 +232,8 @@ This is why the runner leaves existing relation RDF untouched.
 If the official API rejects a request, the runner reports the HTTP status plus a shortened response body. This is important for thesis/debug work because failures such as date-window conflicts, API policy errors, or contract changes should be visible instead of hidden behind a generic status code.
 
 The HTTP request also sends a clear project `User-Agent` and Italian `Accept-Language` header. If the service still returns a protection-system block, the next architecture decision should be operational rather than parser-related: run the API routine from an allowed server, ask for access/whitelisting, or import official OpenData files produced outside the blocked environment.
+
+The import fallback keeps the project moving without pretending that blocked live API calls succeeded. It is suitable for professor review because the imported files remain visible staging inputs and the downstream steps stay deterministic.
 
 ## How This Answers The Feedback
 
@@ -259,6 +280,8 @@ Current tests verify:
 - relation evidence rows can be served back through the web API,
 - relation evidence rows can be shown in the UI without mixing them with confirmed RDF relations,
 - the relation evidence scan can be triggered through the web API and UI,
+- saved update/detail files can be imported when live API access is blocked,
+- relation candidate extraction requires ELI HTTP URLs and writes review-only rows,
 - update candidates are written to TSV,
 - relation RDF is not generated when the API response does not contain relation evidence.
 

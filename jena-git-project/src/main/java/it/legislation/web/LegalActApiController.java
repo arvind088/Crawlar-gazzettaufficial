@@ -164,6 +164,16 @@ public class LegalActApiController {
         return normattivaUpdateService.listUpdateCandidates(limit);
     }
 
+    @PostMapping("/normattiva/import/updates")
+    public NormattivaImportResult importNormattivaUpdates() {
+        return normattivaUpdateService.importUpdateCandidates();
+    }
+
+    @PostMapping("/normattiva/import/details")
+    public NormattivaImportResult importNormattivaDetails() {
+        return normattivaUpdateService.importDetailCandidates();
+    }
+
     @GetMapping("/normattiva/details")
     public List<NormattivaDetailCandidate> normattivaDetails(
             @RequestParam(defaultValue = "50") int limit
@@ -183,6 +193,20 @@ public class LegalActApiController {
             @RequestParam(defaultValue = "20") int limit
     ) {
         return normattivaUpdateService.runEvidenceScan(limit);
+    }
+
+    @GetMapping("/normattiva/relation-candidates")
+    public List<NormattivaRelationCandidate> normattivaRelationCandidates(
+            @RequestParam(defaultValue = "50") int limit
+    ) throws IOException {
+        return normattivaUpdateService.listRelationCandidates(limit);
+    }
+
+    @PostMapping("/normattiva/relation-candidates/run")
+    public NormattivaRelationCandidateRunResult runNormattivaRelationCandidates(
+            @RequestParam(defaultValue = "20") int limit
+    ) {
+        return normattivaUpdateService.runRelationCandidateExtraction(limit);
     }
 
     @PostMapping("/normattiva/details/run")
