@@ -1108,6 +1108,11 @@ function LinkButton({ href, icon, label }) {
 }
 
 function NormattivaPage({ modifications, normattivaDetails, normattivaEvidence, normattivaRelationCandidates, normattivaUpdates }) {
+  const hasDetailRows = normattivaDetails.length > 0;
+  const hasEvidenceRows = normattivaEvidence.length > 0;
+  const hasCandidateRows = normattivaRelationCandidates.length > 0;
+  const hasAdvancedRows = hasDetailRows || hasEvidenceRows || hasCandidateRows;
+
   return e(React.Fragment, null,
     e("section", { className: "panel normattiva-panel" },
       e("div", { className: "panel-heading" },
@@ -1145,7 +1150,21 @@ function NormattivaPage({ modifications, normattivaDetails, normattivaEvidence, 
           )
         : e("div", { className: "empty-state" }, "No Normattiva update candidates loaded")
     ),
-    e("section", { className: "panel normattiva-panel" },
+    hasAdvancedRows ? null : e("section", { className: "panel normattiva-panel pipeline-status-panel" },
+      e("div", { className: "panel-heading" },
+        e("div", null,
+          e("p", { className: "section-label" }, "Normattiva Pipeline"),
+          e("h2", null, "Evidence stages"),
+          e("p", { className: "panel-subtitle" }, "Import or fetch detail data first; relation evidence and review candidates appear here only when rows exist.")
+        )
+      ),
+      e("div", { className: "pipeline-status-grid" },
+        e(PipelineStatusItem, { label: "Detail evidence", count: normattivaDetails.length, state: "Waiting for saved detail data" }),
+        e(PipelineStatusItem, { label: "Relation evidence", count: normattivaEvidence.length, state: "Waiting for evidence scan" }),
+        e(PipelineStatusItem, { label: "Relation candidates", count: normattivaRelationCandidates.length, state: "Waiting for review extraction" })
+      )
+    ),
+    hasDetailRows ? e("section", { className: "panel normattiva-panel" },
       e("div", { className: "panel-heading" },
         e("div", null,
           e("p", { className: "section-label" }, "Normattiva OpenData"),
@@ -1180,8 +1199,8 @@ function NormattivaPage({ modifications, normattivaDetails, normattivaEvidence, 
             )
           )
         : e("div", { className: "empty-state" }, "No Normattiva detail evidence loaded")
-    ),
-    e("section", { className: "panel normattiva-panel" },
+    ) : null,
+    hasEvidenceRows ? e("section", { className: "panel normattiva-panel" },
       e("div", { className: "panel-heading" },
         e("div", null,
           e("p", { className: "section-label" }, "Normattiva OpenData"),
@@ -1214,8 +1233,8 @@ function NormattivaPage({ modifications, normattivaDetails, normattivaEvidence, 
             )
           )
         : e("div", { className: "empty-state" }, "No Normattiva relation evidence loaded")
-    ),
-    e("section", { className: "panel normattiva-panel" },
+    ) : null,
+    hasCandidateRows ? e("section", { className: "panel normattiva-panel" },
       e("div", { className: "panel-heading" },
         e("div", null,
           e("p", { className: "section-label" }, "Normattiva Review"),
@@ -1248,7 +1267,7 @@ function NormattivaPage({ modifications, normattivaDetails, normattivaEvidence, 
             )
           )
         : e("div", { className: "empty-state" }, "No reviewed relation candidates extracted")
-    ),
+    ) : null,
     e("section", { className: "panel normattiva-panel" },
       e("div", { className: "panel-heading" },
         e("div", null,
@@ -1280,6 +1299,14 @@ function NormattivaPage({ modifications, normattivaDetails, normattivaEvidence, 
           )
         : e("div", { className: "empty-state" }, "No Normattiva relationships loaded")
     )
+  );
+}
+
+function PipelineStatusItem({ count, label, state }) {
+  return e("div", { className: "pipeline-status-item" },
+    e("span", { className: "pipeline-status-count" }, count),
+    e("span", { className: "pipeline-status-label" }, label),
+    e("span", { className: "pipeline-status-note" }, state)
   );
 }
 
