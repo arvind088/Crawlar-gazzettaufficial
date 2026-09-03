@@ -266,7 +266,7 @@ public class LegalActQueryService {
     private LegalActSummary toSummary(QuerySolution solution) {
         String uri = value(solution, "act");
         String localId = value(solution, "localId");
-        return new LegalActSummary(
+        return withEliFallbacks(new LegalActSummary(
                 uri,
                 value(solution, "label"),
                 value(solution, "publicationDate"),
@@ -274,7 +274,7 @@ public class LegalActQueryService {
                 value(solution, "type"),
                 localId == null || localId.isBlank() ? localIdFromUri(uri) : localId,
                 value(solution, "source")
-        );
+        ));
     }
 
     private Optional<LegalActSummary> findByUri(String uri) throws IOException {
@@ -310,7 +310,7 @@ public class LegalActQueryService {
             if (resultSet.hasNext()) {
                 QuerySolution solution = resultSet.nextSolution();
                 String localId = value(solution, "localId");
-                return new LegalActSummary(
+                return withEliFallbacks(new LegalActSummary(
                         uri,
                         value(solution, "label"),
                         value(solution, "publicationDate"),
@@ -318,11 +318,28 @@ public class LegalActQueryService {
                         value(solution, "type"),
                         localId == null || localId.isBlank() ? localIdFromUri(uri) : localId,
                         value(solution, "source")
-                );
+                ));
             }
         }
 
-        return new LegalActSummary(uri, null, null, null, null, localIdFromUri(uri), null);
+        return withEliFallbacks(new LegalActSummary(uri, null, null, null, null, localIdFromUri(uri), null));
+    }
+
+    private LegalActSummary withEliFallbacks(LegalActSummary summary) {
+        String uri = summary.uri();
+        if (!isGazzettaEliIdUri(uri)) {
+            return summary;
+        }
+
+        return new LegalActSummary(
+                uri,
+                summary.title(),
+                hasText(summary.publicationDate()) ? summary.publicationDate() : publicationDateFromEliUri(uri),
+                summary.documentDate(),
+                summary.type(),
+                hasText(summary.localId()) ? summary.localId() : localIdFromUri(uri),
+                hasText(summary.source()) ? summary.source() : uri
+        );
     }
 
     private boolean resourceExists(org.apache.jena.query.Dataset dataset, String uri) {
@@ -538,6 +555,39 @@ public class LegalActQueryService {
 
     private boolean isHttpUri(String value) {
         return value.startsWith("http://") || value.startsWith("https://");
+    }
+
+    private boolean isGazzettaEliIdUri(String uri) {
+        return uri != null && uri.contains("gazzettaufficiale.it/eli/id/");
+    }
+
+    private boolean hasText(String value) {
+        return value != null && !value.isBlank();
+    }
+
+    private String publicationDateFromEliUri(String uri) {
+        if (uri == null) {
+            return null;
+        }
+
+        String[] parts = uri.split("/");
+        for (int index = 0; index + 3 < parts.length; index++) {
+            if ("id".equals(parts[index])
+                    && isFourDigitYear(parts[index + 1])
+                    && isTwoDigitMonthOrDay(parts[index + 2])
+                    && isTwoDigitMonthOrDay(parts[index + 3])) {
+                return parts[index + 1] + "-" + parts[index + 2] + "-" + parts[index + 3];
+            }
+        }
+        return null;
+    }
+
+    private boolean isFourDigitYear(String value) {
+        return value != null && value.matches("\\d{4}");
+    }
+
+    private boolean isTwoDigitMonthOrDay(String value) {
+        return value != null && value.matches("\\d{2}");
     }
 
     private String localIdFromUri(String uri) {

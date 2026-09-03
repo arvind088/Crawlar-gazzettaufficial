@@ -605,29 +605,27 @@ button:focus,
 }
 
 .normattiva-panel .update-candidates-table {
-  min-width: 820px;
+  min-width: 760px;
 }
 
 .normattiva-panel .update-candidates-table th:nth-child(1),
 .normattiva-panel .update-candidates-table td:nth-child(1) {
-  width: 13%;
+  width: 22%;
 }
 
 .normattiva-panel .update-candidates-table th:nth-child(2),
 .normattiva-panel .update-candidates-table td:nth-child(2) {
-  width: 32%;
+  width: 34%;
 }
 
 .normattiva-panel .update-candidates-table th:nth-child(3),
-.normattiva-panel .update-candidates-table td:nth-child(3),
-.normattiva-panel .update-candidates-table th:nth-child(4),
-.normattiva-panel .update-candidates-table td:nth-child(4) {
-  width: 14%;
+.normattiva-panel .update-candidates-table td:nth-child(3) {
+  width: 16%;
 }
 
-.normattiva-panel .update-candidates-table th:nth-child(5),
-.normattiva-panel .update-candidates-table td:nth-child(5) {
-  width: 27%;
+.normattiva-panel .update-candidates-table th:nth-child(4),
+.normattiva-panel .update-candidates-table td:nth-child(4) {
+  width: 28%;
 }
 
 .normattiva-panel .detail-candidates-table {
@@ -715,6 +713,11 @@ button:focus,
   padding: 18px 20px 20px;
 }
 
+.technical-pipeline-grid {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  padding: 0 20px 12px;
+}
+
 .pipeline-status-item {
   background: #fbfdfd;
   border: 1px solid var(--line);
@@ -723,6 +726,10 @@ button:focus,
   gap: 5px;
   min-height: 104px;
   padding: 14px;
+}
+
+.technical-pipeline-grid .pipeline-status-item {
+  min-height: 84px;
 }
 
 .pipeline-status-count {
