@@ -31,6 +31,27 @@ body {
   letter-spacing: 0;
 }
 
+.app-error {
+  margin: 0 auto;
+  max-width: 760px;
+  padding: 48px 20px;
+}
+
+.app-error-panel {
+  padding: 24px;
+}
+
+.app-error-panel h1 {
+  font-size: 24px;
+  line-height: 1.2;
+  margin: 0 0 10px;
+}
+
+.app-error-panel p:last-child {
+  color: var(--muted);
+  margin-bottom: 0;
+}
+
 button,
 input,
 select {

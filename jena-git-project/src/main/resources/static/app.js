@@ -2161,6 +2161,10 @@ function formatSparqlCell(value) {
 }
 
 function compactRdfName(text) {
+  if (!text) {
+    return "";
+  }
+  const value = String(text);
   const namespaces = [
     ["http://data.europa.eu/eli/ontology#", "eli:"],
     ["http://purl.org/dc/terms/", "dcterms:"],
@@ -2171,8 +2175,8 @@ function compactRdfName(text) {
     ["http://www.gazzettaufficiale.it/eli/tables/resource-type#", ""],
     ["http://www.gazzettaufficiale.it/eli/tables/versions#", ""]
   ];
-  const match = namespaces.find(([namespace]) => text.startsWith(namespace));
-  return match ? `${match[1]}${text.slice(match[0].length)}` : "";
+  const match = namespaces.find(([namespace]) => value.startsWith(namespace));
+  return match ? `${match[1]}${value.slice(match[0].length)}` : "";
 }
 
 function isLikelyUri(value) {
@@ -2222,4 +2226,32 @@ function Icon({ name }) {
   }, (paths[name] || paths.file).map((d) => e("path", { key: d, d })));
 }
 
-ReactDOM.createRoot(document.getElementById("root")).render(e(App));
+class AppErrorBoundary extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = { error: null };
+  }
+
+  static getDerivedStateFromError(error) {
+    return { error };
+  }
+
+  componentDidCatch(error) {
+    console.error(error);
+  }
+
+  render() {
+    if (this.state.error) {
+      return e("main", { className: "app-error" },
+        e("section", { className: "panel app-error-panel" },
+          e("p", { className: "section-label" }, "Interface"),
+          e("h1", null, "The UI hit a rendering problem"),
+          e("p", null, this.state.error.message || "Refresh the page after the latest changes are loaded.")
+        )
+      );
+    }
+    return this.props.children;
+  }
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(e(AppErrorBoundary, null, e(App)));
