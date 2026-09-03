@@ -331,6 +331,19 @@ button:focus,
   justify-content: flex-end;
 }
 
+.crawler-panel .panel-actions {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(136px, 1fr));
+  max-width: 560px;
+  width: min(100%, 560px);
+}
+
+.crawler-panel .panel-actions .secondary-button {
+  justify-content: center;
+  min-width: 0;
+  width: 100%;
+}
+
 .panel-subtitle {
   color: var(--muted);
   font-size: 15px;
@@ -668,6 +681,46 @@ button:focus,
 .normattiva-panel .relation-candidates-table th:nth-child(4),
 .normattiva-panel .relation-candidates-table td:nth-child(4) {
   width: 16%;
+}
+
+.pipeline-status-panel {
+  min-height: 210px;
+}
+
+.pipeline-status-grid {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  padding: 18px 20px 20px;
+}
+
+.pipeline-status-item {
+  background: #fbfdfd;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  display: grid;
+  gap: 5px;
+  min-height: 104px;
+  padding: 14px;
+}
+
+.pipeline-status-count {
+  color: var(--accent-dark);
+  font-size: 24px;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.pipeline-status-label {
+  color: var(--text);
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.pipeline-status-note {
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.35;
 }
 
 .relation-id-cell {
@@ -1303,7 +1356,8 @@ button:focus,
   }
 
   .metric-grid,
-  .crawler-grid {
+  .crawler-grid,
+  .pipeline-status-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
@@ -1341,12 +1395,18 @@ button:focus,
   }
 
   .metric-grid,
-  .crawler-grid {
+  .crawler-grid,
+  .pipeline-status-grid {
     grid-template-columns: 1fr;
   }
 
   .panel-heading {
     align-items: flex-start;
     flex-direction: column;
+  }
+
+  .crawler-panel .panel-actions {
+    grid-template-columns: 1fr;
+    max-width: none;
   }
 }
