@@ -279,7 +279,7 @@ public class GazzettaScraper {
                 }
             }
 
-            Model newRecords = new RdfModelBuilder().buildLegalActs(records);
+            Model newRecords = RdfModelBuilder.fromEnvironment().buildLegalActs(records);
             for (CleanLegalActRecord record : records) {
                 Resource act = model.createResource(record.getEliUri());
                 model.removeAll(act, null, null);

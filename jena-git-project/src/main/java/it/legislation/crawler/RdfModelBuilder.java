@@ -12,6 +12,8 @@ import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.vocabulary.RDF;
 import org.apache.jena.vocabulary.RDFS;
 
+import it.legislation.eli.EliUriService;
+
 public class RdfModelBuilder {
 
     public static final String ELI_NS = "http://data.europa.eu/eli/ontology#";
@@ -19,6 +21,7 @@ public class RdfModelBuilder {
     public static final String SCHEMA_NS = "http://schema.org/";
     public static final String GU_NS = "http://www.gazzettaufficiale.it/eli/";
     public static final String PROJECT_NS = "http://example.org/italian-legislation/ontology#";
+    public static final String OWL_NS = "http://www.w3.org/2002/07/owl#";
 
     private final Resource legalResourceType;
     private final Resource legalExpressionType;
@@ -35,12 +38,29 @@ public class RdfModelBuilder {
     private final Property publisher;
     private final Property title;
     private final Property source;
+    private final Property sameAs;
     private final Property authorityLabel;
     private final Property reference;
     private final Property referenceGu;
     private final Property contentUrl;
 
+    /**
+     * Minting strategy. Null keeps the source identifiers exactly as crawled,
+     * which is the historical behaviour and what the existing tests expect.
+     */
+    private final EliUriService uriService;
+
     public RdfModelBuilder() {
+        this(null);
+    }
+
+    /**
+     * Mints resource identifiers on our own domain (CONTEXT.md constraint 3)
+     * and records an {@code owl:sameAs} link back to the source identifier, so
+     * no provenance is lost.
+     */
+    public RdfModelBuilder(EliUriService uriService) {
+        this.uriService = uriService;
         Model vocabularyModel = ModelFactory.createDefaultModel();
         this.legalResourceType = vocabularyModel.createResource(ELI_NS + "LegalResource");
         this.legalExpressionType = vocabularyModel.createResource(ELI_NS + "LegalExpression");
@@ -57,10 +77,24 @@ public class RdfModelBuilder {
         this.publisher = vocabularyModel.createProperty(ELI_NS, "publisher");
         this.title = vocabularyModel.createProperty(ELI_NS, "title");
         this.source = vocabularyModel.createProperty(DCTERMS_NS, "source");
+        this.sameAs = vocabularyModel.createProperty(OWL_NS, "sameAs");
         this.authorityLabel = vocabularyModel.createProperty(PROJECT_NS, "authorityLabel");
         this.reference = vocabularyModel.createProperty(PROJECT_NS, "reference");
         this.referenceGu = vocabularyModel.createProperty(PROJECT_NS, "referenceGU");
         this.contentUrl = vocabularyModel.createProperty(SCHEMA_NS, "contentUrl");
+    }
+
+    /**
+     * Builds a minting builder when {@code LEGAL_ELI_BASE_URI} is set, and the
+     * historical pass-through builder otherwise. Keeps identifier policy in one
+     * place and lets a deployment switch it on without a code change.
+     */
+    public static RdfModelBuilder fromEnvironment() {
+        String baseUri = System.getenv("LEGAL_ELI_BASE_URI");
+        if (baseUri == null || baseUri.isBlank()) {
+            return new RdfModelBuilder();
+        }
+        return new RdfModelBuilder(new EliUriService(baseUri));
     }
 
     public Model buildLegalActs(Collection<CleanLegalActRecord> records) {
@@ -78,8 +112,10 @@ public class RdfModelBuilder {
     }
 
     public void addLegalAct(Model model, CleanLegalActRecord record) {
-        Resource legalAct = model.createResource(record.getEliUri());
+        String actUri = mint(record.getEliUri());
+        Resource legalAct = model.createResource(actUri);
         legalAct.addProperty(RDF.type, legalResourceType);
+        addSameAs(legalAct, record.getEliUri(), actUri);
 
         record.getTitle().ifPresent(value -> {
             legalAct.addProperty(RDFS.label, value);
@@ -89,7 +125,8 @@ public class RdfModelBuilder {
         record.getDocumentDate().ifPresent(value -> legalAct.addLiteral(dateDocument, dateLiteral(model, value)));
         record.getDocumentTypeUri().ifPresent(value -> legalAct.addProperty(typeDocument, model.createResource(value)));
         record.getLocalId().ifPresent(value -> legalAct.addProperty(idLocal, value));
-        record.getRealizedByUri().ifPresent(value -> legalAct.addProperty(isRealizedBy, model.createResource(value)));
+        record.getRealizedByUri().ifPresent(value ->
+                legalAct.addProperty(isRealizedBy, model.createResource(mint(value))));
         record.getVersionUri().ifPresent(value -> legalAct.addProperty(version, model.createResource(value)));
         record.getAuthorityLabel().ifPresent(value -> legalAct.addProperty(authorityLabel, value));
         record.getReference().ifPresent(value -> legalAct.addProperty(reference, value));
@@ -101,9 +138,12 @@ public class RdfModelBuilder {
     }
 
     private void addExpression(Model model, CleanLegalActRecord record, String expressionUri) {
-        Resource expression = model.createResource(expressionUri);
+        String mintedExpressionUri = mint(expressionUri);
+        Resource expression = model.createResource(mintedExpressionUri);
         expression.addProperty(RDF.type, legalExpressionType);
-        expression.addProperty(model.createProperty(ELI_NS, "realizes"), model.createResource(record.getEliUri()));
+        expression.addProperty(model.createProperty(ELI_NS, "realizes"),
+                model.createResource(mint(record.getEliUri())));
+        addSameAs(expression, expressionUri, mintedExpressionUri);
 
         record.getTitle().ifPresent(value -> {
             expression.addProperty(RDFS.label, value);
@@ -111,14 +151,29 @@ public class RdfModelBuilder {
         });
         record.getLanguageUri().ifPresent(value -> expression.addProperty(language, model.createResource(value)));
         record.getPublisherUri().ifPresent(value -> expression.addProperty(publisher, model.createResource(value)));
-        record.getEmbodiedByUri().ifPresent(value -> expression.addProperty(isEmbodiedBy, model.createResource(value)));
+        record.getEmbodiedByUri().ifPresent(value ->
+                expression.addProperty(isEmbodiedBy, model.createResource(mint(value))));
     }
 
     private void addFormat(Model model, CleanLegalActRecord record, String manifestationUri) {
-        Resource manifestation = model.createResource(manifestationUri);
+        String mintedManifestationUri = mint(manifestationUri);
+        Resource manifestation = model.createResource(mintedManifestationUri);
         manifestation.addProperty(RDF.type, formatType);
+        addSameAs(manifestation, manifestationUri, mintedManifestationUri);
         record.getFormatUri().ifPresent(value -> manifestation.addProperty(format, model.createResource(value)));
         record.getPdfGuUrl().ifPresent(value -> manifestation.addProperty(contentUrl, model.createResource(value)));
+    }
+
+    /** Re-hosts an ELI identifier on our domain when minting is enabled. */
+    private String mint(String uri) {
+        return uriService == null ? uri : uriService.mint(uri);
+    }
+
+    private void addSameAs(Resource resource, String sourceUri, String mintedUri) {
+        if (uriService == null || sourceUri == null || sourceUri.equals(mintedUri)) {
+            return;
+        }
+        resource.addProperty(sameAs, resource.getModel().createResource(sourceUri));
     }
 
     private Model createModel() {
@@ -128,6 +183,7 @@ public class RdfModelBuilder {
         model.setNsPrefix("schema", SCHEMA_NS);
         model.setNsPrefix("gu", GU_NS);
         model.setNsPrefix("ilg", PROJECT_NS);
+        model.setNsPrefix("owl", OWL_NS);
         model.setNsPrefix("rdf", RDF.getURI());
         model.setNsPrefix("rdfs", RDFS.getURI());
         model.setNsPrefix("xsd", XSDDatatype.XSD + "#");

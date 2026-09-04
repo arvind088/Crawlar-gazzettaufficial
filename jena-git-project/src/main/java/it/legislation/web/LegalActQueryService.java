@@ -327,7 +327,7 @@ public class LegalActQueryService {
 
     private LegalActSummary withEliFallbacks(LegalActSummary summary) {
         String uri = summary.uri();
-        if (!isGazzettaEliIdUri(uri)) {
+        if (!isEliIdUri(uri)) {
             return summary;
         }
 
@@ -557,8 +557,13 @@ public class LegalActQueryService {
         return value.startsWith("http://") || value.startsWith("https://");
     }
 
-    private boolean isGazzettaEliIdUri(String uri) {
-        return uri != null && uri.contains("gazzettaufficiale.it/eli/id/");
+    /**
+     * True for any ELI identifier, on the source domain or on ours. Kept
+     * host-agnostic so the date and local-id fallbacks keep working after the
+     * data has been re-hosted on our own domain.
+     */
+    private boolean isEliIdUri(String uri) {
+        return uri != null && uri.contains("/eli/id/");
     }
 
     private boolean hasText(String value) {
