@@ -11,7 +11,7 @@
   --accent-pale: #f1fbf9;
   --warn: #a16207;
   --warn-soft: #fff5d6;
-  --focus: #2563eb;
+  --focus: #00695f;
   --shadow: 0 16px 45px rgba(15, 43, 54, 0.11);
   --shadow-soft: 0 8px 24px rgba(15, 43, 54, 0.08);
 }
@@ -1437,4 +1437,286 @@ button:focus,
     grid-template-columns: 1fr;
     max-width: none;
   }
+}
+
+
+/* ---------------------------------------------------------------
+   Added: pipeline steps, run log, relation cells, mobile layout
+   --------------------------------------------------------------- */
+
+.pipeline-steps {
+  border-top: 1px solid var(--line);
+  counter-reset: pipeline;
+  display: flex;
+  flex-direction: column;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.pipeline-step {
+  align-items: start;
+  border-bottom: 1px solid var(--line);
+  display: grid;
+  gap: 16px;
+  grid-template-columns: 32px minmax(0, 1fr) auto;
+  padding: 18px 24px;
+}
+
+.pipeline-step-number {
+  align-items: center;
+  border: 1px solid var(--accent);
+  border-radius: 50%;
+  color: var(--accent);
+  display: flex;
+  font-size: 13px;
+  font-weight: 700;
+  height: 30px;
+  justify-content: center;
+  width: 30px;
+}
+
+.pipeline-step-body h3 {
+  font-size: 15px;
+  margin: 4px 0 4px;
+}
+
+.pipeline-step-body p {
+  color: var(--muted);
+  font-size: 13.5px;
+  line-height: 1.5;
+  margin: 0;
+  max-width: 62ch;
+}
+
+.pipeline-step-count {
+  margin-top: 6px !important;
+}
+
+.pipeline-step-count strong {
+  color: var(--text);
+  font-size: 15px;
+}
+
+.pipeline-step-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 168px;
+}
+
+.tertiary-button {
+  background: transparent;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  color: var(--muted);
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+  padding: 8px 12px;
+}
+
+.tertiary-button:hover:not(:disabled) {
+  background: var(--surface-soft);
+  color: var(--text);
+}
+
+.tertiary-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.run-log {
+  border-top: 1px solid var(--line);
+  display: flex;
+  flex-direction: column;
+}
+
+.run-log-row {
+  align-items: baseline;
+  border-bottom: 1px solid var(--line);
+  display: grid;
+  gap: 16px;
+  grid-template-columns: 190px minmax(0, 1fr);
+  padding: 11px 24px;
+}
+
+.run-log-row.failed {
+  background: var(--warn-soft);
+}
+
+.run-log-step {
+  color: var(--text);
+  font-size: 13.5px;
+  font-weight: 700;
+}
+
+.relation-act-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 128px;
+}
+
+.act-ref-link {
+  color: var(--accent-dark);
+  font-weight: 700;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.act-ref-link:hover {
+  text-decoration: underline;
+}
+
+.act-ref-title {
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.4;
+  max-width: 46ch;
+}
+
+.relation-badge {
+  background: var(--accent-soft);
+  border-radius: 999px;
+  color: var(--accent-dark);
+  display: inline-block;
+  font-size: 12.5px;
+  font-weight: 700;
+  padding: 4px 11px;
+  white-space: nowrap;
+}
+
+.primary-link-inline {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #ffffff;
+}
+
+.primary-link-inline:hover {
+  background: var(--accent-dark);
+  border-color: var(--accent-dark);
+}
+
+/* Results become cards on small screens, so IDs never wrap one
+   character per line. */
+@media (max-width: 620px) {
+  .tabs {
+    gap: 14px;
+    padding: 0 16px;
+    scroll-snap-type: x proximity;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .tab-button {
+    font-size: 14px;
+    gap: 0;
+    scroll-snap-align: start;
+  }
+
+  /* Icons are decorative here; dropping them lets all four tab labels
+     fit at 390px instead of clipping "Status" off the edge. */
+  .tab-button svg {
+    display: none;
+  }
+
+  .results-table thead {
+    border: 0;
+    clip: rect(0 0 0 0);
+    height: 1px;
+    margin: -1px;
+    overflow: hidden;
+    padding: 0;
+    position: absolute;
+    width: 1px;
+  }
+
+  .results-table,
+  .results-table tbody,
+  .results-table tr,
+  .results-table td {
+    display: block;
+    width: 100%;
+  }
+
+  .results-table tr {
+    border-bottom: 1px solid var(--line);
+    padding: 14px 16px;
+  }
+
+  .results-table td {
+    border: 0;
+    padding: 0;
+  }
+
+  .results-table td + td {
+    margin-top: 4px;
+  }
+
+  .results-table td.strong-cell {
+    font-size: 14px;
+    font-weight: 700;
+  }
+
+  .results-table .table-title {
+    -webkit-line-clamp: 3;
+    display: -webkit-box;
+    font-size: 14.5px;
+  }
+
+  .table-wrap {
+    overflow-x: visible;
+  }
+
+  .pipeline-step {
+    grid-template-columns: 28px minmax(0, 1fr);
+    padding: 16px;
+  }
+
+  .pipeline-step-actions {
+    grid-column: 2;
+    min-width: 0;
+  }
+
+  .run-log-row {
+    grid-template-columns: 1fr;
+    gap: 4px;
+    padding: 12px 16px;
+  }
+
+  .detail-actions {
+    display: grid;
+    gap: 8px;
+    grid-template-columns: 1fr;
+  }
+
+  .uri-value {
+    font-size: 11.5px;
+    word-break: break-all;
+  }
+}
+
+.boot-message {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  margin: 48px auto;
+  max-width: 640px;
+  padding: 28px 32px;
+}
+
+.boot-message h1 {
+  font-size: 22px;
+  margin: 0 0 12px;
+}
+
+.boot-message p,
+.boot-message li {
+  color: var(--muted);
+  line-height: 1.6;
+  margin: 0 0 10px;
+}
+
+.boot-message a {
+  color: var(--accent-dark);
 }

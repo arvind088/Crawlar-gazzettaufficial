@@ -166,6 +166,7 @@ function App() {
   const [normattivaRelationCandidates, setNormattivaRelationCandidates] = useState([]);
   const [rdfSources, setRdfSources] = useState([]);
   const [acts, setActs] = useState([]);
+  const [datasetActs, setDatasetActs] = useState([]);
   const [selected, setSelected] = useState(null);
   const [resourceDetail, setResourceDetail] = useState(null);
   const [resourceLoading, setResourceLoading] = useState(false);
@@ -347,6 +348,9 @@ function App() {
       const rows = Array.isArray(data) ? data.filter(hasDisplayMetadata) : [];
       setActs(rows);
       setSelected(rows[0] ?? null);
+      if (!(query ?? search)) {
+        setDatasetActs(rows);
+      }
     } catch (err) {
       setError(err.message || "Search failed");
       setActs([]);
@@ -634,6 +638,7 @@ function App() {
   const page = activeTab === "search" ? e(SearchPage, {
     acts: filteredActs,
     allActs: acts,
+    datasetActs: datasetActs.length ? datasetActs : acts,
     error,
     loading,
     modifications,
@@ -656,7 +661,7 @@ function App() {
     onSourceFilterChange: setSourceFilter,
     onTypeFilterChange: setTypeFilter,
     onYearFilterChange: setYearFilter
-  }) : activeTab === "normattiva" ? e(NormattivaPage, { modifications, normattivaDetails, normattivaEvidence, normattivaRelationCandidates, normattivaUpdates })
+  }) : activeTab === "normattiva" ? e(NormattivaPage, { acts: datasetActs.length ? datasetActs : acts, modifications, normattivaDetails, normattivaEvidence, normattivaRelationCandidates, normattivaUpdates })
     : activeTab === "sparql" ? e(SparqlPage, { initialQuery: actSparqlQuery })
       : e(TechnicalPage, {
           archiveEndDate,
@@ -743,14 +748,15 @@ function App() {
 }
 
 function SearchPage(props) {
-  const totalActs = props.allActs.length;
-  const lastUpdate = props.allActs.map((act) => act.publicationDate).filter(Boolean).sort().pop() || "unknown";
+  const dataset = props.datasetActs || props.allActs;
+  const totalActs = dataset.length;
+  const lastUpdate = dataset.map((act) => act.publicationDate).filter(Boolean).sort().pop() || "unknown";
 
   return e(React.Fragment, null,
     e("section", { className: "metric-grid compact-metrics", "aria-label": "Dataset overview" },
-      e(MetricTile, { icon: "file", label: "Legal Acts", value: totalActs, note: "from Gazzetta RDF" }),
-      e(MetricTile, { icon: "link", label: "Relationships", value: props.modifications.length, note: "from Normattiva RDF" }),
-      e(MetricTile, { icon: "clock", label: "Latest Date", value: formatDisplayDate(lastUpdate), note: "publication date" })
+      e(MetricTile, { icon: "file", label: "Legal acts", value: totalActs, note: "in the triple store" }),
+      e(MetricTile, { icon: "link", label: "Act-to-act relations", value: props.modifications.length, note: "from Normattiva" }),
+      e(MetricTile, { icon: "clock", label: "Most recent publication", value: formatDisplayDate(lastUpdate), note: "Gazzetta Ufficiale date" })
     ),
     e("div", { className: "content-grid" },
       e(SearchPanel, props),
@@ -873,7 +879,7 @@ function SelectFilter({ label, value, options, onChange }) {
 
 function ResultTable({ acts, selected, onSelect }) {
   if (!acts.length) {
-    return e("div", { className: "empty-state" }, "No matching legal acts");
+    return e("div", { className: "empty-state" }, "No legal acts match that search");
   }
 
   return e("div", { className: "table-wrap" },
@@ -939,7 +945,7 @@ function DetailPanel({
       resourceLoading,
       onNavigateResource,
       onRunSparqlForAct
-    }) : e("div", { className: "empty-state" }, "Select a record from the results")
+    }) : e("div", { className: "empty-state" }, "Pick an act from the list to see its details")
   );
 }
 
@@ -956,21 +962,22 @@ function DetailView({
   const detail = resourceDetail?.uri === act.uri ? resourceDetail : null;
   const fields = [
     ["Title", displayTitle(act)],
-    ["Publication Date", act.publicationDate],
-    ["Type", shortType(act.type)],
+    ["Published", act.publicationDate],
+    ["Document type", displayVocabularyTerm(act.type) || shortType(act.type)],
     ["Source", sourceLabel(act.source)]
   ];
+  const permanentUrl = eliPageUrl(act);
 
   return e("div", { className: "detail-grid" },
     e("div", { className: "act-pill" }, "ID ", e("strong", null, displayLocalId(act))),
     e("div", { className: "detail-item" },
-      e("div", { className: "detail-label" }, "ELI URI"),
+      e("div", { className: "detail-label" }, "Permanent link"),
       e("div", { className: "uri-row" },
-        e("code", { className: "uri-value" }, act.uri || "Missing data"),
+        e("code", { className: "uri-value" }, permanentUrl || act.uri || "Not available"),
         e("button", {
           className: "copy-button",
-          disabled: !act.uri,
-          onClick: () => copyText(act.uri),
+          disabled: !(permanentUrl || act.uri),
+          onClick: () => copyText(permanentUrl || act.uri),
           type: "button"
         }, "Copy")
       )
@@ -984,9 +991,9 @@ function DetailView({
     e("div", { className: "detail-item" },
       e("div", { className: "detail-label" }, "Versions"),
       resourceLoading
-        ? e("div", { className: "detail-value muted-line" }, "Loading versions...")
+        ? e("div", { className: "detail-value muted-line" }, "Loading versions\u2026")
         : e(LinkedNodeList, {
-            empty: resourceError || "No version loaded",
+            empty: resourceError || "This act has no recorded versions",
             nodes: detail?.expressions || [],
             onNavigateResource
           })
@@ -994,19 +1001,20 @@ function DetailView({
     e("div", { className: "detail-item" },
       e("div", { className: "detail-label" }, "Formats"),
       resourceLoading
-        ? e("div", { className: "detail-value muted-line" }, "Loading formats...")
+        ? e("div", { className: "detail-value muted-line" }, "Loading formats\u2026")
         : e(LinkedNodeList, {
-            empty: resourceError || "No format loaded",
+            empty: resourceError || "This act has no recorded formats",
             nodes: detail?.manifestations || [],
+            expressions: detail?.expressions || [],
             onNavigateResource
           })
     ),
     e("div", { className: "detail-item" },
       e("div", { className: "detail-label" }, "Related Resources"),
       resourceLoading
-        ? e("div", { className: "detail-value muted-line" }, "Loading related resources...")
+        ? e("div", { className: "detail-value muted-line" }, "Loading related acts\u2026")
         : e(LinkedRelationList, {
-            empty: resourceError || "No related resources loaded",
+            empty: resourceError || "No links to other acts recorded yet",
             relations: userFacingRelations(detail),
             onNavigateResource
           })
@@ -1021,10 +1029,14 @@ function DetailView({
               )
             )
           )
-        : e("div", { className: "detail-value muted-line" }, "No loaded relationship")
+        : e("div", { className: "detail-value muted-line" }, "No Normattiva relation recorded for this act")
     ),
     e("div", { className: "detail-actions" },
-      e(LinkButton, { href: act.source || act.uri, icon: "external", label: "Open Gazzetta" }),
+      permanentUrl ? e("a", { className: "action-link primary-link-inline", href: eliPagePath(act) },
+        e(Icon, { name: "link" }),
+        e("span", null, "Open act page")
+      ) : null,
+      e(LinkButton, { href: act.source || act.uri, icon: "external", label: "View on Gazzetta" }),
       displayLocalId(act) ? e(LinkButton, { href: actRdfUrl(act), icon: "link", label: "View RDF" }) : null,
       displayLocalId(act) ? e("a", { className: "action-link secondary-link-inline", href: `${actRdfUrl(act)}?download=true` },
         e(Icon, { name: "download" }),
@@ -1039,7 +1051,13 @@ function DetailView({
   );
 }
 
-function LinkedNodeList({ empty, nodes, onNavigateResource }) {
+function LinkedNodeList({ empty, expressions, nodes, onNavigateResource }) {
+  const versionOf = (node) => {
+    const parent = (expressions || []).find((expression) =>
+      expression.uri && node.uri && String(node.uri).startsWith(`${expression.uri}/`));
+    return parent ? displayVersionTerm(parent.version) || displayNodeTitle(parent) : "";
+  };
+
   if (!nodes.length) {
     return e("div", { className: "detail-value muted-line" }, empty);
   }
@@ -1053,11 +1071,11 @@ function LinkedNodeList({ empty, nodes, onNavigateResource }) {
         title: node.uri,
         type: "button"
       },
-        e("span", { className: "resource-main" }, displayNodeTitle(node)),
+        e("span", { className: "resource-main" }, displayFormatTerm(node.format) || displayNodeTitle(node)),
         e("span", { className: "resource-meta" },
-          [compactRdfName(node.version), compactRdfName(node.language), compactRdfName(node.format)]
+          [displayVersionTerm(node.version) || versionOf(node), displayVocabularyTerm(node.language), node.format ? "" : displayFormatTerm(node.format)]
             .filter(Boolean)
-            .join(" | ") || compactUri(node.uri)
+            .join(" \u00b7 ") || compactUri(node.uri)
         )
       )
     )
@@ -1117,7 +1135,13 @@ function LinkButton({ href, icon, label }) {
   );
 }
 
-function NormattivaPage({ modifications }) {
+function NormattivaPage({ acts, modifications }) {
+  const titleFor = (localId, uri) => {
+    const key = localId || localIdFromUri(uri);
+    const match = (acts || []).find((act) => displayLocalId(act) === key);
+    return match && match.title ? match.title : "";
+  };
+
   return e(React.Fragment, null,
     e("section", { className: "panel normattiva-panel" },
       e("div", { className: "panel-heading" },
@@ -1133,23 +1157,35 @@ function NormattivaPage({ modifications }) {
             e("table", { className: "results-table" },
               e("thead", null,
                 e("tr", null,
-                  e("th", null, "Source Act"),
+                  e("th", null, "This act"),
                   e("th", null, "Relation"),
-                  e("th", null, "Target Act")
+                  e("th", null, "Related act")
                 )
               ),
               e("tbody", null,
                 modifications.map((row) =>
                   e("tr", { key: `${row.sourceUri}-${row.relationship}-${row.targetUri}` },
-                    e("td", { className: "mono relation-id-cell" }, displayRelationId(row.sourceLocalId, row.sourceUri)),
-                    e("td", null, relationshipLabel(row.relationship)),
-                    e("td", { className: "mono relation-id-cell" }, displayRelationId(row.targetLocalId, row.targetUri))
+                    e("td", { className: "relation-act-cell" },
+                      e("a", { className: "act-ref-link mono", href: eliPagePath(row.sourceUri) || row.sourceUri },
+                        displayRelationId(row.sourceLocalId, row.sourceUri)),
+                      titleFor(row.sourceLocalId, row.sourceUri)
+                        ? e("span", { className: "act-ref-title" }, titleFor(row.sourceLocalId, row.sourceUri))
+                        : null
+                    ),
+                    e("td", null, e("span", { className: "relation-badge" }, relationshipLabel(row.relationship))),
+                    e("td", { className: "relation-act-cell" },
+                      e("a", { className: "act-ref-link mono", href: eliPagePath(row.targetUri) || row.targetUri },
+                        displayRelationId(row.targetLocalId, row.targetUri)),
+                      titleFor(row.targetLocalId, row.targetUri)
+                        ? e("span", { className: "act-ref-title" }, titleFor(row.targetLocalId, row.targetUri))
+                        : null
+                    )
                   )
                 )
               )
             )
           )
-        : e("div", { className: "empty-state" }, "No verified legal relationships loaded")
+        : e("div", { className: "empty-state" }, "No act-to-act relations in the triple store yet")
     )
   );
 }
@@ -1386,46 +1422,82 @@ function NormattivaAutomationPanel({
     e("div", { className: "panel-heading" },
       e("div", null,
         e("p", { className: "section-label" }, "Normattiva"),
-        e("h2", null, "Automatic update status"),
-        e("p", { className: "panel-subtitle" }, "Fetches official Normattiva update candidates without inferring relationship RDF.")
-      ),
-      e("div", { className: "panel-actions" },
-        e("button", {
-          className: "secondary-button",
-          disabled: normattivaImportRunning,
-          onClick: onImportNormattivaUpdates,
-          type: "button"
-        }, normattivaImportRunning ? "Importing..." : "Import Updates"),
-        e("button", {
-          className: "secondary-button",
-          disabled: normattivaImportRunning,
-          onClick: onImportNormattivaDetails,
-          type: "button"
-        }, normattivaImportRunning ? "Importing..." : "Import Details"),
-        e("button", {
-          className: "secondary-button",
-          disabled: normattivaRunning,
-          onClick: onRunNormattivaUpdate,
-          type: "button"
-        }, normattivaRunning ? "Running..." : "Run Normattiva Update"),
-        e("button", {
-          className: "secondary-button",
-          disabled: normattivaDetailRunning,
-          onClick: onRunNormattivaDetailFetch,
-          type: "button"
-        }, normattivaDetailRunning ? "Fetching..." : "Fetch Details"),
-        e("button", {
-          className: "secondary-button",
-          disabled: normattivaEvidenceRunning,
-          onClick: onRunNormattivaEvidenceScan,
-          type: "button"
-        }, normattivaEvidenceRunning ? "Scanning..." : "Scan Evidence"),
-        e("button", {
-          className: "secondary-button",
-          disabled: normattivaCandidateRunning,
-          onClick: onRunNormattivaRelationCandidates,
-          type: "button"
-        }, normattivaCandidateRunning ? "Extracting..." : "Extract Candidates")
+        e("h2", null, "Amendment discovery"),
+        e("p", { className: "panel-subtitle" }, "Finds acts that Normattiva has amended. Each step feeds the next, and nothing is written to the graph until a relation has been reviewed.")
+      )
+    ),
+    e("ol", { className: "pipeline-steps" },
+      [
+        {
+          n: 1,
+          title: "Find changed acts",
+          note: "Asks the Normattiva OpenData API which acts changed in the update window.",
+          count: normattivaUpdates.length,
+          countLabel: "acts found",
+          run: onRunNormattivaUpdate,
+          running: normattivaRunning,
+          runLabel: "Find changed acts",
+          busyLabel: "Searching\u2026",
+          alt: { run: onImportNormattivaUpdates, running: normattivaImportRunning, label: "Import from file", busy: "Importing\u2026" }
+        },
+        {
+          n: 2,
+          title: "Fetch act details",
+          note: "Downloads the full record for each act found in step 1.",
+          count: normattivaDetails.length,
+          countLabel: "details fetched",
+          run: onRunNormattivaDetailFetch,
+          running: normattivaDetailRunning,
+          runLabel: "Fetch details",
+          busyLabel: "Fetching\u2026",
+          alt: { run: onImportNormattivaDetails, running: normattivaImportRunning, label: "Import from file", busy: "Importing\u2026" }
+        },
+        {
+          n: 3,
+          title: "Scan for relation evidence",
+          note: "Looks through the fetched text for wording that names another act.",
+          count: normattivaEvidence.length,
+          countLabel: "passages found",
+          run: onRunNormattivaEvidenceScan,
+          running: normattivaEvidenceRunning,
+          runLabel: "Scan evidence",
+          busyLabel: "Scanning\u2026"
+        },
+        {
+          n: 4,
+          title: "Propose relations for review",
+          note: "Turns evidence into candidate links. These are not added to the graph until you approve them.",
+          count: normattivaRelationCandidates.length,
+          countLabel: "awaiting review",
+          run: onRunNormattivaRelationCandidates,
+          running: normattivaCandidateRunning,
+          runLabel: "Propose relations",
+          busyLabel: "Working\u2026"
+        }
+      ].map((step) =>
+        e("li", { key: step.n, className: "pipeline-step" },
+          e("span", { className: "pipeline-step-number", "aria-hidden": "true" }, step.n),
+          e("div", { className: "pipeline-step-body" },
+            e("h3", null, step.title),
+            e("p", null, step.note),
+            e("p", { className: "pipeline-step-count" },
+              e("strong", null, step.count), " ", step.countLabel)
+          ),
+          e("div", { className: "pipeline-step-actions" },
+            e("button", {
+              className: "secondary-button",
+              disabled: step.running,
+              onClick: step.run,
+              type: "button"
+            }, step.running ? step.busyLabel : step.runLabel),
+            step.alt ? e("button", {
+              className: "tertiary-button",
+              disabled: step.alt.running,
+              onClick: step.alt.run,
+              type: "button"
+            }, step.alt.running ? step.alt.busy : step.alt.label) : null
+          )
+        )
       )
     ),
     e("div", { className: "automation-summary" },
@@ -1435,73 +1507,45 @@ function NormattivaAutomationPanel({
           : "Loading Normattiva schedule"
       ),
       e("div", { className: "automation-details" },
-        e("span", null, "Schedule: ", e("strong", null, normattivaAutomationStatus?.cron || "...")),
+        e("span", null, "Runs ", e("strong", null, describeSchedule(normattivaAutomationStatus?.cron))),
         e("span", null, "Zone: ", e("strong", null, normattivaAutomationStatus?.zone || "...")),
         e("span", null, "Last scheduled run: ", e("strong", null, formatShortDate(normattivaAutomationStatus?.lastTriggeredAt) || "not run yet")),
         e("span", null, "State: ", e("strong", null, normattivaAutomationStatus?.lastState || "..."))
       )
     ),
-    e("div", { className: "pipeline-status-grid technical-pipeline-grid" },
-      e(PipelineStatusItem, { label: "Update candidates", count: normattivaUpdates.length, state: "discovered" }),
-      e(PipelineStatusItem, { label: "Detail evidence", count: normattivaDetails.length, state: "imported/fetched" }),
-      e(PipelineStatusItem, { label: "Relation evidence", count: normattivaEvidence.length, state: "scanned" }),
-      e(PipelineStatusItem, { label: "Review candidates", count: normattivaRelationCandidates.length, state: "not RDF yet" })
-    ),
-    e("div", { className: "update-result" },
-      normattivaError
-        ? e("span", { className: "update-error" }, normattivaError)
-        : normattivaUpdateResult
-          ? e("div", { className: "run-summary" },
-              e("span", null, "Last run: ", e("strong", null, normattivaUpdateResult.state)),
-              e("span", null, "updates: ", e("strong", null, normattivaUpdateResult.updatesRead)),
-              e("span", null, "relations: ", e("strong", null, normattivaUpdateResult.relationRows))
-            )
-          : e("span", { className: "muted-line" }, "Manual Normattiva update has not been run from this screen yet.")
-    ),
-    e("div", { className: "update-result" },
-      normattivaImportError
-        ? e("span", { className: "update-error" }, normattivaImportError)
-        : normattivaImportResult
-          ? e("div", { className: "run-summary" },
-              e("span", null, "Import: ", e("strong", null, normattivaImportResult.state)),
-              e("span", null, "rows: ", e("strong", null, normattivaImportResult.rowsWritten)),
-              e("span", null, "output: ", e("strong", null, compactPath(normattivaImportResult.outputPath)))
-            )
-          : e("span", { className: "muted-line" }, "Saved Normattiva files have not been imported from this screen yet.")
-    ),
-    e("div", { className: "update-result" },
-      normattivaDetailError
-        ? e("span", { className: "update-error" }, normattivaDetailError)
-        : normattivaDetailFetchResult
-          ? e("div", { className: "run-summary" },
-              e("span", null, "Detail fetch: ", e("strong", null, normattivaDetailFetchResult.state)),
-              e("span", null, "candidates: ", e("strong", null, normattivaDetailFetchResult.candidatesRead)),
-              e("span", null, "details: ", e("strong", null, normattivaDetailFetchResult.detailsWritten))
-            )
-          : e("span", { className: "muted-line" }, "Detail evidence has not been fetched from this screen yet.")
-    ),
-    e("div", { className: "update-result" },
-      normattivaEvidenceError
-        ? e("span", { className: "update-error" }, normattivaEvidenceError)
-        : normattivaEvidenceScanResult
-          ? e("div", { className: "run-summary" },
-              e("span", null, "Evidence scan: ", e("strong", null, normattivaEvidenceScanResult.state)),
-              e("span", null, "details: ", e("strong", null, normattivaEvidenceScanResult.detailsRead)),
-              e("span", null, "evidence: ", e("strong", null, normattivaEvidenceScanResult.evidenceRows))
-            )
-          : e("span", { className: "muted-line" }, "Relation evidence has not been scanned from this screen yet.")
-    ),
-    e("div", { className: "update-result" },
-      normattivaCandidateError
-        ? e("span", { className: "update-error" }, normattivaCandidateError)
-        : normattivaCandidateRunResult
-          ? e("div", { className: "run-summary" },
-              e("span", null, "Candidates: ", e("strong", null, normattivaCandidateRunResult.state)),
-              e("span", null, "evidence rows: ", e("strong", null, normattivaCandidateRunResult.evidenceRowsRead)),
-              e("span", null, "candidates: ", e("strong", null, normattivaCandidateRunResult.candidatesWritten))
-            )
-          : e("span", { className: "muted-line" }, "Reviewed relation candidates have not been extracted from this screen yet.")
-    )
+    (function () {
+      const rows = [
+        ["Find changed acts", normattivaError, normattivaUpdateResult, (r) => [
+          ["result", r.state], ["acts found", r.updatesRead], ["relations written", r.relationRows]]],
+        ["Import from file", normattivaImportError, normattivaImportResult, (r) => [
+          ["result", r.state], ["rows", r.rowsWritten], ["output", compactPath(r.outputPath)]]],
+        ["Fetch act details", normattivaDetailError, normattivaDetailFetchResult, (r) => [
+          ["result", r.state], ["candidates read", r.candidatesRead], ["details written", r.detailsWritten]]],
+        ["Scan for evidence", normattivaEvidenceError, normattivaEvidenceScanResult, (r) => [
+          ["result", r.state], ["details read", r.detailsRead], ["passages found", r.evidenceRows]]],
+        ["Propose relations", normattivaCandidateError, normattivaCandidateRunResult, (r) => [
+          ["result", r.state], ["evidence rows", r.evidenceRowsRead], ["candidates", r.candidatesWritten]]]
+      ];
+      const active = rows.filter(([, runError, result]) => runError || result);
+      if (!active.length) {
+        return e("div", { className: "run-log" },
+          e("div", { className: "run-log-row" },
+            e("span", { className: "muted-line" },
+              "No step has been run in this session yet. Run results appear here.")));
+      }
+      return e("div", { className: "run-log" },
+        active.map(([label, runError, result, describe]) =>
+          e("div", { key: label, className: runError ? "run-log-row failed" : "run-log-row" },
+            e("span", { className: "run-log-step" }, label),
+            runError
+              ? e("span", { className: "update-error" }, runError)
+              : e("span", { className: "run-summary" },
+                  describe(result).map(([name, value]) =>
+                    e("span", { key: name }, name, ": ", e("strong", null, String(value ?? "\u2014")))))
+          )
+        )
+      );
+    })()
   );
 }
 
@@ -1547,7 +1591,7 @@ function CrawlerStatusPanel({ automationStatus, crawlStatus, updateError, update
     e("div", { className: "panel-heading" },
       e("div", null,
         e("p", { className: "section-label" }, "Crawler"),
-        e("h2", null, "Update status")
+        e("h2", null, "Gazzetta crawler")
       ),
       e("button", {
         className: "secondary-button",
@@ -1574,7 +1618,7 @@ function CrawlerStatusPanel({ automationStatus, crawlStatus, updateError, update
         automationStatus ? (automationStatus.enabled ? "Automatic updates enabled" : "Automatic updates disabled") : "Loading automation schedule"
       ),
       e("div", { className: "automation-details" },
-        e("span", null, "Schedule: ", e("strong", null, automationStatus?.cron || "...")),
+        e("span", null, "Runs ", e("strong", null, describeSchedule(automationStatus?.cron))),
         e("span", null, "Zone: ", e("strong", null, automationStatus?.zone || "...")),
         e("span", null, "RSS entries: ", e("strong", null, automationStatus?.maxEntries ?? "...")),
         e("span", null, "Last scheduled run: ", e("strong", null, formatShortDate(automationStatus?.lastTriggeredAt) || "not run yet"))
@@ -1591,7 +1635,7 @@ function CrawlerStatusPanel({ automationStatus, crawlStatus, updateError, update
               e("span", null, "crawled: ", e("strong", null, updateResult.linksCrawled)),
               e("span", null, "changed: ", e("strong", null, updateResult.changedRecords))
             )
-          : e("span", { className: "muted-line" }, "Manual update check has not been run from this screen yet.")
+          : e("span", { className: "muted-line" }, "No manual check run yet in this session")
     )
   );
 }
@@ -1703,7 +1747,7 @@ function SourcePanel({ rdfSources }) {
     e("div", { className: "panel-heading" },
       e("div", null,
         e("p", { className: "section-label" }, "RDF sources"),
-        e("h2", null, "Files used by the API")
+        e("h2", null, "Loaded RDF files")
       )
     ),
     rdfSources?.length
@@ -1796,7 +1840,7 @@ function displayTitle(act) {
   if (!act) {
     return "Missing title";
   }
-  return act.title || `${displayLocalId(act)} (metadata not loaded)`;
+  return act.title || "No title in the published metadata";
 }
 
 function displayRelationId(localId, uri) {
@@ -1807,6 +1851,65 @@ function displayRelationId(localId, uri) {
     return text.slice(urnIndex + urnMarker.length);
   }
   return text;
+}
+
+function displayVocabularyTerm(uri) {
+  if (!uri) {
+    return "";
+  }
+  const raw = String(uri);
+  const token = raw.includes("#") ? raw.slice(raw.lastIndexOf("#") + 1) : raw.slice(raw.lastIndexOf("/") + 1);
+  return humanizeToken(token) || raw;
+}
+
+function displayVersionTerm(uri) {
+  if (!uri) {
+    return "";
+  }
+  const raw = String(uri);
+  const token = raw.includes("#") ? raw.slice(raw.lastIndexOf("#") + 1) : raw.slice(raw.lastIndexOf("/") + 1);
+  const vigenza = token.match(/^VIGENZA_(\d{4})(\d{2})(\d{2})_V(\d+)$/i);
+  if (vigenza) {
+    return `In force from ${vigenza[1]}-${vigenza[2]}-${vigenza[3]} \u00b7 version ${vigenza[4]}`;
+  }
+  const original = token.match(/^ORIGINALE_V(\d+)$/i);
+  if (original) {
+    return "Original text as published";
+  }
+  return humanizeToken(token) || raw;
+}
+
+function displayFormatTerm(uri) {
+  if (!uri) {
+    return "";
+  }
+  const raw = String(uri);
+  const media = raw.match(/media-types\/([\w.+-]+)\/([\w.+-]+)$/);
+  if (media) {
+    return `${media[2].toUpperCase()} document`;
+  }
+  return displayVocabularyTerm(raw);
+}
+
+function eliPagePath(uriOrAct) {
+  const uri = typeof uriOrAct === "string" ? uriOrAct : uriOrAct?.uri;
+  if (!uri) {
+    return "";
+  }
+  const match = String(uri).match(/\/eli\/(id|ontology)?\/?(\d{4})\/(\d{2})\/(\d{2})\/([^/]+)\/([^/?#]+)(\/[^?#]*)?/);
+  if (!match) {
+    return "";
+  }
+  const tail = match[7] ? match[7].replace(/\/+$/, "") : "";
+  return `/eli/id/${match[2]}/${match[3]}/${match[4]}/${match[5]}/${match[6]}${tail}`;
+}
+
+function eliPageUrl(uriOrAct) {
+  const path = eliPagePath(uriOrAct);
+  if (!path) {
+    return "";
+  }
+  return `${window.location.origin}${path}`;
 }
 
 function localIdFromUri(uri) {
@@ -1821,8 +1924,48 @@ function sourceLabel(source) {
   return source ? "Gazzetta Ufficiale" : "Relation RDF";
 }
 
+const RELATION_LABELS = {
+  "eli:commences": "Commences / converts",
+  "eli:commenced_by": "Commenced / converted by",
+  "eli:amends": "Amends",
+  "eli:amended_by": "Amended by",
+  "eli:repeals": "Repeals",
+  "eli:repealed_by": "Repealed by",
+  "eli:cites": "Cites",
+  "eli:is_realized_by": "Has version",
+  "eli:realizes": "Version of",
+  "eli:is_embodied_by": "Has format",
+  "eli:is_embodied_in": "Format of",
+  "ilg:modifies": "Modifies",
+  "ilg:modifiedBy": "Modified by",
+  "conversion": "Commences / converts"
+};
+
 function relationshipLabel(value) {
-  return value === "conversion" ? "conversion" : "modifies";
+  if (!value) {
+    return "related to";
+  }
+  const key = String(value).trim();
+  if (RELATION_LABELS[key]) {
+    return RELATION_LABELS[key];
+  }
+  const local = key.includes("#") ? key.slice(key.lastIndexOf("#") + 1) : key.slice(key.lastIndexOf("/") + 1);
+  const compact = local.includes(":") ? local.slice(local.indexOf(":") + 1) : local;
+  return humanizeToken(compact);
+}
+
+function humanizeToken(value) {
+  if (!value) {
+    return "";
+  }
+  const spaced = String(value)
+    .replace(/[_-]+/g, " ")
+    .replace(/([a-z\d])([A-Z])/g, "$1 $2")
+    .trim();
+  if (!spaced) {
+    return "";
+  }
+  return spaced.charAt(0).toUpperCase() + spaced.slice(1).toLowerCase();
 }
 
 function compactPath(value) {
@@ -1831,6 +1974,19 @@ function compactPath(value) {
   }
   const parts = String(value).replaceAll("\\", "/").split("/");
   return parts.slice(-3).join("/");
+}
+
+function describeSchedule(cron) {
+  if (!cron) {
+    return "on a schedule";
+  }
+  const parts = String(cron).trim().split(/\s+/);
+  if (parts.length === 6 && /^\d+$/.test(parts[1]) && /^\d+$/.test(parts[2]) && parts[3] === "*" && parts[5] === "*") {
+    const hh = String(parts[2]).padStart(2, "0");
+    const mm = String(parts[1]).padStart(2, "0");
+    return `every day at ${hh}:${mm}`;
+  }
+  return `on schedule ${cron}`;
 }
 
 function formatBytes(bytes) {
