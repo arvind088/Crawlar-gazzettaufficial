@@ -1,426 +1,235 @@
-# SPARQL Validation Queries
+# SPARQL validation queries
 
-These queries validate the current lightweight TDB2-backed demo dataset.
+Hand-verifiable checks on the dataset, covering FR-5.1, FR-5.2, FR-5.3, US-B2,
+US-D1 and manual test case TC-07.
 
-Run them from the browser SPARQL tab or through:
+Run them from the SPARQL tab in the dashboard, or against the public endpoint:
 
 ```bash
-curl -X POST http://localhost:8082/api/sparql \
-  -H "Content-Type: application/json" \
-  -d "{\"query\":\"SELECT * WHERE { ?s ?p ?o } LIMIT 1\"}"
+curl -H 'Accept: application/sparql-results+json' \
+  --data-urlencode 'query=SELECT (COUNT(*) AS ?triples) WHERE { ?s ?p ?o }' \
+  http://localhost:8082/sparql
 ```
 
-Current local verification date: 2026-08-29.
+---
 
-Current dataset status from `GET /api/health`:
+## How expected results are recorded
 
-```text
-triples: 1659
-loaded files: 4
-missing files: 0
+An earlier version of this document recorded absolute figures — "triples: 1659",
+"loaded files: 4". Every one of them went stale the moment data was added, and a
+stale expected result is worse than none: it invites a reviewer to conclude the
+platform is broken when only the document is.
+
+So expectations here are written as **invariants that survive ingestion**:
+
+- properties that must hold no matter how much data arrives ("every conversion
+  runs Legge → Decreto Legge");
+- exact counts only over the **seed dataset**, which is fixed by
+  `CONTEXT.md §3.1` and does not grow.
+
+Whole-dataset totals are not written down. Read them from `GET /api/health`,
+which reports the live figure.
+
+**These are enforced, not just documented.** Every expectation below is asserted
+in `src/test/java/it/legislation/web/ValidationQueriesTest.java` and runs on every
+`mvn test`. If the data model changes underneath them, the build fails — the
+failure mode this document previously could not catch.
+
+---
+
+## Dataset under test
+
+| File | Contents |
+|---|---|
+| `data/rdf/seed_acts.ttl` | The four acts required by CONTEXT.md §3.1, with subject concepts and issuing authorities |
+| `data/rdf/gazzetta_metadata_delta.ttl` | Acts harvested from Gazzetta Ufficiale |
+| `data/rdf/normattiva_modifications.ttl` | Reviewed act-to-act relations |
+| `data/rdf/normattiva_modifications_auto.ttl` | Relations from the automated route |
+| `data/rdf/normattiva_multiversion_sample.ttl` | Multi-version sample (Codice dell'amministrazione digitale) |
+| `data/rdf/in_force.ttl` | Derived in-force status per Expression |
+
+The seed acts, which the counted queries below refer to:
+
+| Local ID | Act | Published | Type |
+|---|---|---|---|
+| `20G00034` | Decreto-legge 17 marzo 2020, n. 18 | 2020-03-17 | Decreto Legge |
+| `20G00043` | Legge 24 aprile 2020, n. 27 | 2020-04-29 | Legge |
+| `20G00035` | Decreto-legge 25 marzo 2020, n. 19 | 2020-03-25 | Decreto Legge |
+| `20G00057` | Legge 22 maggio 2020, n. 35 | 2020-05-23 | Legge |
+
+Two conversion pairs: 27/2020 converts 18/2020, and 35/2020 converts 19/2020.
+Legge 35/2020 carries two Expressions — *testo originale* and *testo vigente al
+2021-07-31* — which is the multi-version case FR-5.2 requires.
+
+---
+
+## 1. All acts
+
+```sparql
+PREFIX eli:  <http://data.europa.eu/eli/ontology#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+
+SELECT ?act ?label ?date WHERE {
+  ?act a eli:LegalResource ; rdfs:label ?label ; eli:date_publication ?date .
+} ORDER BY ?date
 ```
 
-The multi-version example is a small RDF sample derived from the official Normattiva OpenData download documentation. That documentation gives the Codice dell'amministrazione digitale as an example with:
+**Expected** — over the seed data alone, exactly 4 rows, earliest first
+(`20G00034`). Over the full dataset the count is larger; every row must have both
+a label and a date, which query 6 checks.
 
-```text
-DECRETOLEGISLATIVO_20050307_82
-20050516_005G0104_ORIGINALE_V0
-20050516_005G0104_VIGENZA_20250320_V52
-```
-
-## Multi-Version Sample Details
-
-The sample resource is:
-
-```text
-http://www.gazzettaufficiale.it/eli/id/2005/05/16/005G0104/sg
-```
-
-This represents the legal resource/work level for:
-
-```text
-Codice dell'amministrazione digitale
-Decreto legislativo 7 marzo 2005, n. 82
-Published in Gazzetta Ufficiale on 2005-05-16
-Redactional/local ID: 005G0104
-```
-
-The sample is intentionally small. It does not try to store the full legislative text. Its purpose is to validate the ELI linked-data structure that the UI must expose:
-
-```text
-LegalResource / work
-  -> LegalExpression / version
-      -> Format / manifestation
-```
-
-### Work / Legal Resource
-
-The work-level URI is:
-
-```text
-http://www.gazzettaufficiale.it/eli/id/2005/05/16/005G0104/sg
-```
-
-Important triples:
-
-```turtle
-<http://www.gazzettaufficiale.it/eli/id/2005/05/16/005G0104/sg>
-        rdf:type             eli:LegalResource ;
-        rdfs:label           "Codice dell'amministrazione digitale" ;
-        eli:date_document    "2005-03-07"^^xsd:date ;
-        eli:date_publication "2005-05-16"^^xsd:date ;
-        eli:id_local         "005G0104" ;
-        eli:number           "82" ;
-        eli:type_document    <http://www.gazzettaufficiale.it/eli/tables/resource-type#DECRETOLEGISLATIVO> ;
-        eli:is_realized_by   <.../original> ,
-                             <.../vigente/2025-03-20/v52> .
-```
-
-Meaning:
-
-- `eli:LegalResource` is the abstract legal act.
-- `eli:id_local` lets the UI find the resource by the familiar local ID `005G0104`.
-- `eli:is_realized_by` connects the legal act to its expressions/versions.
-- Having two `eli:is_realized_by` values is what makes this a multi-version demonstration.
-
-### Expression 1: Original Version
-
-The original expression URI is:
-
-```text
-http://www.gazzettaufficiale.it/eli/id/2005/05/16/005G0104/sg/ita/original
-```
-
-Important triples:
-
-```turtle
-<http://www.gazzettaufficiale.it/eli/id/2005/05/16/005G0104/sg/ita/original>
-        rdf:type           eli:LegalExpression ;
-        rdfs:label         "Codice dell'amministrazione digitale - testo originale" ;
-        eli:language       <http://publications.europa.eu/resource/authority/language/ITA> ;
-        eli:realizes       <http://www.gazzettaufficiale.it/eli/id/2005/05/16/005G0104/sg> ;
-        eli:version        <http://www.gazzettaufficiale.it/eli/tables/versions#ORIGINALE_V0> ;
-        eli:is_embodied_by <http://www.gazzettaufficiale.it/eli/id/2005/05/16/005G0104/sg/ita/original/html> .
-```
-
-Meaning:
-
-- This is one expression/version of the legal act.
-- `eli:version` records that this is the original version.
-- `eli:realizes` links the expression back to the legal resource/work.
-- `eli:is_embodied_by` links this expression to a concrete manifestation.
-
-### Expression 2: Vigente Version
-
-The later vigente expression URI is:
-
-```text
-http://www.gazzettaufficiale.it/eli/id/2005/05/16/005G0104/sg/ita/vigente/2025-03-20/v52
-```
-
-Important triples:
-
-```turtle
-<http://www.gazzettaufficiale.it/eli/id/2005/05/16/005G0104/sg/ita/vigente/2025-03-20/v52>
-        rdf:type           eli:LegalExpression ;
-        rdfs:label         "Codice dell'amministrazione digitale - testo vigente al 2025-03-20, versione 52" ;
-        eli:language       <http://publications.europa.eu/resource/authority/language/ITA> ;
-        eli:realizes       <http://www.gazzettaufficiale.it/eli/id/2005/05/16/005G0104/sg> ;
-        eli:version        <http://www.gazzettaufficiale.it/eli/tables/versions#VIGENZA_20250320_V52> ;
-        eli:is_embodied_by <http://www.gazzettaufficiale.it/eli/id/2005/05/16/005G0104/sg/ita/vigente/2025-03-20/v52/html> .
-```
-
-Meaning:
-
-- This is another expression/version of the same legal act.
-- The version name follows the Normattiva OpenData naming pattern:
-
-```text
-20050516_005G0104_VIGENZA_20250320_V52
-```
-
-- This lets the UI demonstrate that one legal act can expose multiple expressions.
-
-### Manifestations
-
-The two manifestation URIs are:
-
-```text
-http://www.gazzettaufficiale.it/eli/id/2005/05/16/005G0104/sg/ita/original/html
-http://www.gazzettaufficiale.it/eli/id/2005/05/16/005G0104/sg/ita/vigente/2025-03-20/v52/html
-```
-
-Important triples:
-
-```turtle
-<.../original/html>
-        rdf:type   eli:Format ;
-        eli:format <http://www.iana.org/assignments/media-types/text/html> .
-
-<.../vigente/2025-03-20/v52/html>
-        rdf:type   eli:Format ;
-        eli:format <http://www.iana.org/assignments/media-types/text/html> .
-```
-
-Meaning:
-
-- A manifestation is the concrete representation of an expression.
-- In this sample, both expressions have an HTML manifestation.
-- The UI can therefore show both the expression level and the manifestation level.
-
-### What This Proves
-
-This sample proves four important points:
-
-- The repository can store a legal resource with more than one expression.
-- The UI can query TDB2 and display those expressions.
-- The UI can query and display manifestations for each expression.
-- The user can navigate the linked-data chain inside the interface.
-
-The chain demonstrated by this sample is:
-
-```text
-005G0104 legal resource
-  -> original expression
-      -> original HTML manifestation
-  -> vigente V52 expression
-      -> vigente V52 HTML manifestation
-```
-
-### Current Limitation
-
-This is a curated RDF sample, not yet the result of a fully automated Normattiva API ingestion routine.
-
-That is acceptable for the current validation step because it makes the ELI model and UI behavior explicit and testable. The next data-engineering step is to replace or supplement this sample with records downloaded directly from the Normattiva OpenData APIs.
-
-## 1. Count Loaded Legal Resources
-
-Purpose:
-
-- Confirms that Gazzetta legal resources are loaded into the TDB2-backed repository.
-
-Query:
+## 2. Acts by year
 
 ```sparql
 PREFIX eli: <http://data.europa.eu/eli/ontology#>
 
-SELECT (COUNT(DISTINCT ?act) AS ?legalResources) WHERE {
-  ?act a eli:LegalResource .
+SELECT ?act WHERE {
+  ?act a eli:LegalResource ; eli:date_publication ?date .
+  FILTER(YEAR(?date) = 2020)
 }
 ```
 
-Expected true result:
+**Expected** — all 4 seed acts for 2020; 0 rows for 1999. A year filter that
+returns rows outside its range indicates a date-typing problem.
 
-```text
-legalResources = 100
-```
-
-## 2. Validate Work, Expression, And Manifestation
-
-Purpose:
-
-- Confirms that the UI can show the ELI work/resource level, expression level, and manifestation level.
-- The selected example has two expressions: original text and a later vigente version.
-
-Query:
+## 3. Acts by type
 
 ```sparql
 PREFIX eli: <http://data.europa.eu/eli/ontology#>
 
-SELECT ?act ?expression ?manifestation ?version ?language ?format WHERE {
-  ?act eli:id_local "005G0104" ;
-       eli:is_realized_by ?expression .
-  OPTIONAL { ?expression eli:version ?version . }
-  OPTIONAL { ?expression eli:language ?language . }
-  OPTIONAL { ?expression eli:is_embodied_by ?manifestation . }
-  OPTIONAL { ?manifestation eli:format ?format . }
+SELECT ?act WHERE {
+  ?act eli:type_document
+    <http://www.gazzettaufficiale.it/eli/tables/resource-type#DECRETOLEGGE> .
 }
-ORDER BY ?version
 ```
 
-Expected true results:
+**Expected** — 2 seed acts as `DECRETOLEGGE`, 2 as `LEGGE`.
 
-```text
-act = http://www.gazzettaufficiale.it/eli/id/2005/05/16/005G0104/sg
-expression = http://www.gazzettaufficiale.it/eli/id/2005/05/16/005G0104/sg/ita/original
-manifestation = http://www.gazzettaufficiale.it/eli/id/2005/05/16/005G0104/sg/ita/original/html
-version = http://www.gazzettaufficiale.it/eli/tables/versions#ORIGINALE_V0
-language = http://publications.europa.eu/resource/authority/language/ITA
-format = http://www.iana.org/assignments/media-types/text/html
-
-act = http://www.gazzettaufficiale.it/eli/id/2005/05/16/005G0104/sg
-expression = http://www.gazzettaufficiale.it/eli/id/2005/05/16/005G0104/sg/ita/vigente/2025-03-20/v52
-manifestation = http://www.gazzettaufficiale.it/eli/id/2005/05/16/005G0104/sg/ita/vigente/2025-03-20/v52/html
-version = http://www.gazzettaufficiale.it/eli/tables/versions#VIGENZA_20250320_V52
-language = http://publications.europa.eu/resource/authority/language/ITA
-format = http://www.iana.org/assignments/media-types/text/html
-```
-
-## 3. Validate Outgoing Normattiva Relations
-
-Purpose:
-
-- Confirms that a loaded modifying act has outgoing legal relations.
-- This is a good demo case for relation navigation in the UI.
-
-Query:
-
-```sparql
-PREFIX eli: <http://data.europa.eu/eli/ontology#>
-PREFIX ilg: <http://example.org/italian-legislation/ontology#>
-
-SELECT ?source ?predicate ?target WHERE {
-  VALUES ?source { <http://www.gazzettaufficiale.it/eli/id/2025/03/24/25G00041/sg> }
-  ?source ?predicate ?target .
-  FILTER(?predicate IN (ilg:modifies, eli:commences))
-}
-ORDER BY ?predicate ?target
-```
-
-Expected true results:
-
-```text
-source = http://www.gazzettaufficiale.it/eli/id/2025/03/24/25G00041/sg
-predicate = http://data.europa.eu/eli/ontology#commences
-target = http://www.gazzettaufficiale.it/eli/id/2025/01/24/25G00010/sg
-
-source = http://www.gazzettaufficiale.it/eli/id/2025/03/24/25G00041/sg
-predicate = http://example.org/italian-legislation/ontology#modifies
-target = http://www.gazzettaufficiale.it/eli/id/2025/01/24/25G00010/sg
-
-source = http://www.gazzettaufficiale.it/eli/id/2025/03/24/25G00041/sg
-predicate = http://example.org/italian-legislation/ontology#modifies
-target = http://www.gazzettaufficiale.it/eli/id/2025/01/30/25G00013/sg
-```
-
-## 4. Validate Incoming Reciprocal Relations
-
-Purpose:
-
-- Confirms that the graph can be navigated in the reverse direction.
-- This validates the linked-data UI requirement that resources can be reached through relations among them.
-
-Query:
-
-```sparql
-PREFIX eli: <http://data.europa.eu/eli/ontology#>
-PREFIX ilg: <http://example.org/italian-legislation/ontology#>
-
-SELECT ?source ?predicate ?target WHERE {
-  VALUES ?target { <http://www.gazzettaufficiale.it/eli/id/2025/03/24/25G00041/sg> }
-  ?source ?predicate ?target .
-  FILTER(?predicate IN (ilg:modifiedBy, eli:commenced_by))
-}
-ORDER BY ?predicate ?source
-```
-
-Expected true results:
-
-```text
-source = http://www.gazzettaufficiale.it/eli/id/2025/01/24/25G00010/sg
-predicate = http://data.europa.eu/eli/ontology#commenced_by
-target = http://www.gazzettaufficiale.it/eli/id/2025/03/24/25G00041/sg
-
-source = http://www.gazzettaufficiale.it/eli/id/2025/01/24/25G00010/sg
-predicate = http://example.org/italian-legislation/ontology#modifiedBy
-target = http://www.gazzettaufficiale.it/eli/id/2025/03/24/25G00041/sg
-
-source = http://www.gazzettaufficiale.it/eli/id/2025/01/30/25G00013/sg
-predicate = http://example.org/italian-legislation/ontology#modifiedBy
-target = http://www.gazzettaufficiale.it/eli/id/2025/03/24/25G00041/sg
-```
-
-## 5. Detect Acts With Multiple Expressions
-
-Purpose:
-
-- Checks whether the current repository contains legal acts with more than one loaded expression/version.
-- This is the validation query required for the professor's multi-version requirement.
-
-Query:
+## 4. Latest acts
 
 ```sparql
 PREFIX eli: <http://data.europa.eu/eli/ontology#>
 
-SELECT ?act (COUNT(DISTINCT ?expression) AS ?expressionCount) WHERE {
-  ?act a eli:LegalResource ;
-       eli:is_realized_by ?expression .
-}
-GROUP BY ?act
-HAVING (COUNT(DISTINCT ?expression) > 1)
-ORDER BY DESC(?expressionCount)
-LIMIT 20
+SELECT ?act ?date WHERE {
+  ?act a eli:LegalResource ; eli:date_publication ?date .
+} ORDER BY DESC(?date) LIMIT 2
 ```
 
-Expected true result for the current demo dataset:
+**Expected** — among the seed acts, Legge 35/2020 (2020-05-23) first, then Legge
+27/2020 (2020-04-29).
 
-```text
-act = http://www.gazzettaufficiale.it/eli/id/2005/05/16/005G0104/sg
-expressionCount = 2
-```
+## 5. Conversion-link validation — FR-5.3
 
-Interpretation:
-
-- The current demo now validates the ELI work/expression/manifestation chain.
-- It also contains one concrete multi-version example based on Normattiva OpenData naming.
-- The next data task is to replace or supplement this curated sample with data downloaded directly from the Normattiva OpenData API.
-
-## UI Validation Flow
-
-Use the local UI:
-
-```text
-http://localhost:8082
-```
-
-Recommended checks:
-
-```text
-Search 005G0104
-Confirm Expression Level has 2 items
-Confirm Manifestation Level has 2 items
-Click the expression and manifestation resources
-```
-
-```text
-Search 25G00041
-Confirm outgoing relations show Commences / converts and Modifies
-Confirm incoming relations show Commenced / converted by and Modified by
-Click related resources and confirm the panel navigates inside the app
-```
-
-## Reviewed Relation Candidate Validation
-
-Relation candidates produced from `data/clean/normattiva_relation_candidates.tsv` are not loaded into TDB2 and are not RDF yet. They are a review queue.
-
-After a later reviewed RDF promotion step, validate the promoted relation with SPARQL before treating it as true graph data:
+The important one. An Italian decreto-legge lapses unless converted within sixty
+days, so a conversion edge pointing the wrong way asserts something false about
+whether a decree survived.
 
 ```sparql
 PREFIX eli: <http://data.europa.eu/eli/ontology#>
-PREFIX ilg: <http://example.org/italian-legislation/ontology#>
 
-SELECT ?source ?predicate ?target WHERE {
-  VALUES (?source ?predicate ?target) {
-    (
-      <http://www.gazzettaufficiale.it/eli/id/2025/03/24/25G00041/sg>
-      eli:commences
-      <http://www.gazzettaufficiale.it/eli/id/2025/03/01/25G00028/sg>
-    )
+SELECT ?legge ?decreto WHERE {
+  ?legge eli:commences ?decreto .
+  FILTER NOT EXISTS {
+    ?legge   eli:type_document
+      <http://www.gazzettaufficiale.it/eli/tables/resource-type#LEGGE> .
+    ?decreto eli:type_document
+      <http://www.gazzettaufficiale.it/eli/tables/resource-type#DECRETOLEGGE> .
   }
-  ?source ?predicate ?target .
 }
 ```
 
-Expected result before reviewed RDF promotion:
+**Expected — zero rows, always.** Any row is a modelling error. This is an
+invariant, not a count: it must hold however much data is ingested.
 
-```text
-0 rows
+Listing the conversions themselves over the seed data gives exactly 2 pairs:
+`20G00043 → 20G00034` and `20G00057 → 20G00035`.
+
+## 6. ELI-level validation
+
+```sparql
+PREFIX eli:  <http://data.europa.eu/eli/ontology#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+
+SELECT ?act WHERE {
+  ?act a eli:LegalResource .
+  FILTER (NOT EXISTS { ?act rdfs:label ?label } ||
+          NOT EXISTS { ?act eli:date_publication ?date })
+}
 ```
 
-Expected result after reviewed RDF promotion:
+**Expected** — zero rows over the seed data.
 
-```text
-source = http://www.gazzettaufficiale.it/eli/id/2025/03/24/25G00041/sg
-predicate = http://data.europa.eu/eli/ontology#commences
-target = http://www.gazzettaufficiale.it/eli/id/2025/03/01/25G00028/sg
+Over the full dataset this query is a **report, not a pass/fail**: Gazzetta
+metadata is genuinely sparse, and acts published without a usable title do exist.
+Rows here are data-quality findings to triage, which is what FR-5.1 means by
+"flag resources missing them, matching known sparse-metadata reality".
+
+## 7. Multi-version acts — FR-5.2
+
+```sparql
+PREFIX eli: <http://data.europa.eu/eli/ontology#>
+
+SELECT ?work (COUNT(?expression) AS ?versions) WHERE {
+  ?work eli:is_realized_by ?expression .
+} GROUP BY ?work HAVING (COUNT(?expression) > 1)
 ```
+
+**Expected** — over the seed data, exactly 1 row: Legge 35/2020 with 2
+Expressions. Over the full dataset, also the Codice dell'amministrazione digitale
+sample (`005G0104`, 2 Expressions).
+
+That the number is small is a **data-coverage limitation, not a defect**:
+Gazzetta publishes only the first text of an act, and the Normattiva OpenData API
+that supplies amended versions currently returns HTTP 409 from the development
+network. See `docs/update-routine-rationale.md` §3.
+
+## 8. In-force status — FR-4.5, US-A3
+
+```sparql
+PREFIX eli: <http://data.europa.eu/eli/ontology#>
+
+SELECT ?expression WHERE {
+  <http://www.gazzettaufficiale.it/eli/id/2020/05/22/20G00057/sg>
+      eli:is_realized_by ?expression .
+  ?expression eli:in_force
+    <http://publications.europa.eu/resource/authority/eli-in-force/IN_FORCE> .
+}
+```
+
+**Expected** — exactly 1 row, and it must be the `vigente` Expression, not the
+original. A Work with several Expressions has exactly one current text.
+
+## 9. Non-conversion relations — TC-03
+
+TC-03 exists to prove that navigability is generic across predicates rather than
+special-cased for conversions. It was previously impossible to execute, because
+no such predicate existed in any dataset.
+
+```sparql
+PREFIX eli: <http://data.europa.eu/eli/ontology#>
+
+SELECT ?act ?topic WHERE { ?act eli:is_about ?topic . }
+```
+
+**Expected** — at least one row; likewise for `eli:passed_by`. Clicking either on
+a resource page must navigate exactly as `eli:commences` does.
+
+---
+
+## Machine access — US-B1
+
+The endpoint accepts all four query forms. `DESCRIBE` in particular is required
+by US-B1's acceptance criteria:
+
+```bash
+curl -H 'Accept: text/turtle' \
+  --data-urlencode 'query=DESCRIBE <http://www.gazzettaufficiale.it/eli/id/2020/05/22/20G00057/sg>' \
+  http://localhost:8082/sparql
+```
+
+**Expected** — Turtle describing Legge 35/2020, matching what
+`/eli/id/2020/05/22/20G00057/sg` renders as HTML. Consistency between the two is
+NFR-3.
+
+An update (`INSERT`/`DELETE`) must be rejected with 400: the endpoint parses
+queries only and has no write path.

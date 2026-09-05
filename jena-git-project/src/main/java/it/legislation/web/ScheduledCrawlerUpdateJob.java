@@ -4,6 +4,8 @@ import java.io.IOException;
 import java.time.OffsetDateTime;
 
 import org.springframework.beans.factory.annotation.Value;
+
+import it.legislation.crawler.IngestionRunLog;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
@@ -11,6 +13,7 @@ import org.springframework.stereotype.Component;
 public class ScheduledCrawlerUpdateJob {
 
     private final CrawlerUpdateService crawlerUpdateService;
+    private final IngestionRunLog runLog = new IngestionRunLog();
     private final boolean enabled;
     private final String cron;
     private final String zone;
@@ -44,10 +47,42 @@ public class ScheduledCrawlerUpdateJob {
             return;
         }
 
-        lastTriggeredAt = OffsetDateTime.now().toString();
-        CrawlerUpdateResult result = crawlerUpdateService.runUpdate(maxEntries, maxLinks);
-        lastState = result.state();
-        lastMessage = result.message();
+        OffsetDateTime startedAt = OffsetDateTime.now();
+        lastTriggeredAt = startedAt.toString();
+
+        // FR-1.5: what a run did must outlive the process, so the record goes to
+        // disk rather than only into the fields below.
+        IngestionRunLog.Run run = IngestionRunLog.Run.started("gazzetta", "SCHEDULED", startedAt);
+        try {
+            CrawlerUpdateResult result = crawlerUpdateService.runUpdate(maxEntries, maxLinks);
+            lastState = result.state();
+            lastMessage = result.message();
+            recordRun(run.completed(
+                    OffsetDateTime.now(),
+                    result.rssEntriesRead(),
+                    result.rssEntriesAdded(),
+                    result.changedRecords(),
+                    0,
+                    "",
+                    "",
+                    result.message()));
+        } catch (IOException | RuntimeException failure) {
+            lastState = "FAILED";
+            lastMessage = failure.getMessage() == null
+                    ? failure.getClass().getSimpleName()
+                    : failure.getMessage();
+            recordRun(run.failed(OffsetDateTime.now(), lastMessage));
+            throw failure;
+        }
+    }
+
+    private void recordRun(IngestionRunLog.Run run) {
+        try {
+            runLog.append(run);
+        } catch (IOException exception) {
+            // Losing the audit line must not fail the ingestion itself.
+            lastMessage = lastMessage + " (run log unavailable: " + exception.getMessage() + ")";
+        }
     }
 
     public CrawlerAutomationStatus status() {

@@ -165,6 +165,7 @@ function App() {
   const [normattivaEvidence, setNormattivaEvidence] = useState([]);
   const [normattivaRelationCandidates, setNormattivaRelationCandidates] = useState([]);
   const [rdfSources, setRdfSources] = useState([]);
+  const [ingestionRuns, setIngestionRuns] = useState([]);
   const [acts, setActs] = useState([]);
   const [datasetActs, setDatasetActs] = useState([]);
   const [selected, setSelected] = useState(null);
@@ -178,6 +179,14 @@ function App() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [actSparqlQuery, setActSparqlQuery] = useState("");
+
+  const loadIngestionRuns = useCallback(async () => {
+    const response = await fetch("/api/runs?limit=20");
+    if (!response.ok) {
+      throw new Error("Run history request failed");
+    }
+    setIngestionRuns(await response.json());
+  }, []);
 
   const loadStatus = useCallback(async () => {
     const response = await fetch("/api/health");
@@ -614,8 +623,9 @@ function App() {
     loadNormattivaEvidence().catch((err) => setError(err.message || "Normattiva evidence request failed"));
     loadNormattivaRelationCandidates().catch((err) => setError(err.message || "Normattiva relation candidates request failed"));
     loadRdfSources().catch((err) => setError(err.message || "RDF sources request failed"));
+    loadIngestionRuns().catch(() => {});
     runSearch("");
-  }, [loadAutomationStatus, loadCrawlStatus, loadLatestArchiveRun, loadLatestNormattivaUpdate, loadLatestUpdate, loadModifications, loadNormattivaAutomationStatus, loadNormattivaDetails, loadNormattivaEvidence, loadNormattivaRelationCandidates, loadNormattivaUpdates, loadRdfSources, loadStatus, runSearch]);
+  }, [loadAutomationStatus, loadCrawlStatus, loadLatestArchiveRun, loadLatestNormattivaUpdate, loadLatestUpdate, loadModifications, loadNormattivaAutomationStatus, loadNormattivaDetails, loadNormattivaEvidence, loadNormattivaRelationCandidates, loadNormattivaUpdates, loadRdfSources, loadIngestionRuns, loadStatus, runSearch]);
 
   useEffect(() => {
     loadResourceDetail(selected?.uri || displayLocalId(selected));
@@ -672,6 +682,7 @@ function App() {
           archiveStartDate,
           crawlStatus,
           automationStatus,
+          ingestionRuns,
           loadedFileCount,
           missingFileCount,
           normattivaAutomationStatus,
@@ -960,10 +971,20 @@ function DetailView({
 }) {
   const relations = relatedModifications(act, modifications);
   const detail = resourceDetail?.uri === act.uri ? resourceDetail : null;
+  // A Work's status is that of its current text. Prefer an Expression that is
+  // in force over one that has been superseded, otherwise an act with both
+  // would report the status of whichever happened to be listed first.
+  const expressionStates = (detail?.expressions || [])
+    .map((node) => inForceState(node))
+    .filter(Boolean);
+  const actState = inForceState(act)
+    || expressionStates.find((state) => state.tone === "current")
+    || expressionStates[0];
   const fields = [
     ["Title", displayTitle(act)],
     ["Published", act.publicationDate],
     ["Document type", displayVocabularyTerm(act.type) || shortType(act.type)],
+    ["Status", actState ? actState.label : "Not recorded"],
     ["Source", sourceLabel(act.source)]
   ];
   const permanentUrl = eliPageUrl(act);
@@ -1071,7 +1092,13 @@ function LinkedNodeList({ empty, expressions, nodes, onNavigateResource }) {
         title: node.uri,
         type: "button"
       },
-        e("span", { className: "resource-main" }, displayFormatTerm(node.format) || displayNodeTitle(node)),
+        e("span", { className: "resource-main" },
+          displayFormatTerm(node.format) || displayNodeTitle(node),
+          (() => {
+            const state = inForceState(node);
+            return state ? e("span", { className: `force-badge ${state.tone}` }, state.label) : null;
+          })()
+        ),
         e("span", { className: "resource-meta" },
           [displayVersionTerm(node.version) || versionOf(node), displayVocabularyTerm(node.language), node.format ? "" : displayFormatTerm(node.format)]
             .filter(Boolean)
@@ -1311,6 +1338,7 @@ function TechnicalPage({
   archiveStartDate,
   automationStatus,
   crawlStatus,
+  ingestionRuns = [],
   loadedFileCount,
   missingFileCount,
   normattivaAutomationStatus,
@@ -1386,7 +1414,8 @@ function TechnicalPage({
       onRunNormattivaRelationCandidates,
       onRunNormattivaUpdate
     }),
-    e(SourcePanel, { rdfSources })
+    e(SourcePanel, { rdfSources }),
+    e(IngestionHistoryPanel, { runs: ingestionRuns })
   );
 }
 
@@ -1547,6 +1576,59 @@ function NormattivaAutomationPanel({
       );
     })()
   );
+}
+
+function IngestionHistoryPanel({ runs }) {
+  return e("section", { className: "panel crawler-panel" },
+    e("div", { className: "panel-heading" },
+      e("div", null,
+        e("p", { className: "section-label" }, "Audit"),
+        e("h2", null, "Ingestion history"),
+        e("p", { className: "panel-subtitle" }, "Every scheduled run, recorded to disk so the record survives a restart.")
+      ),
+      e("span", { className: "result-count" }, `${runs.length} run${runs.length === 1 ? "" : "s"}`)
+    ),
+    runs.length
+      ? e("div", { className: "table-wrap" },
+          e("table", { className: "results-table" },
+            e("thead", null,
+              e("tr", null,
+                e("th", null, "Started"),
+                e("th", null, "Source"),
+                e("th", null, "Outcome"),
+                e("th", null, "Fetched"),
+                e("th", null, "Loaded"),
+                e("th", null, "Failed")
+              )
+            ),
+            e("tbody", null,
+              runs.map((run) =>
+                e("tr", { key: run.runId },
+                  e("td", { className: "mono" }, formatShortDate(run.startedAt) || "\u2014"),
+                  e("td", null, run.source),
+                  e("td", null, e("span", { className: `run-state ${runStateTone(run.state)}` },
+                    humanizeToken(run.state))),
+                  e("td", { className: "mono" }, run.itemsFetched),
+                  e("td", { className: "mono" }, run.itemsLoaded),
+                  e("td", { className: "mono" }, run.itemsFailed)
+                )
+              )
+            )
+          )
+        )
+      : e("div", { className: "empty-state" },
+          "No scheduled run has been recorded yet. Runs appear here as they happen.")
+  );
+}
+
+function runStateTone(state) {
+  if (state === "COMPLETED") {
+    return "ok";
+  }
+  if (state === "FAILED") {
+    return "bad";
+  }
+  return "warn";
 }
 
 function WorkflowPanel({ status }) {
@@ -1860,6 +1942,26 @@ function displayVocabularyTerm(uri) {
   const raw = String(uri);
   const token = raw.includes("#") ? raw.slice(raw.lastIndexOf("#") + 1) : raw.slice(raw.lastIndexOf("/") + 1);
   return humanizeToken(token) || raw;
+}
+
+const IN_FORCE_AUTHORITY = "http://publications.europa.eu/resource/authority/eli-in-force/";
+
+function inForceState(node) {
+  const value = node && (node.inForce || node.in_force);
+  if (!value) {
+    return null;
+  }
+  const token = String(value).slice(String(value).lastIndexOf("/") + 1).toUpperCase();
+  if (token === "IN_FORCE") {
+    return { label: "In force", tone: "current" };
+  }
+  if (token === "NOT_IN_FORCE") {
+    return { label: "No longer in force", tone: "superseded" };
+  }
+  if (token === "PARTIALLY_IN_FORCE") {
+    return { label: "Partly in force", tone: "partial" };
+  }
+  return { label: humanizeToken(token), tone: "partial" };
 }
 
 function displayVersionTerm(uri) {

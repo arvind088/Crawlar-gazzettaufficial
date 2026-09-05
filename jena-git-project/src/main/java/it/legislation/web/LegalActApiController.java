@@ -24,6 +24,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import it.legislation.crawler.IngestionRunLog;
+import it.legislation.crawler.IngestionWatermark;
+
 @RestController
 @RequestMapping("/api")
 public class LegalActApiController {
@@ -48,6 +51,16 @@ public class LegalActApiController {
             new RdfFileDefinition(
                     Path.of("data", "rdf", "normattiva_multiversion_sample.ttl"),
                     "Small Normattiva OpenData-inspired multi-version ELI sample"
+            ),
+            "in_force.ttl",
+            new RdfFileDefinition(
+                    Path.of("data", "rdf", "in_force.ttl"),
+                    "In-force status per Expression, using standard ELI predicates"
+            ),
+            "seed_acts.ttl",
+            new RdfFileDefinition(
+                    Path.of("data", "rdf", "seed_acts.ttl"),
+                    "Reference acts required by CONTEXT.md section 3.1"
             )
     );
 
@@ -59,6 +72,9 @@ public class LegalActApiController {
     private final ScheduledNormattivaUpdateJob scheduledNormattivaUpdateJob;
     private final NormattivaQueryService normattivaQueryService;
     private final NormattivaUpdateService normattivaUpdateService;
+    private final IngestionRunLog runLog = new IngestionRunLog();
+    private final IngestionWatermark watermark =
+            new IngestionWatermark(IngestionWatermark.DEFAULT_PATH);
 
     public LegalActApiController(
             LegalActQueryService queryService,
@@ -221,6 +237,28 @@ public class LegalActApiController {
         return scheduledNormattivaUpdateJob.status();
     }
 
+    /**
+     * Ingestion history that survives a restart (FR-1.5, US-C2). Previously the
+     * status view could only report what had happened in the current process.
+     */
+    @GetMapping("/runs")
+    public List<IngestionRunLog.Run> ingestionRuns(
+            @RequestParam(defaultValue = "20") int limit
+    ) throws IOException {
+        return runLog.recent(Math.max(1, Math.min(limit, 200)));
+    }
+
+    /** Where each source has been ingested up to (FR-1.3). */
+    @GetMapping("/watermarks")
+    public List<Map<String, String>> ingestionWatermarks() throws IOException {
+        List<Map<String, String>> rows = new ArrayList<>();
+        for (String source : List.of("gazzetta", "normattiva")) {
+            String last = watermark.lastSuccessfulEnd(source).map(Object::toString).orElse("");
+            rows.add(Map.of("source", source, "lastSuccessfulEnd", last));
+        }
+        return rows;
+    }
+
     @GetMapping("/acts")
     public List<LegalActSummary> searchActs(
             @RequestParam(defaultValue = "") String search,
@@ -321,6 +359,8 @@ public class LegalActApiController {
         sorted.put("normattiva_modifications.ttl", RDF_FILES.get("normattiva_modifications.ttl"));
         sorted.put("normattiva_modifications_auto.ttl", RDF_FILES.get("normattiva_modifications_auto.ttl"));
         sorted.put("normattiva_multiversion_sample.ttl", RDF_FILES.get("normattiva_multiversion_sample.ttl"));
+        sorted.put("in_force.ttl", RDF_FILES.get("in_force.ttl"));
+        sorted.put("seed_acts.ttl", RDF_FILES.get("seed_acts.ttl"));
         return sorted;
     }
 
