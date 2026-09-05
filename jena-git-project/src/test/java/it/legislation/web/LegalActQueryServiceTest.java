@@ -142,6 +142,79 @@ class LegalActQueryServiceTest {
         assertTrue(service.rdfForLocalId("missing").isEmpty());
     }
 
+    @Test
+    void returnsLinkedDataResourceWithExpressionsManifestationsAndRelations() throws Exception {
+        Path turtle = tempDir.resolve("linked_data.ttl");
+        Files.writeString(turtle, """
+                @prefix eli: <http://data.europa.eu/eli/ontology#> .
+                @prefix ilg: <http://example.org/italian-legislation/ontology#> .
+                @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+                @prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+                @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+                <http://www.gazzettaufficiale.it/eli/id/2026/06/12/26G00117/sg>
+                  a eli:LegalResource ;
+                  rdfs:label "Disposizioni per la prevenzione del melanoma" ;
+                  eli:date_publication "2026-06-12"^^xsd:date ;
+                  eli:id_local "26G00117" ;
+                  eli:version <http://www.gazzettaufficiale.it/eli/tables/versions#ORIGINAL> ;
+                  eli:is_realized_by <http://www.gazzettaufficiale.it/eli/id/2026/06/12/26G00117/sg/ita> ;
+                  ilg:modifies <http://www.gazzettaufficiale.it/eli/id/2026/05/01/26G00099/sg> .
+
+                <http://www.gazzettaufficiale.it/eli/id/2026/06/12/26G00117/sg/ita>
+                  a eli:LegalExpression ;
+                  eli:language <http://publications.europa.eu/resource/authority/language/ITA> ;
+                  eli:is_embodied_by <http://www.gazzettaufficiale.it/eli/id/2026/06/12/26G00117/sg/ita/html> .
+
+                <http://www.gazzettaufficiale.it/eli/id/2026/06/12/26G00117/sg/ita/html>
+                  a eli:Format ;
+                  eli:format <http://www.iana.org/assignments/media-types/text/html> .
+
+                <http://www.gazzettaufficiale.it/eli/id/2026/05/01/26G00099/sg>
+                  a eli:LegalResource ;
+                  rdfs:label "Previous related act" ;
+                  eli:id_local "26G00099" ;
+                  ilg:modifiedBy <http://www.gazzettaufficiale.it/eli/id/2026/06/12/26G00117/sg> .
+                """, StandardCharsets.UTF_8);
+
+        LegalActQueryService service = service(turtle);
+
+        LinkedDataResource resource = service.findLinkedDataResource("26G00117").orElseThrow();
+
+        assertEquals("26G00117", resource.localId());
+        assertEquals("Disposizioni per la prevenzione del melanoma", resource.title());
+        assertEquals(1, resource.expressions().size());
+        assertEquals(1, resource.manifestations().size());
+        assertTrue(resource.expressions().get(0).version().endsWith("#ORIGINAL"));
+        assertTrue(resource.manifestations().get(0).format().endsWith("text/html"));
+        assertTrue(resource.outgoingRelations().stream()
+                .anyMatch(relation -> "ilg:modifies".equals(relation.predicateLabel())
+                        && "Modifies".equals(relation.displayLabel())
+                        && relation.important()
+                        && "26G00099".equals(relation.resourceLocalId())));
+        assertTrue(resource.incomingRelations().stream()
+                .anyMatch(relation -> "ilg:modifiedBy".equals(relation.predicateLabel())
+                        && "Modified by".equals(relation.displayLabel())
+                        && relation.important()
+                        && "26G00099".equals(relation.resourceLocalId())));
+    }
+
+    @Test
+    void loadsCommittedMultiVersionSample() throws Exception {
+        LegalActQueryService service = service(Path.of("data", "rdf", "normattiva_multiversion_sample.ttl"));
+
+        LinkedDataResource resource = service.findLinkedDataResource("005G0104").orElseThrow();
+
+        assertEquals("005G0104", resource.localId());
+        assertEquals("Codice dell'amministrazione digitale", resource.title());
+        assertEquals(2, resource.expressions().size());
+        assertEquals(2, resource.manifestations().size());
+        assertTrue(resource.expressions().stream()
+                .anyMatch(expression -> expression.version().endsWith("#ORIGINALE_V0")));
+        assertTrue(resource.expressions().stream()
+                .anyMatch(expression -> expression.version().endsWith("#VIGENZA_20250320_V52")));
+    }
+
     private LegalActQueryService service(Path turtle) throws Exception {
         LegalActQueryService service = new LegalActQueryService(List.of(turtle));
         services.add(service);

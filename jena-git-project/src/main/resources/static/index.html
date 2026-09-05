@@ -4,12 +4,57 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Legal RDF Explorer</title>
-    <link rel="stylesheet" href="/styles.css?v=20260710-readable-all">
-    <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
-    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <link rel="stylesheet" href="/styles.css?v=20260904-ui-pass">
+    <!--
+      React is loaded from a CDN. To remove the external dependency, download
+      these two files into src/main/resources/static/vendor/ and point the
+      script tags at /vendor/react.production.min.js and
+      /vendor/react-dom.production.min.js:
+
+        curl -o src/main/resources/static/vendor/react.production.min.js \
+          https://unpkg.com/react@18/umd/react.production.min.js
+        curl -o src/main/resources/static/vendor/react-dom.production.min.js \
+          https://unpkg.com/react-dom@18/umd/react-dom.production.min.js
+    -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
   </head>
   <body>
-    <div id="root"></div>
-    <script src="/app.js?v=20260710-readable-all"></script>
+    <div id="root">
+      <noscript>
+        <div class="boot-message">
+          <h1>JavaScript is required</h1>
+          <p>This dashboard needs JavaScript. Individual acts are still readable
+             without it at their permanent addresses, for example
+             <code>/eli/id/2005/05/16/005G0104/sg</code>.</p>
+        </div>
+      </noscript>
+    </div>
+    <script>
+      // If the CDN is unreachable the page would otherwise render blank with no
+      // explanation, because the error boundary in app.js needs React to exist.
+      window.addEventListener("DOMContentLoaded", function () {
+        if (window.React && window.ReactDOM) {
+          return;
+        }
+        var root = document.getElementById("root");
+        if (!root || root.childElementCount > 1) {
+          return;
+        }
+        root.innerHTML =
+          '<div class="boot-message">' +
+          '<h1>The dashboard could not start</h1>' +
+          '<p>The React library failed to load from the CDN, so the interactive ' +
+          'dashboard is unavailable. This is a network problem, not a data problem &mdash; ' +
+          'the triple store is unaffected.</p>' +
+          '<p>You can still reach the data directly:</p>' +
+          '<ul>' +
+          '<li><a href="/api/health">/api/health</a> &mdash; dataset status</li>' +
+          '<li><a href="/api/acts">/api/acts</a> &mdash; the acts as JSON</li>' +
+          '<li><code>/eli/id/{year}/{month}/{day}/{id}/{type}</code> &mdash; an individual act page</li>' +
+          '</ul></div>';
+      });
+    </script>
+    <script src="/app.js?v=20260904-ui-pass"></script>
   </body>
 </html>

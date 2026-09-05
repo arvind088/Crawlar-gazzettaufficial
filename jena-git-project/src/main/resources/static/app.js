@@ -76,12 +76,55 @@ LIMIT 10`
   {
     id: "relations",
     label: "Acts with Normattiva relations",
-    query: `PREFIX ilg: <http://example.org/italian-legislation/>
+    query: `PREFIX eli: <http://data.europa.eu/eli/ontology#>
+PREFIX ilg: <http://example.org/italian-legislation/ontology#>
 
 SELECT ?source ?relation ?target WHERE {
   ?source ?relation ?target .
-  FILTER(?relation IN (ilg:modifies, ilg:modifiedBy))
+  FILTER(?relation IN (ilg:modifies, ilg:modifiedBy, eli:commences, eli:commenced_by))
 }
+LIMIT 20`
+  },
+  {
+    id: "eli-levels",
+    label: "Validate ELI levels",
+    query: `PREFIX eli: <http://data.europa.eu/eli/ontology#>
+
+SELECT ?act ?expression ?manifestation ?version ?language ?format WHERE {
+  ?act eli:id_local "005G0104" ;
+       eli:is_realized_by ?expression .
+  OPTIONAL { ?expression eli:version ?version . }
+  OPTIONAL { ?expression eli:language ?language . }
+  OPTIONAL { ?expression eli:is_embodied_by ?manifestation . }
+  OPTIONAL { ?manifestation eli:format ?format . }
+}
+ORDER BY ?version`
+  },
+  {
+    id: "conversion",
+    label: "Validate conversion links",
+    query: `PREFIX eli: <http://data.europa.eu/eli/ontology#>
+PREFIX ilg: <http://example.org/italian-legislation/ontology#>
+
+SELECT ?source ?predicate ?target WHERE {
+  VALUES ?source { <http://www.gazzettaufficiale.it/eli/id/2025/03/24/25G00041/sg> }
+  ?source ?predicate ?target .
+  FILTER(?predicate IN (ilg:modifies, eli:commences))
+}
+ORDER BY ?predicate ?target`
+  },
+  {
+    id: "multi-version",
+    label: "Find multi-version acts",
+    query: `PREFIX eli: <http://data.europa.eu/eli/ontology#>
+
+SELECT ?act (COUNT(DISTINCT ?expression) AS ?expressionCount) WHERE {
+  ?act a eli:LegalResource ;
+       eli:is_realized_by ?expression .
+}
+GROUP BY ?act
+HAVING (COUNT(DISTINCT ?expression) > 1)
+ORDER BY DESC(?expressionCount)
 LIMIT 20`
   }
 ];
@@ -95,6 +138,18 @@ function App() {
   const [normattivaUpdateResult, setNormattivaUpdateResult] = useState(null);
   const [normattivaRunning, setNormattivaRunning] = useState(false);
   const [normattivaError, setNormattivaError] = useState("");
+  const [normattivaDetailFetchResult, setNormattivaDetailFetchResult] = useState(null);
+  const [normattivaDetailRunning, setNormattivaDetailRunning] = useState(false);
+  const [normattivaDetailError, setNormattivaDetailError] = useState("");
+  const [normattivaEvidenceScanResult, setNormattivaEvidenceScanResult] = useState(null);
+  const [normattivaEvidenceRunning, setNormattivaEvidenceRunning] = useState(false);
+  const [normattivaEvidenceError, setNormattivaEvidenceError] = useState("");
+  const [normattivaImportResult, setNormattivaImportResult] = useState(null);
+  const [normattivaImportRunning, setNormattivaImportRunning] = useState(false);
+  const [normattivaImportError, setNormattivaImportError] = useState("");
+  const [normattivaCandidateRunResult, setNormattivaCandidateRunResult] = useState(null);
+  const [normattivaCandidateRunning, setNormattivaCandidateRunning] = useState(false);
+  const [normattivaCandidateError, setNormattivaCandidateError] = useState("");
   const [updateResult, setUpdateResult] = useState(null);
   const [updateRunning, setUpdateRunning] = useState(false);
   const [updateError, setUpdateError] = useState("");
@@ -105,9 +160,18 @@ function App() {
   const [archiveEndDate, setArchiveEndDate] = useState("2026-06-16");
   const [archiveLimit, setArchiveLimit] = useState("10");
   const [modifications, setModifications] = useState([]);
+  const [normattivaUpdates, setNormattivaUpdates] = useState([]);
+  const [normattivaDetails, setNormattivaDetails] = useState([]);
+  const [normattivaEvidence, setNormattivaEvidence] = useState([]);
+  const [normattivaRelationCandidates, setNormattivaRelationCandidates] = useState([]);
   const [rdfSources, setRdfSources] = useState([]);
+  const [ingestionRuns, setIngestionRuns] = useState([]);
   const [acts, setActs] = useState([]);
+  const [datasetActs, setDatasetActs] = useState([]);
   const [selected, setSelected] = useState(null);
+  const [resourceDetail, setResourceDetail] = useState(null);
+  const [resourceLoading, setResourceLoading] = useState(false);
+  const [resourceError, setResourceError] = useState("");
   const [search, setSearch] = useState("");
   const [yearFilter, setYearFilter] = useState("");
   const [typeFilter, setTypeFilter] = useState("");
@@ -115,6 +179,14 @@ function App() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [actSparqlQuery, setActSparqlQuery] = useState("");
+
+  const loadIngestionRuns = useCallback(async () => {
+    const response = await fetch("/api/runs?limit=20");
+    if (!response.ok) {
+      throw new Error("Run history request failed");
+    }
+    setIngestionRuns(await response.json());
+  }, []);
 
   const loadStatus = useCallback(async () => {
     const response = await fetch("/api/health");
@@ -171,6 +243,42 @@ function App() {
     setModifications(Array.isArray(rows) ? rows : []);
   }, []);
 
+  const loadNormattivaUpdates = useCallback(async () => {
+    const response = await fetch("/api/normattiva/updates?limit=20");
+    if (!response.ok) {
+      throw new Error("Normattiva updates request failed");
+    }
+    const rows = await response.json();
+    setNormattivaUpdates(Array.isArray(rows) ? rows : []);
+  }, []);
+
+  const loadNormattivaDetails = useCallback(async () => {
+    const response = await fetch("/api/normattiva/details?limit=20");
+    if (!response.ok) {
+      throw new Error("Normattiva details request failed");
+    }
+    const rows = await response.json();
+    setNormattivaDetails(Array.isArray(rows) ? rows : []);
+  }, []);
+
+  const loadNormattivaEvidence = useCallback(async () => {
+    const response = await fetch("/api/normattiva/evidence?limit=20");
+    if (!response.ok) {
+      throw new Error("Normattiva evidence request failed");
+    }
+    const rows = await response.json();
+    setNormattivaEvidence(Array.isArray(rows) ? rows : []);
+  }, []);
+
+  const loadNormattivaRelationCandidates = useCallback(async () => {
+    const response = await fetch("/api/normattiva/relation-candidates?limit=20");
+    if (!response.ok) {
+      throw new Error("Normattiva relation candidates request failed");
+    }
+    const rows = await response.json();
+    setNormattivaRelationCandidates(Array.isArray(rows) ? rows : []);
+  }, []);
+
   const loadNormattivaAutomationStatus = useCallback(async () => {
     const response = await fetch("/api/normattiva/automation");
     if (!response.ok) {
@@ -199,6 +307,38 @@ function App() {
     setRdfSources(Array.isArray(rows) ? rows : []);
   }, []);
 
+  const loadResourceDetail = useCallback(async (identifier) => {
+    if (!identifier) {
+      setResourceDetail(null);
+      setResourceError("");
+      return null;
+    }
+
+    setResourceLoading(true);
+    setResourceError("");
+    try {
+      const params = new URLSearchParams({ id: identifier });
+      const response = await fetch(`/api/resources?${params.toString()}`);
+      if (response.status === 404) {
+        setResourceDetail(null);
+        setResourceError("No linked data found for this resource.");
+        return null;
+      }
+      if (!response.ok) {
+        throw new Error("Linked-data request failed");
+      }
+      const detail = await response.json();
+      setResourceDetail(detail);
+      return detail;
+    } catch (err) {
+      setResourceDetail(null);
+      setResourceError(err.message || "Linked-data request failed");
+      return null;
+    } finally {
+      setResourceLoading(false);
+    }
+  }, []);
+
   const runSearch = useCallback(async (query, options = {}) => {
     setLoading(true);
     setError("");
@@ -217,6 +357,9 @@ function App() {
       const rows = Array.isArray(data) ? data.filter(hasDisplayMetadata) : [];
       setActs(rows);
       setSelected(rows[0] ?? null);
+      if (!(query ?? search)) {
+        setDatasetActs(rows);
+      }
     } catch (err) {
       setError(err.message || "Search failed");
       setActs([]);
@@ -323,6 +466,10 @@ function App() {
       }
       await loadStatus();
       await loadModifications();
+      await loadNormattivaUpdates();
+      await loadNormattivaDetails();
+      await loadNormattivaEvidence();
+      await loadNormattivaRelationCandidates();
       await loadRdfSources();
       await loadNormattivaAutomationStatus();
     } catch (err) {
@@ -330,12 +477,137 @@ function App() {
     } finally {
       setNormattivaRunning(false);
     }
-  }, [loadModifications, loadNormattivaAutomationStatus, loadRdfSources, loadStatus]);
+  }, [loadModifications, loadNormattivaAutomationStatus, loadNormattivaDetails, loadNormattivaEvidence, loadNormattivaRelationCandidates, loadNormattivaUpdates, loadRdfSources, loadStatus]);
+
+  const runNormattivaDetailFetch = useCallback(async () => {
+    setNormattivaDetailRunning(true);
+    setNormattivaDetailError("");
+    try {
+      const response = await fetch("/api/normattiva/details/run?limit=20", { method: "POST" });
+      if (!response.ok) {
+        throw new Error("Normattiva detail fetch request failed");
+      }
+      const result = await response.json();
+      setNormattivaDetailFetchResult(result);
+      if (result.state === "FAILED") {
+        setNormattivaDetailError(result.message || "Normattiva detail fetch failed");
+      }
+      await loadNormattivaDetails();
+      await loadNormattivaEvidence();
+      await loadNormattivaRelationCandidates();
+    } catch (err) {
+      setNormattivaDetailError(err.message || "Normattiva detail fetch failed");
+    } finally {
+      setNormattivaDetailRunning(false);
+    }
+  }, [loadNormattivaDetails, loadNormattivaEvidence, loadNormattivaRelationCandidates]);
+
+  const runNormattivaEvidenceScan = useCallback(async () => {
+    setNormattivaEvidenceRunning(true);
+    setNormattivaEvidenceError("");
+    try {
+      const response = await fetch("/api/normattiva/evidence/run?limit=20", { method: "POST" });
+      if (!response.ok) {
+        throw new Error("Normattiva evidence scan request failed");
+      }
+      const result = await response.json();
+      setNormattivaEvidenceScanResult(result);
+      if (result.state === "FAILED") {
+        setNormattivaEvidenceError(result.message || "Normattiva evidence scan failed");
+      }
+      await loadNormattivaEvidence();
+      await loadNormattivaRelationCandidates();
+    } catch (err) {
+      setNormattivaEvidenceError(err.message || "Normattiva evidence scan failed");
+    } finally {
+      setNormattivaEvidenceRunning(false);
+    }
+  }, [loadNormattivaEvidence, loadNormattivaRelationCandidates]);
+
+  const importNormattivaUpdates = useCallback(async () => {
+    setNormattivaImportRunning(true);
+    setNormattivaImportError("");
+    try {
+      const response = await fetch("/api/normattiva/import/updates", { method: "POST" });
+      if (!response.ok) {
+        throw new Error("Normattiva update import request failed");
+      }
+      const result = await response.json();
+      setNormattivaImportResult(result);
+      if (result.state === "FAILED") {
+        setNormattivaImportError(result.message || "Normattiva update import failed");
+      }
+      await loadNormattivaUpdates();
+    } catch (err) {
+      setNormattivaImportError(err.message || "Normattiva update import failed");
+    } finally {
+      setNormattivaImportRunning(false);
+    }
+  }, [loadNormattivaUpdates]);
+
+  const importNormattivaDetails = useCallback(async () => {
+    setNormattivaImportRunning(true);
+    setNormattivaImportError("");
+    try {
+      const response = await fetch("/api/normattiva/import/details", { method: "POST" });
+      if (!response.ok) {
+        throw new Error("Normattiva detail import request failed");
+      }
+      const result = await response.json();
+      setNormattivaImportResult(result);
+      if (result.state === "FAILED") {
+        setNormattivaImportError(result.message || "Normattiva detail import failed");
+      }
+      await loadNormattivaDetails();
+      await loadNormattivaEvidence();
+      await loadNormattivaRelationCandidates();
+    } catch (err) {
+      setNormattivaImportError(err.message || "Normattiva detail import failed");
+    } finally {
+      setNormattivaImportRunning(false);
+    }
+  }, [loadNormattivaDetails, loadNormattivaEvidence, loadNormattivaRelationCandidates]);
+
+  const runNormattivaRelationCandidates = useCallback(async () => {
+    setNormattivaCandidateRunning(true);
+    setNormattivaCandidateError("");
+    try {
+      const response = await fetch("/api/normattiva/relation-candidates/run?limit=20", { method: "POST" });
+      if (!response.ok) {
+        throw new Error("Normattiva relation candidate request failed");
+      }
+      const result = await response.json();
+      setNormattivaCandidateRunResult(result);
+      if (result.state === "FAILED") {
+        setNormattivaCandidateError(result.message || "Normattiva relation candidate extraction failed");
+      }
+      await loadNormattivaRelationCandidates();
+    } catch (err) {
+      setNormattivaCandidateError(err.message || "Normattiva relation candidate extraction failed");
+    } finally {
+      setNormattivaCandidateRunning(false);
+    }
+  }, [loadNormattivaRelationCandidates]);
 
   const runSparqlForAct = useCallback((act) => {
     setActSparqlQuery(createActSparqlQuery(act));
     setActiveTab("sparql");
   }, []);
+
+  const navigateResource = useCallback(async (identifier) => {
+    const detail = await loadResourceDetail(identifier);
+    if (detail) {
+      setSelected({
+        uri: detail.uri,
+        title: detail.title,
+        localId: detail.localId,
+        publicationDate: null,
+        documentDate: null,
+        type: null,
+        source: null
+      });
+    }
+  }, [loadResourceDetail]);
 
   useEffect(() => {
     loadStatus().catch((err) => setError(err.message || "Status request failed"));
@@ -346,9 +618,18 @@ function App() {
     loadLatestNormattivaUpdate().catch(() => {});
     loadLatestArchiveRun().catch(() => {});
     loadModifications().catch((err) => setError(err.message || "Normattiva request failed"));
+    loadNormattivaUpdates().catch((err) => setError(err.message || "Normattiva updates request failed"));
+    loadNormattivaDetails().catch((err) => setError(err.message || "Normattiva details request failed"));
+    loadNormattivaEvidence().catch((err) => setError(err.message || "Normattiva evidence request failed"));
+    loadNormattivaRelationCandidates().catch((err) => setError(err.message || "Normattiva relation candidates request failed"));
     loadRdfSources().catch((err) => setError(err.message || "RDF sources request failed"));
+    loadIngestionRuns().catch(() => {});
     runSearch("");
-  }, [loadAutomationStatus, loadCrawlStatus, loadLatestArchiveRun, loadLatestNormattivaUpdate, loadLatestUpdate, loadModifications, loadNormattivaAutomationStatus, loadRdfSources, loadStatus, runSearch]);
+  }, [loadAutomationStatus, loadCrawlStatus, loadLatestArchiveRun, loadLatestNormattivaUpdate, loadLatestUpdate, loadModifications, loadNormattivaAutomationStatus, loadNormattivaDetails, loadNormattivaEvidence, loadNormattivaRelationCandidates, loadNormattivaUpdates, loadRdfSources, loadIngestionRuns, loadStatus, runSearch]);
+
+  useEffect(() => {
+    loadResourceDetail(selected?.uri || displayLocalId(selected));
+  }, [loadResourceDetail, selected]);
 
   const filteredActs = useMemo(() => acts.filter((act) => {
     const yearMatch = !yearFilter || String(act.publicationDate || "").startsWith(yearFilter);
@@ -367,9 +648,13 @@ function App() {
   const page = activeTab === "search" ? e(SearchPage, {
     acts: filteredActs,
     allActs: acts,
+    datasetActs: datasetActs.length ? datasetActs : acts,
     error,
     loading,
     modifications,
+    resourceDetail,
+    resourceError,
+    resourceLoading,
     search,
     selected,
     sourceFilter,
@@ -381,11 +666,12 @@ function App() {
     onSearchChange: setSearch,
     onRunSearch: runSearch,
     onRunSparqlForAct: runSparqlForAct,
+    onNavigateResource: navigateResource,
     onSelect: setSelected,
     onSourceFilterChange: setSourceFilter,
     onTypeFilterChange: setTypeFilter,
     onYearFilterChange: setYearFilter
-  }) : activeTab === "normattiva" ? e(NormattivaPage, { modifications })
+  }) : activeTab === "normattiva" ? e(NormattivaPage, { acts: datasetActs.length ? datasetActs : acts, modifications, normattivaDetails, normattivaEvidence, normattivaRelationCandidates, normattivaUpdates })
     : activeTab === "sparql" ? e(SparqlPage, { initialQuery: actSparqlQuery })
       : e(TechnicalPage, {
           archiveEndDate,
@@ -396,12 +682,29 @@ function App() {
           archiveStartDate,
           crawlStatus,
           automationStatus,
+          ingestionRuns,
           loadedFileCount,
           missingFileCount,
           normattivaAutomationStatus,
+          normattivaDetails,
+          normattivaDetailError,
+          normattivaDetailFetchResult,
+          normattivaDetailRunning,
+          normattivaEvidence,
+          normattivaEvidenceError,
+          normattivaEvidenceRunning,
+          normattivaEvidenceScanResult,
+          normattivaCandidateError,
+          normattivaCandidateRunResult,
+          normattivaCandidateRunning,
           normattivaError,
+          normattivaImportError,
+          normattivaImportResult,
+          normattivaImportRunning,
+          normattivaRelationCandidates,
           normattivaRunning,
           normattivaUpdateResult,
+          normattivaUpdates,
           rdfSources,
           status,
           updateError,
@@ -412,6 +715,11 @@ function App() {
           onArchiveStartDateChange: setArchiveStartDate,
           onRunArchiveCrawl: runArchiveCrawl,
           onRunArchiveDiscover: runArchiveDiscover,
+          onImportNormattivaDetails: importNormattivaDetails,
+          onImportNormattivaUpdates: importNormattivaUpdates,
+          onRunNormattivaDetailFetch: runNormattivaDetailFetch,
+          onRunNormattivaEvidenceScan: runNormattivaEvidenceScan,
+          onRunNormattivaRelationCandidates: runNormattivaRelationCandidates,
           onRunNormattivaUpdate: runNormattivaUpdate,
           onRunUpdate: runCrawlerUpdate
         });
@@ -451,18 +759,27 @@ function App() {
 }
 
 function SearchPage(props) {
-  const totalActs = props.allActs.length;
-  const lastUpdate = props.allActs.map((act) => act.publicationDate).filter(Boolean).sort().pop() || "unknown";
+  const dataset = props.datasetActs || props.allActs;
+  const totalActs = dataset.length;
+  const lastUpdate = dataset.map((act) => act.publicationDate).filter(Boolean).sort().pop() || "unknown";
 
   return e(React.Fragment, null,
     e("section", { className: "metric-grid compact-metrics", "aria-label": "Dataset overview" },
-      e(MetricTile, { icon: "file", label: "Legal Acts", value: totalActs, note: "from Gazzetta RDF" }),
-      e(MetricTile, { icon: "link", label: "Relationships", value: props.modifications.length, note: "from Normattiva RDF" }),
-      e(MetricTile, { icon: "clock", label: "Latest Date", value: formatDisplayDate(lastUpdate), note: "publication date" })
+      e(MetricTile, { icon: "file", label: "Legal acts", value: totalActs, note: "in the triple store" }),
+      e(MetricTile, { icon: "link", label: "Act-to-act relations", value: props.modifications.length, note: "from Normattiva" }),
+      e(MetricTile, { icon: "clock", label: "Most recent publication", value: formatDisplayDate(lastUpdate), note: "Gazzetta Ufficiale date" })
     ),
     e("div", { className: "content-grid" },
       e(SearchPanel, props),
-      e(DetailPanel, { act: props.selected, modifications: props.modifications, onRunSparqlForAct: props.onRunSparqlForAct })
+      e(DetailPanel, {
+        act: props.selected,
+        modifications: props.modifications,
+        resourceDetail: props.resourceDetail,
+        resourceError: props.resourceError,
+        resourceLoading: props.resourceLoading,
+        onNavigateResource: props.onNavigateResource,
+        onRunSparqlForAct: props.onRunSparqlForAct
+      })
     )
   );
 }
@@ -573,7 +890,7 @@ function SelectFilter({ label, value, options, onChange }) {
 
 function ResultTable({ acts, selected, onSelect }) {
   if (!acts.length) {
-    return e("div", { className: "empty-state" }, "No matching legal acts");
+    return e("div", { className: "empty-state" }, "No legal acts match that search");
   }
 
   return e("div", { className: "table-wrap" },
@@ -612,7 +929,15 @@ function ResultTable({ acts, selected, onSelect }) {
   );
 }
 
-function DetailPanel({ act, modifications, onRunSparqlForAct }) {
+function DetailPanel({
+  act,
+  modifications,
+  resourceDetail,
+  resourceError,
+  resourceLoading,
+  onNavigateResource,
+  onRunSparqlForAct
+}) {
   return e("aside", { className: "panel detail-panel" },
     e("div", { className: "panel-heading" },
       e("div", { className: "heading-lockup" },
@@ -623,29 +948,57 @@ function DetailPanel({ act, modifications, onRunSparqlForAct }) {
         )
       )
     ),
-    act ? e(DetailView, { act, modifications, onRunSparqlForAct }) : e("div", { className: "empty-state" }, "Select a record from the results")
+    act ? e(DetailView, {
+      act,
+      modifications,
+      resourceDetail,
+      resourceError,
+      resourceLoading,
+      onNavigateResource,
+      onRunSparqlForAct
+    }) : e("div", { className: "empty-state" }, "Pick an act from the list to see its details")
   );
 }
 
-function DetailView({ act, modifications, onRunSparqlForAct }) {
+function DetailView({
+  act,
+  modifications,
+  resourceDetail,
+  resourceError,
+  resourceLoading,
+  onNavigateResource,
+  onRunSparqlForAct
+}) {
   const relations = relatedModifications(act, modifications);
+  const detail = resourceDetail?.uri === act.uri ? resourceDetail : null;
+  // A Work's status is that of its current text. Prefer an Expression that is
+  // in force over one that has been superseded, otherwise an act with both
+  // would report the status of whichever happened to be listed first.
+  const expressionStates = (detail?.expressions || [])
+    .map((node) => inForceState(node))
+    .filter(Boolean);
+  const actState = inForceState(act)
+    || expressionStates.find((state) => state.tone === "current")
+    || expressionStates[0];
   const fields = [
     ["Title", displayTitle(act)],
-    ["Publication Date", act.publicationDate],
-    ["Type", shortType(act.type)],
+    ["Published", act.publicationDate],
+    ["Document type", displayVocabularyTerm(act.type) || shortType(act.type)],
+    ["Status", actState ? actState.label : "Not recorded"],
     ["Source", sourceLabel(act.source)]
   ];
+  const permanentUrl = eliPageUrl(act);
 
   return e("div", { className: "detail-grid" },
     e("div", { className: "act-pill" }, "ID ", e("strong", null, displayLocalId(act))),
     e("div", { className: "detail-item" },
-      e("div", { className: "detail-label" }, "ELI URI"),
+      e("div", { className: "detail-label" }, "Permanent link"),
       e("div", { className: "uri-row" },
-        e("code", { className: "uri-value" }, act.uri || "Missing data"),
+        e("code", { className: "uri-value" }, permanentUrl || act.uri || "Not available"),
         e("button", {
           className: "copy-button",
-          disabled: !act.uri,
-          onClick: () => copyText(act.uri),
+          disabled: !(permanentUrl || act.uri),
+          onClick: () => copyText(permanentUrl || act.uri),
           type: "button"
         }, "Copy")
       )
@@ -657,6 +1010,37 @@ function DetailView({ act, modifications, onRunSparqlForAct }) {
       )
     ),
     e("div", { className: "detail-item" },
+      e("div", { className: "detail-label" }, "Versions"),
+      resourceLoading
+        ? e("div", { className: "detail-value muted-line" }, "Loading versions\u2026")
+        : e(LinkedNodeList, {
+            empty: resourceError || "This act has no recorded versions",
+            nodes: detail?.expressions || [],
+            onNavigateResource
+          })
+    ),
+    e("div", { className: "detail-item" },
+      e("div", { className: "detail-label" }, "Formats"),
+      resourceLoading
+        ? e("div", { className: "detail-value muted-line" }, "Loading formats\u2026")
+        : e(LinkedNodeList, {
+            empty: resourceError || "This act has no recorded formats",
+            nodes: detail?.manifestations || [],
+            expressions: detail?.expressions || [],
+            onNavigateResource
+          })
+    ),
+    e("div", { className: "detail-item" },
+      e("div", { className: "detail-label" }, "Related Resources"),
+      resourceLoading
+        ? e("div", { className: "detail-value muted-line" }, "Loading related acts\u2026")
+        : e(LinkedRelationList, {
+            empty: resourceError || "No links to other acts recorded yet",
+            relations: userFacingRelations(detail),
+            onNavigateResource
+          })
+    ),
+    e("div", { className: "detail-item" },
       e("div", { className: "detail-label" }, "Normattiva Relations"),
       relations.length
         ? e("div", { className: "relation-list" },
@@ -666,15 +1050,19 @@ function DetailView({ act, modifications, onRunSparqlForAct }) {
               )
             )
           )
-        : e("div", { className: "detail-value muted-line" }, "No loaded relationship")
+        : e("div", { className: "detail-value muted-line" }, "No Normattiva relation recorded for this act")
     ),
     e("div", { className: "detail-actions" },
-      e(LinkButton, { href: act.source || act.uri, icon: "external", label: "Open Gazzetta" }),
-      e(LinkButton, { href: actRdfUrl(act), icon: "link", label: "View RDF" }),
-      e("a", { className: "action-link secondary-link-inline", href: `${actRdfUrl(act)}?download=true` },
+      permanentUrl ? e("a", { className: "action-link primary-link-inline", href: eliPagePath(act) },
+        e(Icon, { name: "link" }),
+        e("span", null, "Open act page")
+      ) : null,
+      e(LinkButton, { href: act.source || act.uri, icon: "external", label: "View on Gazzetta" }),
+      displayLocalId(act) ? e(LinkButton, { href: actRdfUrl(act), icon: "link", label: "View RDF" }) : null,
+      displayLocalId(act) ? e("a", { className: "action-link secondary-link-inline", href: `${actRdfUrl(act)}?download=true` },
         e(Icon, { name: "download" }),
         e("span", null, "Download TTL")
-      ),
+      ) : null,
       e("button", {
         className: "secondary-button",
         onClick: () => onRunSparqlForAct(act),
@@ -684,6 +1072,89 @@ function DetailView({ act, modifications, onRunSparqlForAct }) {
   );
 }
 
+function LinkedNodeList({ empty, expressions, nodes, onNavigateResource }) {
+  const versionOf = (node) => {
+    const parent = (expressions || []).find((expression) =>
+      expression.uri && node.uri && String(node.uri).startsWith(`${expression.uri}/`));
+    return parent ? displayVersionTerm(parent.version) || displayNodeTitle(parent) : "";
+  };
+
+  if (!nodes.length) {
+    return e("div", { className: "detail-value muted-line" }, empty);
+  }
+
+  return e("div", { className: "resource-node-list" },
+    nodes.map((node) =>
+      e("button", {
+        key: node.uri,
+        className: "resource-link-button",
+        onClick: () => onNavigateResource(node.uri),
+        title: node.uri,
+        type: "button"
+      },
+        e("span", { className: "resource-main" },
+          displayFormatTerm(node.format) || displayNodeTitle(node),
+          (() => {
+            const state = inForceState(node);
+            return state ? e("span", { className: `force-badge ${state.tone}` }, state.label) : null;
+          })()
+        ),
+        e("span", { className: "resource-meta" },
+          [displayVersionTerm(node.version) || versionOf(node), displayVocabularyTerm(node.language), node.format ? "" : displayFormatTerm(node.format)]
+            .filter(Boolean)
+            .join(" \u00b7 ") || compactUri(node.uri)
+        )
+      )
+    )
+  );
+}
+
+function LinkedRelationList({ empty, relations, onNavigateResource }) {
+  if (!relations.length) {
+    return e("div", { className: "detail-value muted-line" }, empty);
+  }
+
+  return e("div", { className: "linked-relation-list" },
+    relations.map((relation) =>
+      e("div", {
+        key: `${relation.predicate}-${relation.resourceUri}`,
+        className: relation.important ? "linked-relation-row key-relation" : "linked-relation-row"
+      },
+        e("span", { className: "relation-predicate" },
+          e("span", { className: "relation-label" }, relation.displayLabel || relation.predicateLabel || compactRdfName(relation.predicate) || relation.predicate),
+          e("span", { className: "relation-code" }, relation.predicateLabel || compactRdfName(relation.predicate) || relation.predicate),
+          relation.important ? e("span", { className: "relation-importance" }, "Key") : null
+        ),
+        e("button", {
+          className: "resource-link-button relation-resource",
+          onClick: () => onNavigateResource(relation.resourceUri),
+          title: relation.resourceUri,
+          type: "button"
+        },
+          e("span", { className: "resource-main" }, relation.resourceLocalId || relation.resourceLabel || compactUri(relation.resourceUri)),
+          e("span", { className: "resource-meta" }, relation.resourceLabel || compactUri(relation.resourceUri))
+        )
+      )
+    )
+  );
+}
+
+function userFacingRelations(detail) {
+  const hiddenPredicates = new Set([
+    "http://data.europa.eu/eli/ontology#is_realized_by",
+    "http://data.europa.eu/eli/ontology#realizes",
+    "http://data.europa.eu/eli/ontology#is_embodied_by",
+    "http://data.europa.eu/eli/ontology#embodies",
+    "http://purl.org/dc/terms/source",
+    "http://data.europa.eu/eli/ontology#type_document",
+    "http://data.europa.eu/eli/ontology#version",
+    "http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
+  ]);
+  return (detail?.outgoingRelations || [])
+    .concat(detail?.incomingRelations || [])
+    .filter((relation) => !hiddenPredicates.has(relation.predicate));
+}
+
 function LinkButton({ href, icon, label }) {
   return e("a", { className: "action-link", href, target: "_blank", rel: "noreferrer" },
     e(Icon, { name: icon || "external" }),
@@ -691,37 +1162,66 @@ function LinkButton({ href, icon, label }) {
   );
 }
 
-function NormattivaPage({ modifications }) {
-  return e("section", { className: "panel normattiva-panel" },
-    e("div", { className: "panel-heading" },
-      e("div", null,
-        e("p", { className: "section-label" }, "Normattiva RDF"),
-        e("h2", null, "Legal relationships")
+function NormattivaPage({ acts, modifications }) {
+  const titleFor = (localId, uri) => {
+    const key = localId || localIdFromUri(uri);
+    const match = (acts || []).find((act) => displayLocalId(act) === key);
+    return match && match.title ? match.title : "";
+  };
+
+  return e(React.Fragment, null,
+    e("section", { className: "panel normattiva-panel" },
+      e("div", { className: "panel-heading" },
+        e("div", null,
+          e("p", { className: "section-label" }, "Linked Data"),
+          e("h2", null, "Legal relationships"),
+          e("p", { className: "panel-subtitle" }, "Verified act-to-act relations stored as RDF and served from the triple store.")
+        ),
+        e("span", { className: "result-count" }, `${modifications.length} link${modifications.length === 1 ? "" : "s"}`)
       ),
-      e("span", { className: "result-count" }, `${modifications.length} link${modifications.length === 1 ? "" : "s"}`)
-    ),
-    modifications.length
-      ? e("div", { className: "table-wrap" },
-          e("table", { className: "results-table" },
-            e("thead", null,
-              e("tr", null,
-                e("th", null, "Source Act"),
-                e("th", null, "Relation"),
-                e("th", null, "Target Act")
-              )
-            ),
-            e("tbody", null,
-              modifications.map((row) =>
-                e("tr", { key: `${row.sourceUri}-${row.relationship}-${row.targetUri}` },
-                  e("td", { className: "mono relation-id-cell" }, displayRelationId(row.sourceLocalId, row.sourceUri)),
-                  e("td", null, relationshipLabel(row.relationship)),
-                  e("td", { className: "mono relation-id-cell" }, displayRelationId(row.targetLocalId, row.targetUri))
+      modifications.length
+        ? e("div", { className: "table-wrap" },
+            e("table", { className: "results-table" },
+              e("thead", null,
+                e("tr", null,
+                  e("th", null, "This act"),
+                  e("th", null, "Relation"),
+                  e("th", null, "Related act")
+                )
+              ),
+              e("tbody", null,
+                modifications.map((row) =>
+                  e("tr", { key: `${row.sourceUri}-${row.relationship}-${row.targetUri}` },
+                    e("td", { className: "relation-act-cell" },
+                      e("a", { className: "act-ref-link mono", href: eliPagePath(row.sourceUri) || row.sourceUri },
+                        displayRelationId(row.sourceLocalId, row.sourceUri)),
+                      titleFor(row.sourceLocalId, row.sourceUri)
+                        ? e("span", { className: "act-ref-title" }, titleFor(row.sourceLocalId, row.sourceUri))
+                        : null
+                    ),
+                    e("td", null, e("span", { className: "relation-badge" }, relationshipLabel(row.relationship))),
+                    e("td", { className: "relation-act-cell" },
+                      e("a", { className: "act-ref-link mono", href: eliPagePath(row.targetUri) || row.targetUri },
+                        displayRelationId(row.targetLocalId, row.targetUri)),
+                      titleFor(row.targetLocalId, row.targetUri)
+                        ? e("span", { className: "act-ref-title" }, titleFor(row.targetLocalId, row.targetUri))
+                        : null
+                    )
+                  )
                 )
               )
             )
           )
-        )
-      : e("div", { className: "empty-state" }, "No Normattiva relationships loaded")
+        : e("div", { className: "empty-state" }, "No act-to-act relations in the triple store yet")
+    )
+  );
+}
+
+function PipelineStatusItem({ count, label, state }) {
+  return e("div", { className: "pipeline-status-item" },
+    e("span", { className: "pipeline-status-count" }, count),
+    e("span", { className: "pipeline-status-label" }, label),
+    e("span", { className: "pipeline-status-note" }, state)
   );
 }
 
@@ -838,12 +1338,29 @@ function TechnicalPage({
   archiveStartDate,
   automationStatus,
   crawlStatus,
+  ingestionRuns = [],
   loadedFileCount,
   missingFileCount,
   normattivaAutomationStatus,
+  normattivaDetails,
+  normattivaDetailError,
+  normattivaDetailFetchResult,
+  normattivaDetailRunning,
+  normattivaEvidence,
+  normattivaEvidenceError,
+  normattivaEvidenceRunning,
+  normattivaEvidenceScanResult,
+  normattivaCandidateError,
+  normattivaCandidateRunResult,
+  normattivaCandidateRunning,
   normattivaError,
+  normattivaImportError,
+  normattivaImportResult,
+  normattivaImportRunning,
+  normattivaRelationCandidates,
   normattivaRunning,
   normattivaUpdateResult,
+  normattivaUpdates,
   rdfSources,
   status,
   updateError,
@@ -852,8 +1369,13 @@ function TechnicalPage({
   onArchiveEndDateChange,
   onArchiveLimitChange,
   onArchiveStartDateChange,
+  onImportNormattivaDetails,
+  onImportNormattivaUpdates,
   onRunArchiveCrawl,
   onRunArchiveDiscover,
+  onRunNormattivaDetailFetch,
+  onRunNormattivaEvidenceScan,
+  onRunNormattivaRelationCandidates,
   onRunNormattivaUpdate,
   onRunUpdate
 }) {
@@ -864,30 +1386,148 @@ function TechnicalPage({
       e(MetricTile, { icon: "registry", label: "Registry", value: crawlStatus?.registryRecords ?? "...", note: "tracked acts" })
     ),
     e(CrawlerStatusPanel, { automationStatus, crawlStatus, updateError, updateResult, updateRunning, onRunUpdate }),
-    e(SourcePanel, { rdfSources })
+    e(NormattivaAutomationPanel, {
+      normattivaAutomationStatus,
+      normattivaDetails,
+      normattivaDetailError,
+      normattivaDetailFetchResult,
+      normattivaDetailRunning,
+      normattivaEvidence,
+      normattivaEvidenceError,
+      normattivaEvidenceRunning,
+      normattivaEvidenceScanResult,
+      normattivaCandidateError,
+      normattivaCandidateRunResult,
+      normattivaCandidateRunning,
+      normattivaError,
+      normattivaImportError,
+      normattivaImportResult,
+      normattivaImportRunning,
+      normattivaRelationCandidates,
+      normattivaRunning,
+      normattivaUpdateResult,
+      normattivaUpdates,
+      onImportNormattivaDetails,
+      onImportNormattivaUpdates,
+      onRunNormattivaDetailFetch,
+      onRunNormattivaEvidenceScan,
+      onRunNormattivaRelationCandidates,
+      onRunNormattivaUpdate
+    }),
+    e(SourcePanel, { rdfSources }),
+    e(IngestionHistoryPanel, { runs: ingestionRuns })
   );
 }
 
 function NormattivaAutomationPanel({
   normattivaAutomationStatus,
+  normattivaDetails = [],
+  normattivaDetailError,
+  normattivaDetailFetchResult,
+  normattivaDetailRunning,
+  normattivaEvidence = [],
+  normattivaEvidenceError,
+  normattivaEvidenceRunning,
+  normattivaEvidenceScanResult,
+  normattivaCandidateError,
+  normattivaCandidateRunResult,
+  normattivaCandidateRunning,
   normattivaError,
+  normattivaImportError,
+  normattivaImportResult,
+  normattivaImportRunning,
+  normattivaRelationCandidates = [],
   normattivaRunning,
   normattivaUpdateResult,
+  normattivaUpdates = [],
+  onImportNormattivaDetails,
+  onImportNormattivaUpdates,
+  onRunNormattivaDetailFetch,
+  onRunNormattivaEvidenceScan,
+  onRunNormattivaRelationCandidates,
   onRunNormattivaUpdate
 }) {
   return e("section", { className: "panel crawler-panel" },
     e("div", { className: "panel-heading" },
       e("div", null,
         e("p", { className: "section-label" }, "Normattiva"),
-        e("h2", null, "Automatic update status"),
-        e("p", { className: "panel-subtitle" }, "Downloads Normattiva update cards, extracts act links, and generates automatic relationship RDF.")
-      ),
-      e("button", {
-        className: "secondary-button",
-        disabled: normattivaRunning,
-        onClick: onRunNormattivaUpdate,
-        type: "button"
-      }, normattivaRunning ? "Running..." : "Run Normattiva Update")
+        e("h2", null, "Amendment discovery"),
+        e("p", { className: "panel-subtitle" }, "Finds acts that Normattiva has amended. Each step feeds the next, and nothing is written to the graph until a relation has been reviewed.")
+      )
+    ),
+    e("ol", { className: "pipeline-steps" },
+      [
+        {
+          n: 1,
+          title: "Find changed acts",
+          note: "Asks the Normattiva OpenData API which acts changed in the update window.",
+          count: normattivaUpdates.length,
+          countLabel: "acts found",
+          run: onRunNormattivaUpdate,
+          running: normattivaRunning,
+          runLabel: "Find changed acts",
+          busyLabel: "Searching\u2026",
+          alt: { run: onImportNormattivaUpdates, running: normattivaImportRunning, label: "Import from file", busy: "Importing\u2026" }
+        },
+        {
+          n: 2,
+          title: "Fetch act details",
+          note: "Downloads the full record for each act found in step 1.",
+          count: normattivaDetails.length,
+          countLabel: "details fetched",
+          run: onRunNormattivaDetailFetch,
+          running: normattivaDetailRunning,
+          runLabel: "Fetch details",
+          busyLabel: "Fetching\u2026",
+          alt: { run: onImportNormattivaDetails, running: normattivaImportRunning, label: "Import from file", busy: "Importing\u2026" }
+        },
+        {
+          n: 3,
+          title: "Scan for relation evidence",
+          note: "Looks through the fetched text for wording that names another act.",
+          count: normattivaEvidence.length,
+          countLabel: "passages found",
+          run: onRunNormattivaEvidenceScan,
+          running: normattivaEvidenceRunning,
+          runLabel: "Scan evidence",
+          busyLabel: "Scanning\u2026"
+        },
+        {
+          n: 4,
+          title: "Propose relations for review",
+          note: "Turns evidence into candidate links. These are not added to the graph until you approve them.",
+          count: normattivaRelationCandidates.length,
+          countLabel: "awaiting review",
+          run: onRunNormattivaRelationCandidates,
+          running: normattivaCandidateRunning,
+          runLabel: "Propose relations",
+          busyLabel: "Working\u2026"
+        }
+      ].map((step) =>
+        e("li", { key: step.n, className: "pipeline-step" },
+          e("span", { className: "pipeline-step-number", "aria-hidden": "true" }, step.n),
+          e("div", { className: "pipeline-step-body" },
+            e("h3", null, step.title),
+            e("p", null, step.note),
+            e("p", { className: "pipeline-step-count" },
+              e("strong", null, step.count), " ", step.countLabel)
+          ),
+          e("div", { className: "pipeline-step-actions" },
+            e("button", {
+              className: "secondary-button",
+              disabled: step.running,
+              onClick: step.run,
+              type: "button"
+            }, step.running ? step.busyLabel : step.runLabel),
+            step.alt ? e("button", {
+              className: "tertiary-button",
+              disabled: step.alt.running,
+              onClick: step.alt.run,
+              type: "button"
+            }, step.alt.running ? step.alt.busy : step.alt.label) : null
+          )
+        )
+      )
     ),
     e("div", { className: "automation-summary" },
       e("div", { className: normattivaAutomationStatus?.enabled ? "automation-badge" : "automation-badge muted" },
@@ -896,24 +1536,99 @@ function NormattivaAutomationPanel({
           : "Loading Normattiva schedule"
       ),
       e("div", { className: "automation-details" },
-        e("span", null, "Schedule: ", e("strong", null, normattivaAutomationStatus?.cron || "...")),
+        e("span", null, "Runs ", e("strong", null, describeSchedule(normattivaAutomationStatus?.cron))),
         e("span", null, "Zone: ", e("strong", null, normattivaAutomationStatus?.zone || "...")),
         e("span", null, "Last scheduled run: ", e("strong", null, formatShortDate(normattivaAutomationStatus?.lastTriggeredAt) || "not run yet")),
         e("span", null, "State: ", e("strong", null, normattivaAutomationStatus?.lastState || "..."))
       )
     ),
-    e("div", { className: "update-result" },
-      normattivaError
-        ? e("span", { className: "update-error" }, normattivaError)
-        : normattivaUpdateResult
-          ? e("div", { className: "run-summary" },
-              e("span", null, "Last run: ", e("strong", null, normattivaUpdateResult.state)),
-              e("span", null, "updates: ", e("strong", null, normattivaUpdateResult.updatesRead)),
-              e("span", null, "relations: ", e("strong", null, normattivaUpdateResult.relationRows))
-            )
-          : e("span", { className: "muted-line" }, "Manual Normattiva update has not been run from this screen yet.")
-    )
+    (function () {
+      const rows = [
+        ["Find changed acts", normattivaError, normattivaUpdateResult, (r) => [
+          ["result", r.state], ["acts found", r.updatesRead], ["relations written", r.relationRows]]],
+        ["Import from file", normattivaImportError, normattivaImportResult, (r) => [
+          ["result", r.state], ["rows", r.rowsWritten], ["output", compactPath(r.outputPath)]]],
+        ["Fetch act details", normattivaDetailError, normattivaDetailFetchResult, (r) => [
+          ["result", r.state], ["candidates read", r.candidatesRead], ["details written", r.detailsWritten]]],
+        ["Scan for evidence", normattivaEvidenceError, normattivaEvidenceScanResult, (r) => [
+          ["result", r.state], ["details read", r.detailsRead], ["passages found", r.evidenceRows]]],
+        ["Propose relations", normattivaCandidateError, normattivaCandidateRunResult, (r) => [
+          ["result", r.state], ["evidence rows", r.evidenceRowsRead], ["candidates", r.candidatesWritten]]]
+      ];
+      const active = rows.filter(([, runError, result]) => runError || result);
+      if (!active.length) {
+        return e("div", { className: "run-log" },
+          e("div", { className: "run-log-row" },
+            e("span", { className: "muted-line" },
+              "No step has been run in this session yet. Run results appear here.")));
+      }
+      return e("div", { className: "run-log" },
+        active.map(([label, runError, result, describe]) =>
+          e("div", { key: label, className: runError ? "run-log-row failed" : "run-log-row" },
+            e("span", { className: "run-log-step" }, label),
+            runError
+              ? e("span", { className: "update-error" }, runError)
+              : e("span", { className: "run-summary" },
+                  describe(result).map(([name, value]) =>
+                    e("span", { key: name }, name, ": ", e("strong", null, String(value ?? "\u2014")))))
+          )
+        )
+      );
+    })()
   );
+}
+
+function IngestionHistoryPanel({ runs }) {
+  return e("section", { className: "panel crawler-panel" },
+    e("div", { className: "panel-heading" },
+      e("div", null,
+        e("p", { className: "section-label" }, "Audit"),
+        e("h2", null, "Ingestion history"),
+        e("p", { className: "panel-subtitle" }, "Every scheduled run, recorded to disk so the record survives a restart.")
+      ),
+      e("span", { className: "result-count" }, `${runs.length} run${runs.length === 1 ? "" : "s"}`)
+    ),
+    runs.length
+      ? e("div", { className: "table-wrap" },
+          e("table", { className: "results-table" },
+            e("thead", null,
+              e("tr", null,
+                e("th", null, "Started"),
+                e("th", null, "Source"),
+                e("th", null, "Outcome"),
+                e("th", null, "Fetched"),
+                e("th", null, "Loaded"),
+                e("th", null, "Failed")
+              )
+            ),
+            e("tbody", null,
+              runs.map((run) =>
+                e("tr", { key: run.runId },
+                  e("td", { className: "mono" }, formatShortDate(run.startedAt) || "\u2014"),
+                  e("td", null, run.source),
+                  e("td", null, e("span", { className: `run-state ${runStateTone(run.state)}` },
+                    humanizeToken(run.state))),
+                  e("td", { className: "mono" }, run.itemsFetched),
+                  e("td", { className: "mono" }, run.itemsLoaded),
+                  e("td", { className: "mono" }, run.itemsFailed)
+                )
+              )
+            )
+          )
+        )
+      : e("div", { className: "empty-state" },
+          "No scheduled run has been recorded yet. Runs appear here as they happen.")
+  );
+}
+
+function runStateTone(state) {
+  if (state === "COMPLETED") {
+    return "ok";
+  }
+  if (state === "FAILED") {
+    return "bad";
+  }
+  return "warn";
 }
 
 function WorkflowPanel({ status }) {
@@ -958,7 +1673,7 @@ function CrawlerStatusPanel({ automationStatus, crawlStatus, updateError, update
     e("div", { className: "panel-heading" },
       e("div", null,
         e("p", { className: "section-label" }, "Crawler"),
-        e("h2", null, "Update status")
+        e("h2", null, "Gazzetta crawler")
       ),
       e("button", {
         className: "secondary-button",
@@ -985,7 +1700,7 @@ function CrawlerStatusPanel({ automationStatus, crawlStatus, updateError, update
         automationStatus ? (automationStatus.enabled ? "Automatic updates enabled" : "Automatic updates disabled") : "Loading automation schedule"
       ),
       e("div", { className: "automation-details" },
-        e("span", null, "Schedule: ", e("strong", null, automationStatus?.cron || "...")),
+        e("span", null, "Runs ", e("strong", null, describeSchedule(automationStatus?.cron))),
         e("span", null, "Zone: ", e("strong", null, automationStatus?.zone || "...")),
         e("span", null, "RSS entries: ", e("strong", null, automationStatus?.maxEntries ?? "...")),
         e("span", null, "Last scheduled run: ", e("strong", null, formatShortDate(automationStatus?.lastTriggeredAt) || "not run yet"))
@@ -1002,7 +1717,7 @@ function CrawlerStatusPanel({ automationStatus, crawlStatus, updateError, update
               e("span", null, "crawled: ", e("strong", null, updateResult.linksCrawled)),
               e("span", null, "changed: ", e("strong", null, updateResult.changedRecords))
             )
-          : e("span", { className: "muted-line" }, "Manual update check has not been run from this screen yet.")
+          : e("span", { className: "muted-line" }, "No manual check run yet in this session")
     )
   );
 }
@@ -1114,7 +1829,7 @@ function SourcePanel({ rdfSources }) {
     e("div", { className: "panel-heading" },
       e("div", null,
         e("p", { className: "section-label" }, "RDF sources"),
-        e("h2", null, "Files used by the API")
+        e("h2", null, "Loaded RDF files")
       )
     ),
     rdfSources?.length
@@ -1197,11 +1912,17 @@ function hasDisplayMetadata(act) {
 }
 
 function displayLocalId(act) {
+  if (!act) {
+    return "";
+  }
   return act.localId || localIdFromUri(act.uri) || "Unknown ID";
 }
 
 function displayTitle(act) {
-  return act.title || "Missing title";
+  if (!act) {
+    return "Missing title";
+  }
+  return act.title || "No title in the published metadata";
 }
 
 function displayRelationId(localId, uri) {
@@ -1212,6 +1933,85 @@ function displayRelationId(localId, uri) {
     return text.slice(urnIndex + urnMarker.length);
   }
   return text;
+}
+
+function displayVocabularyTerm(uri) {
+  if (!uri) {
+    return "";
+  }
+  const raw = String(uri);
+  const token = raw.includes("#") ? raw.slice(raw.lastIndexOf("#") + 1) : raw.slice(raw.lastIndexOf("/") + 1);
+  return humanizeToken(token) || raw;
+}
+
+const IN_FORCE_AUTHORITY = "http://publications.europa.eu/resource/authority/eli-in-force/";
+
+function inForceState(node) {
+  const value = node && (node.inForce || node.in_force);
+  if (!value) {
+    return null;
+  }
+  const token = String(value).slice(String(value).lastIndexOf("/") + 1).toUpperCase();
+  if (token === "IN_FORCE") {
+    return { label: "In force", tone: "current" };
+  }
+  if (token === "NOT_IN_FORCE") {
+    return { label: "No longer in force", tone: "superseded" };
+  }
+  if (token === "PARTIALLY_IN_FORCE") {
+    return { label: "Partly in force", tone: "partial" };
+  }
+  return { label: humanizeToken(token), tone: "partial" };
+}
+
+function displayVersionTerm(uri) {
+  if (!uri) {
+    return "";
+  }
+  const raw = String(uri);
+  const token = raw.includes("#") ? raw.slice(raw.lastIndexOf("#") + 1) : raw.slice(raw.lastIndexOf("/") + 1);
+  const vigenza = token.match(/^VIGENZA_(\d{4})(\d{2})(\d{2})_V(\d+)$/i);
+  if (vigenza) {
+    return `In force from ${vigenza[1]}-${vigenza[2]}-${vigenza[3]} \u00b7 version ${vigenza[4]}`;
+  }
+  const original = token.match(/^ORIGINALE_V(\d+)$/i);
+  if (original) {
+    return "Original text as published";
+  }
+  return humanizeToken(token) || raw;
+}
+
+function displayFormatTerm(uri) {
+  if (!uri) {
+    return "";
+  }
+  const raw = String(uri);
+  const media = raw.match(/media-types\/([\w.+-]+)\/([\w.+-]+)$/);
+  if (media) {
+    return `${media[2].toUpperCase()} document`;
+  }
+  return displayVocabularyTerm(raw);
+}
+
+function eliPagePath(uriOrAct) {
+  const uri = typeof uriOrAct === "string" ? uriOrAct : uriOrAct?.uri;
+  if (!uri) {
+    return "";
+  }
+  const match = String(uri).match(/\/eli\/(id|ontology)?\/?(\d{4})\/(\d{2})\/(\d{2})\/([^/]+)\/([^/?#]+)(\/[^?#]*)?/);
+  if (!match) {
+    return "";
+  }
+  const tail = match[7] ? match[7].replace(/\/+$/, "") : "";
+  return `/eli/id/${match[2]}/${match[3]}/${match[4]}/${match[5]}/${match[6]}${tail}`;
+}
+
+function eliPageUrl(uriOrAct) {
+  const path = eliPagePath(uriOrAct);
+  if (!path) {
+    return "";
+  }
+  return `${window.location.origin}${path}`;
 }
 
 function localIdFromUri(uri) {
@@ -1226,8 +2026,69 @@ function sourceLabel(source) {
   return source ? "Gazzetta Ufficiale" : "Relation RDF";
 }
 
+const RELATION_LABELS = {
+  "eli:commences": "Commences / converts",
+  "eli:commenced_by": "Commenced / converted by",
+  "eli:amends": "Amends",
+  "eli:amended_by": "Amended by",
+  "eli:repeals": "Repeals",
+  "eli:repealed_by": "Repealed by",
+  "eli:cites": "Cites",
+  "eli:is_realized_by": "Has version",
+  "eli:realizes": "Version of",
+  "eli:is_embodied_by": "Has format",
+  "eli:is_embodied_in": "Format of",
+  "ilg:modifies": "Modifies",
+  "ilg:modifiedBy": "Modified by",
+  "conversion": "Commences / converts"
+};
+
 function relationshipLabel(value) {
-  return value === "conversion" ? "conversion" : "modifies";
+  if (!value) {
+    return "related to";
+  }
+  const key = String(value).trim();
+  if (RELATION_LABELS[key]) {
+    return RELATION_LABELS[key];
+  }
+  const local = key.includes("#") ? key.slice(key.lastIndexOf("#") + 1) : key.slice(key.lastIndexOf("/") + 1);
+  const compact = local.includes(":") ? local.slice(local.indexOf(":") + 1) : local;
+  return humanizeToken(compact);
+}
+
+function humanizeToken(value) {
+  if (!value) {
+    return "";
+  }
+  const spaced = String(value)
+    .replace(/[_-]+/g, " ")
+    .replace(/([a-z\d])([A-Z])/g, "$1 $2")
+    .trim();
+  if (!spaced) {
+    return "";
+  }
+  return spaced.charAt(0).toUpperCase() + spaced.slice(1).toLowerCase();
+}
+
+function compactPath(value) {
+  if (!value) {
+    return "-";
+  }
+  const parts = String(value).replaceAll("\\", "/").split("/");
+  return parts.slice(-3).join("/");
+}
+
+function describeSchedule(cron) {
+  if (!cron) {
+    return "on a schedule";
+  }
+  const parts = String(cron).trim().split(/\s+/);
+  if (parts.length === 6 && /^\d+$/.test(parts[1]) && /^\d+$/.test(parts[2]) && parts[3] === "*" && parts[5] === "*") {
+    const hh = String(parts[2]).padStart(2, "0");
+    const mm = String(parts[1]).padStart(2, "0");
+    return `every day at ${hh}:${mm}`;
+  }
+  return `on schedule ${cron}`;
 }
 
 function formatBytes(bytes) {
@@ -1291,6 +2152,27 @@ function normattivaStatus(act, modifications) {
     row.targetUri === uri
   );
   return linked ? "Linked in loaded Normattiva relations" : "No loaded Normattiva relation";
+}
+
+function displayNodeTitle(node) {
+  return node?.localId || node?.label || compactUri(node?.uri) || "Resource";
+}
+
+function compactUri(uri) {
+  if (!uri) {
+    return "";
+  }
+  const compact = compactRdfName(uri);
+  if (compact) {
+    return compact;
+  }
+  const text = String(uri).replace(/\/$/, "");
+  const hash = text.lastIndexOf("#");
+  if (hash >= 0) {
+    return text.slice(hash + 1);
+  }
+  const slash = text.lastIndexOf("/");
+  return slash >= 0 ? text.slice(slash + 1) : text;
 }
 
 function actRdfUrl(act) {
@@ -1374,6 +2256,10 @@ function formatSparqlCell(value) {
 }
 
 function compactRdfName(text) {
+  if (!text) {
+    return "";
+  }
+  const value = String(text);
   const namespaces = [
     ["http://data.europa.eu/eli/ontology#", "eli:"],
     ["http://purl.org/dc/terms/", "dcterms:"],
@@ -1384,8 +2270,8 @@ function compactRdfName(text) {
     ["http://www.gazzettaufficiale.it/eli/tables/resource-type#", ""],
     ["http://www.gazzettaufficiale.it/eli/tables/versions#", ""]
   ];
-  const match = namespaces.find(([namespace]) => text.startsWith(namespace));
-  return match ? `${match[1]}${text.slice(match[0].length)}` : "";
+  const match = namespaces.find(([namespace]) => value.startsWith(namespace));
+  return match ? `${match[1]}${value.slice(match[0].length)}` : "";
 }
 
 function isLikelyUri(value) {
@@ -1435,4 +2321,32 @@ function Icon({ name }) {
   }, (paths[name] || paths.file).map((d) => e("path", { key: d, d })));
 }
 
-ReactDOM.createRoot(document.getElementById("root")).render(e(App));
+class AppErrorBoundary extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = { error: null };
+  }
+
+  static getDerivedStateFromError(error) {
+    return { error };
+  }
+
+  componentDidCatch(error) {
+    console.error(error);
+  }
+
+  render() {
+    if (this.state.error) {
+      return e("main", { className: "app-error" },
+        e("section", { className: "panel app-error-panel" },
+          e("p", { className: "section-label" }, "Interface"),
+          e("h1", null, "The UI hit a rendering problem"),
+          e("p", null, this.state.error.message || "Refresh the page after the latest changes are loaded.")
+        )
+      );
+    }
+    return this.props.children;
+  }
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(e(AppErrorBoundary, null, e(App)));

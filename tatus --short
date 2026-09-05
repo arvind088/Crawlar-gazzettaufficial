@@ -1,0 +1,19 @@
+warning: LF will be replaced by CRLF in jena-git-project/src/main/java/it/legislation/crawler/GazzettaScraper.java.
+The file will have its original line endings in your working directory
+warning: LF will be replaced by CRLF in jena-git-project/src/main/java/it/legislation/crawler/RdfModelBuilder.java.
+The file will have its original line endings in your working directory
+warning: LF will be replaced by CRLF in jena-git-project/src/main/java/it/legislation/web/LegalActQueryService.java.
+The file will have its original line endings in your working directory
+warning: LF will be replaced by CRLF in jena-git-project/src/main/resources/static/app.js.
+The file will have its original line endings in your working directory
+warning: LF will be replaced by CRLF in jena-git-project/src/main/resources/static/index.html.
+The file will have its original line endings in your working directory
+warning: LF will be replaced by CRLF in jena-git-project/src/main/resources/static/styles.css.
+The file will have its original line endings in your working directory
+ .../it/legislation/crawler/GazzettaScraper.java    |   2 [32m+[m[31m-[m
+ .../it/legislation/crawler/RdfModelBuilder.java    |  68 [32m+++[m[31m-[m
+ .../it/legislation/web/LegalActQueryService.java   |  11 [32m+[m[31m-[m
+ jena-git-project/src/main/resources/static/app.js  | 438 [32m++++++++++++++[m[31m-------[m
+ .../src/main/resources/static/index.html           |  55 [32m++[m[31m-[m
+ .../src/main/resources/static/styles.css           | 284 [32m++++++++++++[m[31m-[m
+ 6 files changed, 701 insertions(+), 157 deletions(-)
