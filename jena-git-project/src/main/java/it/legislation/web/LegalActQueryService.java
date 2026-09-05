@@ -365,7 +365,7 @@ public class LegalActQueryService {
                 PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
                 PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
 
-                SELECT DISTINCT ?node ?label ?type (COALESCE(?expressionVersion, ?workVersion) AS ?version) ?language
+                SELECT DISTINCT ?node ?label ?type (COALESCE(?expressionVersion, ?workVersion) AS ?version) ?language ?inForce
                 WHERE {
                   ?resource eli:is_realized_by ?node .
                   OPTIONAL { ?node rdfs:label ?label . }
@@ -373,6 +373,7 @@ public class LegalActQueryService {
                   OPTIONAL { ?node eli:version ?expressionVersion . }
                   OPTIONAL { ?resource eli:version ?workVersion . }
                   OPTIONAL { ?node eli:language ?language . }
+                  OPTIONAL { ?node eli:in_force ?inForce . }
                 }
                 ORDER BY ?node
                 """;
@@ -457,7 +458,8 @@ public class LegalActQueryService {
                         value(solution, "type"),
                         value(solution, "version"),
                         value(solution, "language"),
-                        value(solution, "format")
+                        value(solution, "format"),
+                        value(solution, "inForce")
                 ));
             }
         }

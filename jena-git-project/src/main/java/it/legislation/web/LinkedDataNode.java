@@ -7,6 +7,8 @@ public record LinkedDataNode(
         String type,
         String version,
         String language,
-        String format
+        String format,
+        /** ELI in-force value for this node, or null when not recorded (FR-4.5). */
+        String inForce
 ) {
 }

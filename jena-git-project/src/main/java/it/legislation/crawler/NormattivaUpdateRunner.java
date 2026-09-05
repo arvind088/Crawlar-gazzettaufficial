@@ -11,8 +11,10 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.time.LocalDate;
+import java.time.Duration;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
+import java.util.Optional;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
@@ -115,26 +117,92 @@ public class NormattivaUpdateRunner {
         System.out.println("RDF output: " + rdfOutput.toAbsolutePath().normalize());
     }
 
+    /** Source key under which this job's cursor is stored. */
+    public static final String WATERMARK_SOURCE = "normattiva";
+
     public static Result run(
             String sourceUrl,
             Path updatesOutput,
             Path relationsOutput,
             Path rdfOutput
     ) throws IOException {
+        return run(sourceUrl, updatesOutput, relationsOutput, rdfOutput,
+                new IngestionWatermark(IngestionWatermark.DEFAULT_PATH));
+    }
+
+    /**
+     * Runs the update, resuming from the persisted watermark (FR-1.3).
+     *
+     * <p>The window used to be a fixed {@code now − lookbackDays}, so an outage
+     * longer than the lookback lost that period permanently. Now the run resumes
+     * where the last successful run finished, and the cursor advances only on
+     * success — a failed run leaves it in place so the same period is requested
+     * again. Explicit {@code NORMATTIVA_UPDATE_START} / {@code _END} still
+     * override, for backfills.
+     */
+    static Result run(
+            String sourceUrl,
+            Path updatesOutput,
+            Path relationsOutput,
+            Path rdfOutput,
+            IngestionWatermark watermark
+    ) throws IOException {
         OffsetDateTime end = envDate("NORMATTIVA_UPDATE_END")
                 .orElse(OffsetDateTime.now(ZoneOffset.UTC));
-        OffsetDateTime start = envDate("NORMATTIVA_UPDATE_START")
-                .orElse(end.minusDays(lookbackDays()));
 
-        return runOpenData(
-                sourceUrl,
-                start,
-                end,
-                updatesOutput,
-                relationsOutput,
-                rdfOutput,
-                NormattivaUpdateRunner::postJson
-        );
+        // envDate returns this class's own OptionalDate, whose only accessor is
+        // value(); null means the variable was not set.
+        OffsetDateTime explicitStart = envDate("NORMATTIVA_UPDATE_START").value();
+        boolean backfill = explicitStart != null;
+
+        IngestionWatermark.Window window;
+        if (backfill) {
+            window = new IngestionWatermark.Window(explicitStart, end, false, false);
+        } else {
+            IngestionWatermark.Window resolved;
+            try {
+                resolved = watermark.windowFor(
+                        WATERMARK_SOURCE, end, Duration.ofDays(lookbackDays()));
+            } catch (IOException exception) {
+                // An unreadable cursor must not stop ingestion; fall back to the
+                // lookback window and say so.
+                System.out.println("Watermark unreadable, using fallback lookback: "
+                        + exception.getMessage());
+                resolved = new IngestionWatermark.Window(
+                        end.minusDays(lookbackDays()), end, false, false);
+            }
+            window = resolved;
+        }
+
+        System.out.println("Update window: " + window.start() + " to " + window.end()
+                + " (" + (backfill ? "explicit backfill range" : window.describe()) + ")");
+
+        try {
+            Result result = runOpenData(
+                    sourceUrl,
+                    window.start(),
+                    window.end(),
+                    updatesOutput,
+                    relationsOutput,
+                    rdfOutput,
+                    NormattivaUpdateRunner::postJson
+            );
+            if (!backfill) {
+                watermark.recordSuccess(WATERMARK_SOURCE, window,
+                        OffsetDateTime.now(ZoneOffset.UTC),
+                        "updates read: " + result.updatesRead());
+            }
+            return result;
+        } catch (IOException | RuntimeException failure) {
+            if (!backfill) {
+                watermark.recordFailure(WATERMARK_SOURCE, window,
+                        OffsetDateTime.now(ZoneOffset.UTC),
+                        failure.getMessage() == null
+                                ? failure.getClass().getSimpleName()
+                                : failure.getMessage());
+            }
+            throw failure;
+        }
     }
 
     public static EvidenceScanResult runEvidenceScan(

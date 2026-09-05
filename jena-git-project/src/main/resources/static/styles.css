@@ -1720,3 +1720,44 @@ button:focus,
 .boot-message a {
   color: var(--accent-dark);
 }
+
+/* In-force status on an Expression (FR-4.5, US-A3). Semantic colour, kept
+   separate from the teal accent so "current" reads as a state, not a brand. */
+.force-badge {
+  border-radius: 999px;
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: .04em;
+  margin-left: 8px;
+  padding: 2px 8px;
+  text-transform: uppercase;
+  vertical-align: 1px;
+  white-space: nowrap;
+}
+
+.force-badge.current {
+  background: #dff3e6;
+  color: #1f6b43;
+}
+
+.force-badge.superseded {
+  background: #eceef1;
+  color: #5d6673;
+}
+
+.force-badge.partial {
+  background: var(--warn-soft);
+  color: var(--warn);
+}
+
+.run-state {
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 3px 9px;
+  white-space: nowrap;
+}
+
+.run-state.ok { background: #dff3e6; color: #1f6b43; }
+.run-state.bad { background: #fbe4e1; color: #9c3229; }
+.run-state.warn { background: var(--warn-soft); color: var(--warn); }

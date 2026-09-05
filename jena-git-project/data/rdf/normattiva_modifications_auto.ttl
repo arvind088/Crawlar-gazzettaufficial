@@ -4,12 +4,10 @@
 @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
 @prefix xsd:  <http://www.w3.org/2001/XMLSchema#> .
 
-<https://www.normattiva.it/uri-res/N2Ls?urn:nir:stato:legge:2026-05-13;79>
-        rdf:type       eli:LegalResource;
-        eli:commences  <https://www.normattiva.it/uri-res/N2Ls?urn:nir:stato:decreto.legge:2026-03-18;33>;
-        ilg:modifies   <https://www.normattiva.it/uri-res/N2Ls?urn:nir:stato:decreto.legge:2026-03-18;33> .
+<https://www.normattiva.it/uri-res/N2Ls?urn:nir:stato:decreto.legislativo:2024-02-5;20>
+        rdf:type        eli:LegalResource;
+        ilg:modifiedBy  <https://www.normattiva.it/uri-res/N2Ls?urn:nir:stato:decreto.legislativo:2026-06-18;123> .
 
-<https://www.normattiva.it/uri-res/N2Ls?urn:nir:stato:decreto.legge:2026-03-18;33>
-        rdf:type          eli:LegalResource;
-        eli:commenced_by  <https://www.normattiva.it/uri-res/N2Ls?urn:nir:stato:legge:2026-05-13;79>;
-        ilg:modifiedBy    <https://www.normattiva.it/uri-res/N2Ls?urn:nir:stato:legge:2026-05-13;79> .
+<https://www.normattiva.it/uri-res/N2Ls?urn:nir:stato:decreto.legislativo:2026-06-18;123>
+        rdf:type      eli:LegalResource;
+        ilg:modifies  <https://www.normattiva.it/uri-res/N2Ls?urn:nir:stato:decreto.legislativo:2024-02-5;20> .

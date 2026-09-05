@@ -1,0 +1,179 @@
+@prefix eli:     <http://data.europa.eu/eli/ontology#> .
+@prefix eli-fc:  <http://publications.europa.eu/resource/authority/eli-in-force/> .
+@prefix dcterms: <http://purl.org/dc/terms/> .
+@prefix ilg:     <http://example.org/italian-legislation/ontology#> .
+@prefix skos:    <http://www.w3.org/2004/02/skos/core#> .
+@prefix rdf:     <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs:    <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd:     <http://www.w3.org/2001/XMLSchema#> .
+
+# ---------------------------------------------------------------------------
+# Seed data required by CONTEXT.md section 3.1.
+#
+# The specification names these four acts and says explicitly: do not invent
+# placeholder data, use these. They give the platform a real conversion pair to
+# demonstrate eli:commences, and a Legge with two Expressions to demonstrate
+# version listing.
+#
+# Two notes on fidelity, so the difference from the specification is a recorded
+# decision rather than a silent edit:
+#
+#  1. CONTEXT.md writes "Legge 22 aprile 2020, n. 27". The act published under
+#     redactional code 20G00043 is Legge *24* aprile 2020, n. 27, which is also
+#     what the ELI identifier the specification gives (.../2020/04/24/...)
+#     encodes. The correct title is used here and the identifier is unchanged.
+#  2. Full IRIs are written out rather than using a "gu:" prefix. A Turtle
+#     local name may not contain "/" or "#", so gu:id/2020/03/17/... is a
+#     syntax error - which is exactly how the first version of this file
+#     failed to load.
+#  3. Subject concepts and issuing authorities are minted in this project's own
+#     namespace as SKOS concepts rather than pointing at EuroVoc identifiers
+#     that have not been verified. ARCHITECTURE.md section 4 lists SKOS for
+#     exactly this purpose. They exist so that TC-03 - navigating a relation
+#     that is not a conversion - has something to navigate.
+# ---------------------------------------------------------------------------
+
+# --- Controlled vocabulary -------------------------------------------------
+
+ilg:concept-emergenza-sanitaria
+        rdf:type         skos:Concept ;
+        skos:prefLabel   "Emergenza sanitaria"@it ;
+        rdfs:label       "Public health emergency" .
+
+ilg:concept-sostegno-economico
+        rdf:type         skos:Concept ;
+        skos:prefLabel   "Sostegno economico"@it ;
+        rdfs:label       "Economic support" .
+
+ilg:authority-parlamento
+        rdf:type         skos:Concept ;
+        skos:prefLabel   "Parlamento della Repubblica Italiana"@it ;
+        rdfs:label       "Parliament of the Italian Republic" .
+
+ilg:authority-governo
+        rdf:type         skos:Concept ;
+        skos:prefLabel   "Governo della Repubblica Italiana"@it ;
+        rdfs:label       "Government of the Italian Republic" .
+
+# --- Pair 1: Decreto-legge 18/2020 converted by Legge 27/2020 --------------
+
+<http://www.gazzettaufficiale.it/eli/id/2020/03/17/20G00034/sg>
+        rdf:type              eli:LegalResource ;
+        rdfs:label            "Decreto-legge 17 marzo 2020, n. 18" ;
+        eli:title             "Misure di potenziamento del Servizio sanitario nazionale e di sostegno economico per famiglie, lavoratori e imprese connesse all'emergenza epidemiologica da COVID-19" ;
+        eli:id_local          "20G00034" ;
+        eli:number            "18" ;
+        eli:date_document     "2020-03-17"^^xsd:date ;
+        eli:date_publication  "2020-03-17"^^xsd:date ;
+        eli:type_document     <http://www.gazzettaufficiale.it/eli/tables/resource-type#DECRETOLEGGE> ;
+        eli:passed_by         ilg:authority-governo ;
+        eli:is_about          ilg:concept-emergenza-sanitaria , ilg:concept-sostegno-economico ;
+        eli:is_realized_by    <http://www.gazzettaufficiale.it/eli/id/2020/03/17/20G00034/sg/ita> ;
+        eli:commenced_by      <http://www.gazzettaufficiale.it/eli/id/2020/04/24/20G00043/sg> ;
+        dcterms:source        <http://www.gazzettaufficiale.it/eli/id/2020/03/17/20G00034/sg> .
+
+<http://www.gazzettaufficiale.it/eli/id/2020/03/17/20G00034/sg/ita>
+        rdf:type              eli:LegalExpression ;
+        rdfs:label            "Decreto-legge 17 marzo 2020, n. 18 - testo originale" ;
+        eli:realizes          <http://www.gazzettaufficiale.it/eli/id/2020/03/17/20G00034/sg> ;
+        eli:language          <http://publications.europa.eu/resource/authority/language/ITA> ;
+        eli:version           <http://www.gazzettaufficiale.it/eli/tables/versions#ORIGINALE_V0> ;
+        eli:in_force          eli-fc:IN_FORCE .
+
+<http://www.gazzettaufficiale.it/eli/id/2020/04/24/20G00043/sg>
+        rdf:type              eli:LegalResource ;
+        rdfs:label            "Legge 24 aprile 2020, n. 27" ;
+        eli:title             "Conversione in legge, con modificazioni, del decreto-legge 17 marzo 2020, n. 18" ;
+        eli:id_local          "20G00043" ;
+        eli:number            "27" ;
+        eli:date_document     "2020-04-24"^^xsd:date ;
+        eli:date_publication  "2020-04-29"^^xsd:date ;
+        eli:type_document     <http://www.gazzettaufficiale.it/eli/tables/resource-type#LEGGE> ;
+        eli:passed_by         ilg:authority-parlamento ;
+        eli:is_about          ilg:concept-emergenza-sanitaria ;
+        eli:is_realized_by    <http://www.gazzettaufficiale.it/eli/id/2020/04/24/20G00043/sg/ita> ;
+        eli:commences         <http://www.gazzettaufficiale.it/eli/id/2020/03/17/20G00034/sg> ;
+        dcterms:source        <http://www.gazzettaufficiale.it/eli/id/2020/04/24/20G00043/sg> .
+
+<http://www.gazzettaufficiale.it/eli/id/2020/04/24/20G00043/sg/ita>
+        rdf:type              eli:LegalExpression ;
+        rdfs:label            "Legge 24 aprile 2020, n. 27 - testo originale" ;
+        eli:realizes          <http://www.gazzettaufficiale.it/eli/id/2020/04/24/20G00043/sg> ;
+        eli:language          <http://publications.europa.eu/resource/authority/language/ITA> ;
+        eli:version           <http://www.gazzettaufficiale.it/eli/tables/versions#ORIGINALE_V0> ;
+        eli:in_force          eli-fc:IN_FORCE .
+
+# --- Pair 2: Decreto-legge 19/2020 converted by Legge 35/2020 --------------
+# CONTEXT.md asks for the Legge in this pair to carry at least two Expressions
+# with different dates, so that version listing (FR-4.4, US-A3, TC-04) can be
+# demonstrated on a Legge rather than only on the hand-made sample.
+
+<http://www.gazzettaufficiale.it/eli/id/2020/03/25/20G00035/sg>
+        rdf:type              eli:LegalResource ;
+        rdfs:label            "Decreto-legge 25 marzo 2020, n. 19" ;
+        eli:title             "Misure urgenti per fronteggiare l'emergenza epidemiologica da COVID-19" ;
+        eli:id_local          "20G00035" ;
+        eli:number            "19" ;
+        eli:date_document     "2020-03-25"^^xsd:date ;
+        eli:date_publication  "2020-03-25"^^xsd:date ;
+        eli:type_document     <http://www.gazzettaufficiale.it/eli/tables/resource-type#DECRETOLEGGE> ;
+        eli:passed_by         ilg:authority-governo ;
+        eli:is_about          ilg:concept-emergenza-sanitaria ;
+        eli:is_realized_by    <http://www.gazzettaufficiale.it/eli/id/2020/03/25/20G00035/sg/ita> ;
+        eli:commenced_by      <http://www.gazzettaufficiale.it/eli/id/2020/05/22/20G00057/sg> ;
+        dcterms:source        <http://www.gazzettaufficiale.it/eli/id/2020/03/25/20G00035/sg> .
+
+<http://www.gazzettaufficiale.it/eli/id/2020/03/25/20G00035/sg/ita>
+        rdf:type              eli:LegalExpression ;
+        rdfs:label            "Decreto-legge 25 marzo 2020, n. 19 - testo originale" ;
+        eli:realizes          <http://www.gazzettaufficiale.it/eli/id/2020/03/25/20G00035/sg> ;
+        eli:language          <http://publications.europa.eu/resource/authority/language/ITA> ;
+        eli:version           <http://www.gazzettaufficiale.it/eli/tables/versions#ORIGINALE_V0> ;
+        eli:in_force          eli-fc:IN_FORCE .
+
+<http://www.gazzettaufficiale.it/eli/id/2020/05/22/20G00057/sg>
+        rdf:type              eli:LegalResource ;
+        rdfs:label            "Legge 22 maggio 2020, n. 35" ;
+        eli:title             "Conversione in legge, con modificazioni, del decreto-legge 25 marzo 2020, n. 19" ;
+        eli:id_local          "20G00057" ;
+        eli:number            "35" ;
+        eli:date_document     "2020-05-22"^^xsd:date ;
+        eli:date_publication  "2020-05-23"^^xsd:date ;
+        eli:type_document     <http://www.gazzettaufficiale.it/eli/tables/resource-type#LEGGE> ;
+        eli:passed_by         ilg:authority-parlamento ;
+        eli:is_about          ilg:concept-emergenza-sanitaria ;
+        eli:is_realized_by    <http://www.gazzettaufficiale.it/eli/id/2020/05/22/20G00057/sg/ita/original> ,
+                              <http://www.gazzettaufficiale.it/eli/id/2020/05/22/20G00057/sg/ita/vigente/2021-07-31> ;
+        eli:commences         <http://www.gazzettaufficiale.it/eli/id/2020/03/25/20G00035/sg> ;
+        dcterms:source        <http://www.gazzettaufficiale.it/eli/id/2020/05/22/20G00057/sg> .
+
+<http://www.gazzettaufficiale.it/eli/id/2020/05/22/20G00057/sg/ita/original>
+        rdf:type              eli:LegalExpression ;
+        rdfs:label            "Legge 22 maggio 2020, n. 35 - testo originale" ;
+        eli:realizes          <http://www.gazzettaufficiale.it/eli/id/2020/05/22/20G00057/sg> ;
+        eli:language          <http://publications.europa.eu/resource/authority/language/ITA> ;
+        eli:version           <http://www.gazzettaufficiale.it/eli/tables/versions#ORIGINALE_V0> ;
+        eli:date_publication  "2020-05-23"^^xsd:date ;
+        eli:first_date_entry_in_force "2020-05-23"^^xsd:date ;
+        eli:date_no_longer_in_force   "2021-07-31"^^xsd:date ;
+        eli:in_force          eli-fc:NOT_IN_FORCE ;
+        eli:is_embodied_by    <http://www.gazzettaufficiale.it/eli/id/2020/05/22/20G00057/sg/ita/original/html> .
+
+<http://www.gazzettaufficiale.it/eli/id/2020/05/22/20G00057/sg/ita/vigente/2021-07-31>
+        rdf:type              eli:LegalExpression ;
+        rdfs:label            "Legge 22 maggio 2020, n. 35 - testo vigente al 2021-07-31" ;
+        eli:realizes          <http://www.gazzettaufficiale.it/eli/id/2020/05/22/20G00057/sg> ;
+        eli:language          <http://publications.europa.eu/resource/authority/language/ITA> ;
+        eli:version           <http://www.gazzettaufficiale.it/eli/tables/versions#VIGENZA_20210731_V2> ;
+        eli:date_publication  "2021-07-31"^^xsd:date ;
+        eli:first_date_entry_in_force "2021-07-31"^^xsd:date ;
+        eli:in_force          eli-fc:IN_FORCE ;
+        eli:is_embodied_by    <http://www.gazzettaufficiale.it/eli/id/2020/05/22/20G00057/sg/ita/vigente/2021-07-31/html> .
+
+<http://www.gazzettaufficiale.it/eli/id/2020/05/22/20G00057/sg/ita/original/html>
+        rdf:type              eli:Format ;
+        eli:format            <http://www.iana.org/assignments/media-types/text/html> .
+
+<http://www.gazzettaufficiale.it/eli/id/2020/05/22/20G00057/sg/ita/vigente/2021-07-31/html>
+        rdf:type              eli:Format ;
+        eli:format            <http://www.iana.org/assignments/media-types/text/html> .
