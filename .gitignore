@@ -8,41 +8,52 @@ target/
 .settings/
 .idea/
 *.iml
+bin/
 
-# Local notes and planning artifacts
+# Working context for AI assistants — not part of the project.
+# Note: the previous rule was "context/", which did not match the folder
+# "context for claude/" and so never took effect.
+context/
+context for claude/
+IMPLEMENTATION_PLAN.md
+
+# Local planning notes. docs/* is ignored, then the write-ups the URS
+# requires (NFR-5) are un-ignored explicitly.
 docs/*
-!docs/PROGRESS_LOG.md
 !docs/diagrams/
 !docs/diagrams/**
-context/
-IMPLEMENTATION_PLAN.md
+!docs/data-model.md
+!docs/update-routine-rationale.md
+!docs/linked-data-design-notes.md
+
+# Local manual and progress notes (unchanged from before: both were already
+# ignored in effect)
+PROJECT_MANUAL.md
 
 # Accidental command/output artifacts
 h origin master
+ngrok-demo.log
+ngrok-demo.err.log
 
-# Generated crawler snapshots and runtime outputs
-jena-git-project/data/clean/gazzetta_rss_updates.tsv
-jena-git-project/data/clean/gazzetta_archive_links.tsv
-jena-git-project/data/clean/normattiva_updates.tsv
-jena-git-project/data/clean/normattiva_modifications_auto.tsv
-jena-git-project/data/registry/crawl_registry.tsv
-jena-git-project/data/raw/**/*.html
+# ---------------------------------------------------------------------------
+# Harvested data IS tracked.
+#
+# Scheduled ingestion runs in CI and commits its output (see
+# .github/workflows/scheduled-ingestion.yml), so the commit history is the
+# evidence that ingestion ran without gaps. Ignoring these files would defeat
+# that, and would also mean a fresh deployment starts with an empty store.
+# ---------------------------------------------------------------------------
+
+# Large local artefacts that are rebuilt, never authored
 jena-git-project/data/tdb2/
-jena-git-project/data/rdf/gazzetta_metadata_delta.ttl
-jena-git-project/data/rdf/normattiva_modifications_auto.ttl
-!jena-git-project/data/rdf/gazzetta_metadata_delta.ttl
-!jena-git-project/data/rdf/normattiva_modifications_auto.ttl
-jena-git-project/eli_metadata.ttl
-jena-git-project/eli_metadata_cleaned.ttl
-jena-git-project/src/eli_metadata_generated.ttl
-
-# Generated local reports/output
+jena-git-project/data/raw/**/*.html
+jena-git-project/data/rdf/*.ttl.bak
+jena-git-project/data/import/
 jena-git-project/output/
 jena-git-project/data/reports/
 jena-git-project/data/registry/reports/
-ngrok-demo.log
-ngrok-demo.err.log
-PROJECT_MANUAL.md
-docs/PROGRESS_LOG.md
-ngrok-demo.log
-ngrok-demo.err.log
+
+# Superseded working files
+jena-git-project/eli_metadata.ttl
+jena-git-project/eli_metadata_cleaned.ttl
+jena-git-project/src/eli_metadata_generated.ttl

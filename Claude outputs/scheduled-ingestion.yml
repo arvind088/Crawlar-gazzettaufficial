@@ -1,0 +1,95 @@
+name: Scheduled ingestion
+
+# Durable daily ingestion (FR-1.1, FR-1.3, NFR-2).
+#
+# The application's own @Scheduled jobs are correct, but a free-tier web host
+# that sleeps when idle and resets its filesystem on deploy guarantees neither
+# that a run happens nor that its output survives. Running ingestion here and
+# committing the result makes the schedule dependable and turns "no gaps" into
+# an auditable per-day commit history rather than a claim.
+
+on:
+  schedule:
+    # 06:15 Europe/Rome is 04:15 UTC in summer, 05:15 in winter. GitHub cron is
+    # UTC only and has no DST, so this fires at 04:15 UTC year-round; the exact
+    # minute does not matter because the watermark decides the window, not the
+    # clock.
+    - cron: "15 4 * * *"
+  workflow_dispatch:
+    inputs:
+      rss_entries:
+        description: "Maximum RSS entries to read"
+        required: false
+        default: "50"
+
+# Needed to commit the harvested data back.
+permissions:
+  contents: write
+
+concurrency:
+  # Never let two ingestion runs race on the same branch.
+  group: scheduled-ingestion
+  cancel-in-progress: false
+
+jobs:
+  ingest:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: jena-git-project
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+          cache: maven
+
+      - name: Run tests
+        # A failing build must not be allowed to commit data.
+        run: mvn -B test
+
+      - name: Fetch latest Gazzetta RSS entries
+        run: mvn -B "-Dexec.mainClass=it.legislation.crawler.GazzettaRssUpdateRunner" exec:java
+        env:
+          GAZZETTA_RSS_URL: "https://www.gazzettaufficiale.it/rss/SG"
+          GAZZETTA_RSS_OUTPUT: "data/clean/gazzetta_rss_updates.tsv"
+          GAZZETTA_RSS_MAX_ENTRIES: ${{ inputs.rss_entries || '50' }}
+
+      - name: Fetch Normattiva updates
+        # Resumes from the committed watermark, so a skipped or failed day is
+        # picked up by the next run rather than lost.
+        continue-on-error: true
+        run: mvn -B "-Dexec.mainClass=it.legislation.crawler.NormattivaUpdateRunner" exec:java
+        env:
+          NORMATTIVA_SOURCE_URL: "https://api.normattiva.it/t/normattiva.api"
+          NORMATTIVA_UPDATES_OUTPUT: "data/clean/normattiva_updates.tsv"
+          NORMATTIVA_RELATIONS_OUTPUT: "data/clean/normattiva_modifications_auto.tsv"
+          NORMATTIVA_RDF_OUTPUT: "data/rdf/normattiva_modifications_auto.ttl"
+
+      - name: Derive in-force status
+        run: mvn -B "-Dexec.mainClass=it.legislation.crawler.InForceEnrichmentRunner" exec:java
+
+      - name: Commit harvested data
+        run: |
+          cd "$GITHUB_WORKSPACE"
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          # Only data files: never let a scheduled run touch source.
+          git add -- \
+            jena-git-project/data/rdf/*.ttl \
+            jena-git-project/data/clean/*.tsv \
+            jena-git-project/data/registry/*.tsv
+
+          if git diff --cached --quiet; then
+            echo "No new legislation today; nothing to commit."
+            exit 0
+          fi
+
+          git commit -m "data: scheduled ingestion $(date -u +%Y-%m-%d)"
+          git push
