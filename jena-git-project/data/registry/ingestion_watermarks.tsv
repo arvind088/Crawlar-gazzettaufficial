@@ -1,0 +1,2 @@
+source	lastSuccessfulEnd	lastRunStartedAt	lastRunFinishedAt	lastRunState	note
+normattiva		2026-08-30T08:41:42.702445190Z	2026-09-06T08:41:47.325129560Z	FAILED	Normattiva OpenData request failed with HTTP 409: { "status": "KO", "supportId": "14717047868901250747", "message": "La pagina richiesta è stata bloccata dai sistemi di protezione del Poligrafico e Zecca dello Stato Italiano" }
