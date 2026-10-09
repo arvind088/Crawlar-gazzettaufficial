@@ -1,4 +1,8 @@
-package it.legislation.crawler;
+package it.legislation.mapping;
+
+import it.legislation.model.ModificationType;
+
+import it.legislation.model.CleanModificationRecord;
 
 import java.util.Collection;
 

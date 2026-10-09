@@ -15,7 +15,7 @@ import org.apache.jena.query.ResultSet;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import it.legislation.crawler.RdfModelBuilder;
+import it.legislation.mapping.RdfModelBuilder;
 
 @Service
 public class NormattivaQueryService {

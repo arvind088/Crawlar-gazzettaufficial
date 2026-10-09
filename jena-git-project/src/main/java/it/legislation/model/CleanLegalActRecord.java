@@ -1,4 +1,4 @@
-package it.legislation.crawler;
+package it.legislation.model;
 
 import java.time.LocalDate;
 import java.util.Objects;

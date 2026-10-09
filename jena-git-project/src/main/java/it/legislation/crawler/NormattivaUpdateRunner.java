@@ -1,5 +1,9 @@
 package it.legislation.crawler;
 
+import it.legislation.mapping.ModificationRdfModelBuilder;
+
+import it.legislation.model.CleanModificationRecord;
+
 import it.legislation.ingest.IngestionWatermark;
 
 import java.io.IOException;

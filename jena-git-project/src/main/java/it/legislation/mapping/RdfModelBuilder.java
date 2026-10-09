@@ -1,4 +1,6 @@
-package it.legislation.crawler;
+package it.legislation.mapping;
+
+import it.legislation.model.CleanLegalActRecord;
 
 import java.time.LocalDate;
 import java.util.Collection;

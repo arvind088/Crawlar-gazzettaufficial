@@ -1,5 +1,9 @@
 package it.legislation.crawler;
 
+import it.legislation.mapping.RdfModelBuilder;
+
+import it.legislation.model.CleanLegalActRecord;
+
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.Resource;

@@ -1,4 +1,4 @@
-package it.legislation.crawler;
+package it.legislation.mapping;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -11,7 +11,7 @@ import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.junit.jupiter.api.Test;
 
-import it.legislation.crawler.InForceRdfBuilder.ExpressionStatus;
+import it.legislation.mapping.InForceRdfBuilder.ExpressionStatus;
 
 /**
  * FR-4.5, US-A1 and US-A3 all need in-force status to be queryable rather than

@@ -1,5 +1,7 @@
 package it.legislation.crawler;
 
+import it.legislation.model.CleanModificationRecord;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
