@@ -1,102 +1,93 @@
-# Enriched Italian Legislative Knowledge Graph
+# Italian Legislation Linked Data
 
-Lightweight demo application for exploring Italian legislative data as a knowledge graph.
+A lightweight thesis application for validating official Italian legislation data, representing it with ELI RDF, storing it in Apache Jena TDB2, and exploring it through SPARQL-backed web pages.
 
-## Problem Statement
-
-Italian legislative information is available across different public sources. Gazzetta Ufficiale provides official publication metadata, while Normattiva provides legal relationships such as amendments and modifications. A researcher normally has to check both sources separately.
-
-This project combines those sources into one simple searchable dashboard.
-
-## What This Project Does
-
-- Crawls or stores sample legal act data from Gazzetta Ufficiale.
-- Stores modification relationship data from Normattiva.
-- Converts the data into RDF triples.
-- Loads the RDF into an Apache Jena model.
-- Provides a Spring Boot API for search, relationships, status, and SPARQL.
-- Shows the data in a simple web dashboard.
-
-## Demo
-
-Live demo:
-
-https://italian-legislative-kg-demo.onrender.com/
-
-## Main Flow
+## Thesis Flow
 
 ```text
-Gazzetta data + Normattiva data
-        |
-        v
-Clean structured records
-        |
-        v
-RDF triples
-        |
-        v
-Apache Jena knowledge graph
-        |
-        v
-Spring Boot API
-        |
-        v
-Simple web dashboard
+Official Normattiva AKN XML
+        -> validation
+        -> ELI Work / Expression / Manifestation RDF
+        -> persistent Jena TDB2
+        -> read-only SPARQL
+        -> navigable web interface
 ```
 
-## Dashboard Features
+The first thesis release is intentionally narrow. It prioritizes trusted data, clear provenance, real version navigation, and repeatable validation over broad crawling or automatic legal interpretation.
 
-- Search legal acts.
-- View publication metadata.
-- View modification relationships.
-- Check loaded RDF source files.
-- Run simple SPARQL queries.
+## Current Capabilities
 
-## Example SPARQL Query
+- Persistent, transaction-backed Jena TDB2 storage.
+- SPARQL-based legal-act search and resource pages.
+- Read-only SPARQL protocol endpoint.
+- ELI resource resolution and content negotiation.
+- Work, Expression, and Manifestation representation.
+- Clickable navigation for RDF resource links.
+- Scheduled ingestion components, watermarks, and run logs.
+- Automated query and data-model tests.
 
-```sparql
-PREFIX ilg: <http://example.org/italian-legislation/ontology#>
+## Current Priority
 
-SELECT ?source ?relation ?target
-WHERE {
-  ?source ?relation ?target .
-  FILTER(?relation IN (ilg:modifies, ilg:modifiedBy))
-}
-LIMIT 20
-```
+Complete a defensible import path for real Normattiva OpenData AKN files:
+
+1. Inspect and validate the XML securely.
+2. Preview validation errors and warnings.
+3. Map accepted data to application-owned ELI URIs.
+4. Commit RDF transactionally to TDB2.
+5. Demonstrate a real act with multiple Expressions.
+6. Verify the result with golden SPARQL queries and the UI.
+
+Automatic relation extraction from ambiguous text is outside the trusted graph. A possible relation remains a review candidate until its source, target, predicate, and evidence are explicit.
 
 ## Run Locally
 
 Requirements:
 
 - Java 17
-- Maven
+- Maven 3.9 or later
 
-Commands:
-
-```bash
+```powershell
 cd jena-git-project
+mvn -B test
 mvn spring-boot:run
 ```
 
-Open:
+Use the single port configured by the application. Check `/api/health` before starting another process.
+
+## Repository Guide
 
 ```text
-http://localhost:8080/
+CONTEXT.md                 Stable project decisions and professor feedback
+PLAN.md                    Milestones and acceptance criteria
+SKILL.md                   Rules for future implementation sessions
+docs/                      Architecture, data model, rationale, and diagrams
+docs/screenshots/          Historical UI verification images
+docs/archive/              Superseded drafts retained for reference
+jena-git-project/          The Spring Boot application
+  data/                    Reviewed source, intermediate, and RDF data
+  queries/                 Demonstration SPARQL queries
+  scripts/                 Local validation helpers
+  src/main/                Application code and static UI
+  src/test/                Automated tests
+render.yaml                Deployment definition
 ```
 
-## Project Structure
+## Documentation
 
-```text
-jena-git-project/
-  src/main/java/       Spring Boot backend and crawler code
-  src/main/resources/  Static dashboard files
-  data/rdf/            RDF files loaded into Apache Jena
-  data/clean/          Cleaned intermediate data
-docs/diagrams/         Project flow and architecture diagrams
-render.yaml            Render deployment configuration
-```
+- [Implementation plan](PLAN.md)
+- [Project context](CONTEXT.md)
+- [Data model](docs/data-model.md)
+- [Linked Data design](docs/linked-data-design-notes.md)
+- [Update routine rationale](docs/update-routine-rationale.md)
+- [SPARQL validation queries](jena-git-project/VALIDATION_QUERIES.md)
+- [Manual UI tests](jena-git-project/MANUAL_UI_TESTS.md)
 
-## Current Scope
+## Known Limits
 
-This is a lightweight academic prototype. It focuses on showing the full idea clearly: data collection, RDF conversion, knowledge graph loading, API access, and a simple end-user dashboard.
+- Real multi-version coverage is not yet demonstrated at useful scale.
+- The public ELI base URI is still a placeholder until deployment is finalized.
+- Render persistence is not configured; TDB2 data would not survive a redeploy on ephemeral storage.
+- Gazzetta RSS alone cannot guarantee recovery after a long outage.
+- Normattiva update discovery does not itself prove legal relationships.
+
+These limits are part of the plan, not hidden assumptions.

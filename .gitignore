@@ -16,19 +16,10 @@ bin/
 context/
 context for claude/
 IMPLEMENTATION_PLAN.md
-
-# Local planning notes. docs/* is ignored, then the write-ups the URS
-# requires (NFR-5) are un-ignored explicitly.
-docs/*
-!docs/diagrams/
-!docs/diagrams/**
-!docs/data-model.md
-!docs/update-routine-rationale.md
-!docs/linked-data-design-notes.md
-
-# Local manual and progress notes (unchanged from before: both were already
-# ignored in effect)
 PROJECT_MANUAL.md
+docs/NEW_APP_IMPLEMENTATION_PLAN.md
+docs/PROGRESS_LOG.md
+thesis-documents/
 
 # Accidental command/output artifacts
 h origin master
@@ -53,7 +44,7 @@ jena-git-project/output/
 jena-git-project/data/reports/
 jena-git-project/data/registry/reports/
 
-# Superseded working files
+# Superseded generated RDF files
 jena-git-project/eli_metadata.ttl
 jena-git-project/eli_metadata_cleaned.ttl
 jena-git-project/src/eli_metadata_generated.ttl
