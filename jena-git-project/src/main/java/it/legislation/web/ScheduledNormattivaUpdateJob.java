@@ -5,7 +5,7 @@ import java.time.OffsetDateTime;
 
 import org.springframework.beans.factory.annotation.Value;
 
-import it.legislation.crawler.IngestionRunLog;
+import it.legislation.ingest.IngestionRunLog;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
