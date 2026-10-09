@@ -1,5 +1,7 @@
 package it.legislation.crawler;
 
+import it.legislation.ingest.IngestionWatermark;
+
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.http.HttpClient;
