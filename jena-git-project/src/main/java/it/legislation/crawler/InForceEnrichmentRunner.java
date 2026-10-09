@@ -1,5 +1,7 @@
 package it.legislation.crawler;
 
+import it.legislation.mapping.InForceRdfBuilder;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -23,7 +25,7 @@ import org.apache.jena.riot.Lang;
 import org.apache.jena.riot.RDFDataMgr;
 import org.apache.jena.riot.RDFFormat;
 
-import it.legislation.crawler.InForceRdfBuilder.ExpressionStatus;
+import it.legislation.mapping.InForceRdfBuilder.ExpressionStatus;
 
 /**
  * Derives in-force triples for every Expression already in the dataset and

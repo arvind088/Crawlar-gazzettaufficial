@@ -1,5 +1,9 @@
 package it.legislation.crawler;
 
+import it.legislation.model.ModificationType;
+
+import it.legislation.model.CleanModificationRecord;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.nio.charset.StandardCharsets;

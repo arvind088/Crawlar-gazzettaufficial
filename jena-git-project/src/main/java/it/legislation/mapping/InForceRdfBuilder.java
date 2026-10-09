@@ -1,4 +1,4 @@
-package it.legislation.crawler;
+package it.legislation.mapping;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeParseException;

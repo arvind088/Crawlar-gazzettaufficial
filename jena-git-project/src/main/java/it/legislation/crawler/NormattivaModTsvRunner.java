@@ -1,5 +1,9 @@
 package it.legislation.crawler;
 
+import it.legislation.mapping.ModificationRdfModelBuilder;
+
+import it.legislation.model.CleanModificationRecord;
+
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.file.Files;

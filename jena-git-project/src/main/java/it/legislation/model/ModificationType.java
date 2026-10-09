@@ -1,4 +1,4 @@
-package it.legislation.crawler;
+package it.legislation.model;
 
 public enum ModificationType {
     ABROGATION,

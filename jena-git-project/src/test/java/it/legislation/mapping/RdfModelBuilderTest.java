@@ -1,4 +1,6 @@
-package it.legislation.crawler;
+package it.legislation.mapping;
+
+import it.legislation.model.CleanLegalActRecord;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
