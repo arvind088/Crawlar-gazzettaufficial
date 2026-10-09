@@ -1,4 +1,4 @@
-package it.legislation.crawler;
+package it.legislation.source.gazzetta;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;

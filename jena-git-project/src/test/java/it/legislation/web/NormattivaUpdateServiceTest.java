@@ -13,7 +13,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
-import it.legislation.crawler.NormattivaUpdateRunner;
+import it.legislation.source.normattiva.NormattivaUpdateRunner;
 
 class NormattivaUpdateServiceTest {
 

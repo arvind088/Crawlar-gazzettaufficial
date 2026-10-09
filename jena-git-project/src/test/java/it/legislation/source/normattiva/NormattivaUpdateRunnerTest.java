@@ -1,4 +1,4 @@
-package it.legislation.crawler;
+package it.legislation.source.normattiva;
 
 import it.legislation.model.CleanModificationRecord;
 

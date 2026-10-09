@@ -1,4 +1,4 @@
-package it.legislation.crawler;
+package it.legislation.ingest;
 
 import it.legislation.mapping.InForceRdfBuilder;
 
@@ -36,7 +36,7 @@ import it.legislation.mapping.InForceRdfBuilder.ExpressionStatus;
  * and the enrichment is gone. It is additive with respect to everything else.
  *
  * <pre>
- * mvn -B "-Dexec.mainClass=it.legislation.crawler.InForceEnrichmentRunner" exec:java
+ * mvn -B "-Dexec.mainClass=it.legislation.ingest.InForceEnrichmentRunner" exec:java
  * </pre>
  */
 public final class InForceEnrichmentRunner {
