@@ -1,4 +1,4 @@
-package it.legislation.crawler;
+package it.legislation.source.gazzetta;
 
 import it.legislation.mapping.RdfModelBuilder;
 

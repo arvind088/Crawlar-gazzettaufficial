@@ -51,7 +51,7 @@ jobs:
         run: mvn -B test
 
       - name: Fetch latest Gazzetta RSS entries
-        run: mvn -B "-Dexec.mainClass=it.legislation.crawler.GazzettaRssUpdateRunner" exec:java
+        run: mvn -B "-Dexec.mainClass=it.legislation.source.gazzetta.GazzettaRssUpdateRunner" exec:java
         env:
           GAZZETTA_RSS_URL: "https://www.gazzettaufficiale.it/rss/SG"
           GAZZETTA_RSS_OUTPUT: "data/clean/gazzetta_rss_updates.tsv"
@@ -61,7 +61,7 @@ jobs:
         # Resumes from the committed watermark, so a skipped or failed day is
         # picked up by the next run rather than lost.
         continue-on-error: true
-        run: mvn -B "-Dexec.mainClass=it.legislation.crawler.NormattivaUpdateRunner" exec:java
+        run: mvn -B "-Dexec.mainClass=it.legislation.source.normattiva.NormattivaUpdateRunner" exec:java
         env:
           NORMATTIVA_SOURCE_URL: "https://api.normattiva.it/t/normattiva.api"
           NORMATTIVA_UPDATES_OUTPUT: "data/clean/normattiva_updates.tsv"
@@ -69,7 +69,7 @@ jobs:
           NORMATTIVA_RDF_OUTPUT: "data/rdf/normattiva_modifications_auto.ttl"
 
       - name: Derive in-force status
-        run: mvn -B "-Dexec.mainClass=it.legislation.crawler.InForceEnrichmentRunner" exec:java
+        run: mvn -B "-Dexec.mainClass=it.legislation.ingest.InForceEnrichmentRunner" exec:java
 
       - name: Commit harvested data
         run: |
