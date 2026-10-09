@@ -1,4 +1,4 @@
-package it.legislation.web;
+package it.legislation.store;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -79,7 +79,7 @@ public class Tdb2DatasetService {
         this(Path.of(datasetPath), defaultSources());
     }
 
-    Tdb2DatasetService(Path datasetPath, List<RdfGraphSource> rdfSources) throws IOException {
+    public Tdb2DatasetService(Path datasetPath, List<RdfGraphSource> rdfSources) throws IOException {
         Path normalizedPath = datasetPath.toAbsolutePath().normalize();
         Files.createDirectories(normalizedPath);
         this.dataset = TDB2Factory.connectDataset(normalizedPath.toString());
@@ -91,11 +91,11 @@ public class Tdb2DatasetService {
         this.rdfSources = List.copyOf(rdfSources);
     }
 
-    static Tdb2DatasetService forRdfPaths(Path datasetPath, List<Path> rdfPaths) throws IOException {
+    public static Tdb2DatasetService forRdfPaths(Path datasetPath, List<Path> rdfPaths) throws IOException {
         return new Tdb2DatasetService(datasetPath, graphSources(rdfPaths));
     }
 
-    static Tdb2DatasetService inMemoryForRdfPaths(List<Path> rdfPaths) {
+    public static Tdb2DatasetService inMemoryForRdfPaths(List<Path> rdfPaths) {
         return new Tdb2DatasetService(DatasetFactory.createTxnMem(), graphSources(rdfPaths));
     }
 
@@ -107,7 +107,7 @@ public class Tdb2DatasetService {
         return sources;
     }
 
-    static List<RdfGraphSource> defaultSources() {
+    public static List<RdfGraphSource> defaultSources() {
         return List.of(
                 new RdfGraphSource(GRAPH_BASE + "gazzetta", GAZZETTA_DELTA),
                 new RdfGraphSource(GRAPH_BASE + "normattiva/manual", NORMATTIVA_MODIFICATIONS),
@@ -338,7 +338,7 @@ public class Tdb2DatasetService {
         T read(Dataset dataset) throws IOException;
     }
 
-    record RdfGraphSource(String graphUri, Path path) {
+    public record RdfGraphSource(String graphUri, Path path) {
     }
 
     public record LoadStatus(long triples, List<String> loadedFiles, List<String> missingFiles) {
