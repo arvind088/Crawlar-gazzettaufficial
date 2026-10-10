@@ -32,6 +32,11 @@ public class NormattivaClient {
     private final Sleeper sleeper;
     private final LongSupplier clockMillis;
 
+    /** Receives one line per export step, so a long export shows its progress. */
+    public interface Progress {
+        void report(String line);
+    }
+
     /** Waits between status polls; replaced in tests. */
     public interface Sleeper {
         void sleep(Duration duration) throws InterruptedException;
@@ -122,6 +127,7 @@ public class NormattivaClient {
         String location = response.header(LOCATION_HEADER).orElse(null);
         int code = response.status() == 303 ? ExportStatus.COMPLETED : 2;
         String message = null;
+        String raw = response.text().isBlank() ? null : excerpt(response.text());
         if (response.body() != null && response.body().length > 0) {
             try {
                 JsonNode body = json.readTree(response.body());
@@ -133,7 +139,7 @@ public class NormattivaClient {
                 // Not JSON: keep the status derived from the HTTP code.
             }
         }
-        return new ExportStatus(code, location, message);
+        return new ExportStatus(code, location, message, raw);
     }
 
     /** Downloads a finished export (a ZIP archive). */
@@ -148,12 +154,30 @@ public class NormattivaClient {
 
     /** Starts an export, polls until it is done, and returns the ZIP bytes. */
     public byte[] export(ExportRequest request, Duration timeout, Duration pollEvery) throws IOException {
+        return export(request, timeout, pollEvery, line -> { });
+    }
+
+    /** As {@link #export(ExportRequest, Duration, Duration)}, reporting each step to {@code progress}. */
+    public byte[] export(ExportRequest request, Duration timeout, Duration pollEvery, Progress progress)
+            throws IOException {
+        long started = clockMillis.getAsLong();
         String token = startExport(request);
-        long deadline = clockMillis.getAsLong() + timeout.toMillis();
+        progress.report("export started, token " + token);
+        long deadline = started + timeout.toMillis();
+        int lastCode = Integer.MIN_VALUE;
         while (true) {
             ExportStatus status = exportStatus(token);
+            long seconds = (clockMillis.getAsLong() - started) / 1000;
+            if (status.code() != lastCode) {
+                progress.report(seconds + "s state " + status.code() + " (" + ExportStatus.describe(status.code()) + ")"
+                        + (status.message() == null ? "" : ": " + status.message())
+                        + (status.raw() == null ? "" : "  raw=" + status.raw()));
+                lastCode = status.code();
+            }
             if (status.isCompleted()) {
-                return downloadExport(token, status.location());
+                byte[] zip = downloadExport(token, status.location());
+                progress.report("downloaded " + zip.length + " bytes");
+                return zip;
             }
             if (status.isDone()) {
                 throw new NormattivaApiException("Export " + request.fileStem() + " ended with state "
@@ -178,6 +202,11 @@ public class NormattivaClient {
             throw new NormattivaApiException(operation, response.status(), response.text());
         }
         return json.readTree(response.body());
+    }
+
+    private static String excerpt(String text) {
+        String flat = text.replaceAll("\\s+", " ").trim();
+        return flat.length() > 200 ? flat.substring(0, 200) + "..." : flat;
     }
 
     private static String text(JsonNode node, String field, String fallback) {
