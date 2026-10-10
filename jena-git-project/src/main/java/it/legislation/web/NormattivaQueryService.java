@@ -1,5 +1,7 @@
 package it.legislation.web;
 
+import it.legislation.store.Tdb2DatasetService;
+
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -13,7 +15,7 @@ import org.apache.jena.query.ResultSet;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import it.legislation.crawler.RdfModelBuilder;
+import it.legislation.mapping.RdfModelBuilder;
 
 @Service
 public class NormattivaQueryService {

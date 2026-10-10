@@ -19,7 +19,7 @@ import org.apache.jena.riot.RDFDataMgr;
 import org.apache.jena.riot.RDFFormat;
 import org.springframework.stereotype.Service;
 
-import it.legislation.web.Tdb2DatasetService;
+import it.legislation.store.Tdb2DatasetService;
 
 /**
  * Resolves an ELI path to the resource it identifies, by running SPARQL against

@@ -24,8 +24,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import it.legislation.crawler.IngestionRunLog;
-import it.legislation.crawler.IngestionWatermark;
+import it.legislation.ingest.IngestionRunLog;
+import it.legislation.ingest.IngestionWatermark;
 
 @RestController
 @RequestMapping("/api")
