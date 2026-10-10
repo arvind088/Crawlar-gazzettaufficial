@@ -48,3 +48,7 @@ jena-git-project/data/registry/reports/
 jena-git-project/eli_metadata.ttl
 jena-git-project/eli_metadata_cleaned.ttl
 jena-git-project/src/eli_metadata_generated.ttl
+
+# Raw Normattiva downloads (AKN/JSON/ZIP) can be large. Keep the manifest
+# (file name + SHA-256 + time) in Git, keep the files themselves local.
+jena-git-project/data/raw/normattiva/*/
