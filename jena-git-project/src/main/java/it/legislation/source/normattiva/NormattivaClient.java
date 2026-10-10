@@ -84,6 +84,40 @@ public class NormattivaClient {
         return postJson("Advanced search", ADVANCED_SEARCH, body.toString());
     }
 
+    /**
+     * How many acts match the criteria of an export, using {@code ricerca/avanzata}
+     * ({@code numeroAttiTrovati}). Used to size exports and, after import, to check
+     * that nothing is missing.
+     */
+    public int count(ExportRequest request) throws IOException {
+        JsonNode result = advancedSearch(request.criteria(json), 1, 1);
+        JsonNode found = result.path("numeroAttiTrovati");
+        if (!found.isNumber() && !found.isTextual()) {
+            throw new NormattivaApiException("Count for " + request.fileStem() + " has no numeroAttiTrovati: "
+                    + result.toString().substring(0, Math.min(200, result.toString().length())));
+        }
+        return found.asInt();
+    }
+
+    /** Every act matching the criteria of an export ({@code listaAtti} of all result pages). */
+    public java.util.List<JsonNode> listAll(ExportRequest request) throws IOException {
+        java.util.List<JsonNode> acts = new java.util.ArrayList<>();
+        int pageSize = 50;
+        for (int page = 1; page <= 200; page++) {
+            JsonNode result = advancedSearch(request.criteria(json), page, pageSize);
+            JsonNode list = result.path("listaAtti");
+            if (!list.isArray() || list.isEmpty()) {
+                break;
+            }
+            list.forEach(acts::add);
+            int total = result.path("numeroAttiTrovati").asInt(Integer.MAX_VALUE);
+            if (acts.size() >= total || list.size() < pageSize) {
+                break;
+            }
+        }
+        return acts;
+    }
+
     /** A new, empty criteria object for {@link #advancedSearch}. */
     public ObjectNode criteria() {
         return json.createObjectNode();

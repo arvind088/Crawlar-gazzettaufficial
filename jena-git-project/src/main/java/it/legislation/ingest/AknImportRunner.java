@@ -21,6 +21,7 @@ import it.legislation.eli.EliUriService;
 import it.legislation.mapping.AknActReader;
 import it.legislation.mapping.AknToEli;
 import it.legislation.model.AknExpression;
+import it.legislation.source.normattiva.CorpusCounts;
 
 /**
  * Turns the Normattiva Akoma Ntoso files in the raw store into ELI RDF.
@@ -47,7 +48,14 @@ public class AknImportRunner {
 
     /** What one run did. */
     public record Summary(int filesRead, int acts, int expressions, int duplicates,
-                          List<AknExpression.Rejected> rejected, boolean written) {}
+                          List<AknExpression.Rejected> rejected, boolean written, List<CountCheck> countChecks) {}
+
+    /** Acts imported for one act type and year, against the number Normattiva reported. */
+    public record CountCheck(String actType, int year, int expected, int imported, List<String> missing) {
+        public boolean ok() {
+            return expected == imported;
+        }
+    }
 
     private final AknActReader reader = new AknActReader();
     private final AknToEli mapper;
@@ -74,6 +82,52 @@ public class AknImportRunner {
         System.out.println("Rejected:     " + summary.rejected().size());
         summary.rejected().forEach(r -> System.out.println("  REJECTED " + r.sourceFile() + "  " + r.problems()));
         System.out.println(summary.written() ? "Wrote " + out : "No change: " + out + " is already up to date");
+        if (!summary.countChecks().isEmpty()) {
+            System.out.println("Corpus check (acts in Normattiva vs acts imported):");
+            summary.countChecks().forEach(c -> {
+                System.out.println("  " + (c.ok() ? "OK      " : "MISSING ")
+                        + c.actType() + " " + c.year() + ": " + c.expected() + " vs " + c.imported());
+                c.missing().forEach(m -> System.out.println("           not in export: " + m));
+            });
+            long bad = summary.countChecks().stream().filter(c -> !c.ok()).count();
+            System.out.println(bad == 0 ? "Corpus complete." : bad + " slice(s) do not match: fetch again, then re-import.");
+        }
+    }
+
+    /** Compares imported acts per type and year with {@code corpus/counts.tsv}, when that file exists. */
+    static List<CountCheck> countChecks(Path in, Map<String, Map<String, AknExpression>> byAct) throws IOException {
+        CorpusCounts expected = CorpusCounts.read(in.resolve("corpus").resolve(CorpusCounts.FILE));
+        Map<CorpusCounts.Key, Integer> imported = new TreeMap<>();
+        for (Map<String, AknExpression> versions : byAct.values()) {
+            AknExpression any = versions.values().iterator().next();
+            imported.merge(new CorpusCounts.Key(any.actType(), any.documentDate().getYear()), 1, Integer::sum);
+        }
+        List<CountCheck> checks = new ArrayList<>();
+        for (Map.Entry<CorpusCounts.Key, Integer> entry : expected.all().entrySet()) {
+            CorpusCounts.Key key = entry.getKey();
+            int got = imported.getOrDefault(key, 0);
+            List<String> missing = got == entry.getValue() ? List.of() : missingActs(in, key, byAct.keySet());
+            checks.add(new CountCheck(key.actType(), key.year(), entry.getValue(), got, missing));
+        }
+        return checks;
+    }
+
+    /** Acts Normattiva lists for a slice (corpus/lists/*.json) whose codice redazionale was not imported. */
+    static List<String> missingActs(Path in, CorpusCounts.Key key, java.util.Set<String> importedCodes) throws IOException {
+        String stem = key.actType().replaceAll("[^A-Za-z0-9]+", "_") + "_" + String.format("%04d", key.year()) + "_M_AKN";
+        Path list = in.resolve("corpus").resolve("lists").resolve(stem + ".json");
+        if (!Files.exists(list)) {
+            return List.of("(no list saved for this slice: run NormattivaCorpusRunner again to name the missing acts)");
+        }
+        List<String> missing = new ArrayList<>();
+        com.fasterxml.jackson.databind.JsonNode acts = new com.fasterxml.jackson.databind.ObjectMapper().readTree(list.toFile());
+        for (com.fasterxml.jackson.databind.JsonNode act : acts) {
+            String code = act.path("codiceRedazionale").asText();
+            if (!importedCodes.contains(code)) {
+                missing.add(code + "  GU " + act.path("dataGU").asText() + "  " + act.path("descrizioneAtto").asText());
+            }
+        }
+        return missing;
     }
 
     public Summary run(Path in, Path out) throws IOException {
@@ -120,6 +174,7 @@ public class AknImportRunner {
             Files.write(out, turtle);
             written = true;
         }
-        return new Summary(files.size(), byAct.size(), expressions, duplicates, List.copyOf(rejected), written);
+        return new Summary(files.size(), byAct.size(), expressions, duplicates, List.copyOf(rejected), written,
+                countChecks(in, byAct));
     }
 }
