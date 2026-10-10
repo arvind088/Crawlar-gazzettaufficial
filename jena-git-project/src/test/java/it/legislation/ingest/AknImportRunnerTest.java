@@ -60,5 +60,24 @@ class AknImportRunnerTest {
         assertFalse(dl.ok());
         assertEquals(0, dl.imported());
         assertTrue(legge.ok());
+        assertTrue(legge.missing().isEmpty());
+    }
+
+    @Test
+    void namesTheActsMissingFromTheExport() throws IOException {
+        Path in = Files.createDirectories(temp.resolve("raw2"));
+        Files.copy(Path.of("src/test/resources/akn/legge-2020-27-original.xml"), in.resolve("a.xml"));
+        Files.createDirectories(in.resolve("corpus/lists"));
+        Files.writeString(in.resolve("corpus/counts.tsv"), "act_type\tyear\tcount\tcounted_at\nLEGGE\t2020\t2\t\n");
+        Files.writeString(in.resolve("corpus/lists/LEGGE_2020_M_AKN.json"),
+                "[{\"codiceRedazionale\":\"20G00045\"},{\"codiceRedazionale\":\"20G00999\",\"dataGU\":\"2020-12-31\",\"descrizioneAtto\":\"LEGGE 30 dicembre 2020, n. 999\"}]");
+
+        AknImportRunner.Summary summary = new AknImportRunner(new EliUriService("https://example.test"))
+                .run(in, temp.resolve("out2.ttl"));
+
+        AknImportRunner.CountCheck legge = summary.countChecks().get(0);
+        assertFalse(legge.ok());
+        assertEquals(1, legge.missing().size());
+        assertTrue(legge.missing().get(0).startsWith("20G00999"), legge.missing().get(0));
     }
 }

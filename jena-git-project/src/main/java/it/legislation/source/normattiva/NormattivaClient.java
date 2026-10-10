@@ -99,6 +99,25 @@ public class NormattivaClient {
         return found.asInt();
     }
 
+    /** Every act matching the criteria of an export ({@code listaAtti} of all result pages). */
+    public java.util.List<JsonNode> listAll(ExportRequest request) throws IOException {
+        java.util.List<JsonNode> acts = new java.util.ArrayList<>();
+        int pageSize = 50;
+        for (int page = 1; page <= 200; page++) {
+            JsonNode result = advancedSearch(request.criteria(json), page, pageSize);
+            JsonNode list = result.path("listaAtti");
+            if (!list.isArray() || list.isEmpty()) {
+                break;
+            }
+            list.forEach(acts::add);
+            int total = result.path("numeroAttiTrovati").asInt(Integer.MAX_VALUE);
+            if (acts.size() >= total || list.size() < pageSize) {
+                break;
+            }
+        }
+        return acts;
+    }
+
     /** A new, empty criteria object for {@link #advancedSearch}. */
     public ObjectNode criteria() {
         return json.createObjectNode();

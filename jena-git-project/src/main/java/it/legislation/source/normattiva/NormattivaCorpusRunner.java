@@ -89,7 +89,9 @@ public class NormattivaCorpusRunner {
         for (String type : types) {
             for (int year = from; year <= to; year++) {
                 try {
-                    int count = client.count(ExportRequest.slice(ExportRequest.Mode.ALL_VERSIONS, type, year, null));
+                    ExportRequest yearSlice = ExportRequest.slice(ExportRequest.Mode.ALL_VERSIONS, type, year, null);
+                    int count = client.count(yearSlice);
+                    saveList(yearSlice);
                     counts.put(type, year, count, OffsetDateTime.now(ZoneOffset.UTC).withNano(0).toString());
                     counts.write(countsFile);
                     log(type + " " + year + ": " + count + " acts");
@@ -114,6 +116,20 @@ public class NormattivaCorpusRunner {
                 + ", failed: " + failures.size());
         failures.forEach(failure -> System.out.println("  FAIL " + failure));
         System.out.println("Next: mvn -B compile exec:java \"-Dexec.mainClass=it.legislation.ingest.AknImportRunner\"");
+    }
+
+    /**
+     * Saves the list of acts Normattiva reports for a slice (codice redazionale, GU date, title),
+     * so the import can name exactly which acts are missing.
+     */
+    private void saveList(ExportRequest request) throws IOException {
+        java.util.List<com.fasterxml.jackson.databind.JsonNode> acts = client.listAll(request);
+        com.fasterxml.jackson.databind.ObjectMapper json = new com.fasterxml.jackson.databind.ObjectMapper();
+        com.fasterxml.jackson.databind.node.ArrayNode array = json.createArrayNode();
+        acts.forEach(array::add);
+        Path file = root.resolve("corpus").resolve("lists").resolve(request.fileStem() + ".json");
+        Files.createDirectories(file.getParent());
+        Files.write(file, json.writerWithDefaultPrettyPrinter().writeValueAsBytes(array));
     }
 
     private void exportByMonth(String type, int year, int yearCount) throws IOException {
