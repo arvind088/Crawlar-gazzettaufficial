@@ -31,8 +31,9 @@ import it.legislation.source.RawStore;
  * Files are saved unchanged under {@code data/raw/normattiva/} with SHA-256 in {@code manifest.tsv};
  * export archives are also unpacked next to the ZIP for easy reading.
  *
+ * Always compile in the same command, otherwise Maven runs old classes:
  * <pre>
- * mvn -B "-Dexec.mainClass=it.legislation.source.normattiva.NormattivaSampleFetchRunner" exec:java
+ * mvn -B compile exec:java "-Dexec.mainClass=it.legislation.source.normattiva.NormattivaSampleFetchRunner"
  * </pre>
  */
 public class NormattivaSampleFetchRunner {
@@ -135,7 +136,7 @@ public class NormattivaSampleFetchRunner {
                 RawStore.SavedFile saved = store.save(name, json.writeValueAsBytes(detail), "dettaglio-atto-urn " + urn);
                 result("OK    " + saved.status() + "  " + name);
             } catch (IOException | RuntimeException exception) {
-                result("FAIL  " + name + "  " + exception.getMessage());
+                result("FAIL  " + name + "  " + describe(exception));
                 ok = false;
             }
         }
@@ -152,7 +153,7 @@ public class NormattivaSampleFetchRunner {
             result("OK    " + saved.status() + "  " + name + "  (" + entries + " files)");
             return true;
         } catch (IOException | RuntimeException exception) {
-            result("FAIL  " + name + "  " + exception.getMessage());
+            result("FAIL  " + name + "  " + describe(exception));
             return false;
         }
     }
@@ -181,9 +182,13 @@ public class NormattivaSampleFetchRunner {
             log("baseline act: " + first.path("descrizioneAtto").asText(request.fileStem()));
             return fetchExport(folder, request);
         } catch (IOException | RuntimeException exception) {
-            result("FAIL  " + folder + "  " + exception.getMessage());
+            result("FAIL  " + folder + "  " + describe(exception));
             return false;
         }
+    }
+
+    private static String describe(Throwable exception) {
+        return exception.getClass().getSimpleName() + ": " + exception.getMessage();
     }
 
     /** Unpacks a ZIP into {@code target}, refusing entries that would escape it. */

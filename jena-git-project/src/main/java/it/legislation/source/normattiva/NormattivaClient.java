@@ -124,7 +124,7 @@ public class NormattivaClient {
         if (!response.isSuccess() && response.status() != 303) {
             throw new NormattivaApiException("Export status " + token, response.status(), response.text());
         }
-        String location = response.header(LOCATION_HEADER).orElse(null);
+        String location = response.header(LOCATION_HEADER).or(() -> response.header("location")).orElse(null);
         int code = response.status() == 303 ? ExportStatus.COMPLETED : 2;
         String message = null;
         String raw = response.text().isBlank() ? null : excerpt(response.text());
@@ -142,14 +142,22 @@ public class NormattivaClient {
         return new ExportStatus(code, location, message, raw);
     }
 
-    /** Downloads a finished export (a ZIP archive). */
+    /** Downloads a finished export (a ZIP archive), following up to 5 redirects by hand. */
     public byte[] downloadExport(String token, String location) throws IOException {
         String path = location != null && !location.isBlank() ? location : EXPORT_DOWNLOAD + token;
-        NormattivaTransport.Response response = transport.get(path);
-        if (!response.isSuccess()) {
-            throw new NormattivaApiException("Export download " + token, response.status(), response.text());
+        for (int hop = 0; hop < 5; hop++) {
+            NormattivaTransport.Response response = transport.get(path);
+            if (response.isSuccess()) {
+                return response.body();
+            }
+            boolean redirect = response.status() >= 300 && response.status() < 400;
+            String next = response.header("location").or(() -> response.header(LOCATION_HEADER)).orElse(null);
+            if (!redirect || next == null || next.isBlank()) {
+                throw new NormattivaApiException("Export download " + token, response.status(), response.text());
+            }
+            path = next;
         }
-        return response.body();
+        throw new NormattivaApiException("Export download " + token + " redirected more than 5 times");
     }
 
     /** Starts an export, polls until it is done, and returns the ZIP bytes. */
