@@ -1,0 +1,19 @@
+# Which acts amended, repealed or changed one act, with trust level and evidence.
+# Example: D.Lgs. 30 giugno 2003, n. 196 (codice redazionale 003G0218).
+PREFIX eli: <http://data.europa.eu/eli/ontology#>
+PREFIX ilg: <http://example.org/italian-legislation/ontology#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+
+SELECT ?source ?sourceLabel ?property ?trust ?textualMods ?confirmedByLifecycle
+WHERE {
+  ?act eli:id_local "003G0218" .
+  ?relation a ilg:Relation ;
+            ilg:toAct ?act ;
+            ilg:fromAct ?source ;
+            ilg:relationProperty ?property ;
+            ilg:trustLevel ?trust ;
+            ilg:textualModCount ?textualMods ;
+            ilg:confirmedByLifecycle ?confirmedByLifecycle .
+  OPTIONAL { ?source rdfs:label ?sourceLabel . }
+}
+ORDER BY ?trust ?source

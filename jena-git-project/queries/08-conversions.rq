@@ -1,0 +1,14 @@
+# Every decree-law and the law that converts it, with the result of checks C1-C6.
+# CONVERTED = all checks pass (level A); CONVERTED_ONE_SOURCE = level B.
+PREFIX eli: <http://data.europa.eu/eli/ontology#>
+PREFIX ilg: <http://example.org/italian-legislation/ontology#>
+
+SELECT ?decree ?decreeTitle ?status ?law ?days
+WHERE {
+  ?check a ilg:ConversionCheck ;
+         ilg:decree ?decree ;
+         ilg:conversionStatus ?status .
+  OPTIONAL { ?check ilg:law ?law ; ilg:daysToConversion ?days . }
+  OPTIONAL { ?decree eli:title ?decreeTitle . }
+}
+ORDER BY ?status ?decree
