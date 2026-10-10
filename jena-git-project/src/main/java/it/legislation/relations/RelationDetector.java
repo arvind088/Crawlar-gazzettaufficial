@@ -69,7 +69,11 @@ public class RelationDetector {
         REVIEW,
         /** No conversion law, and the 60 days are not over yet. */
         PENDING,
-        /** No conversion law, and more than 60 days have passed. */
+        /** Normattiva lists a law converting it, whose text is not exported yet (not imported). */
+        AWAITING_LAW_TEXT,
+        /** Not converted: repealed by an imported act (usually merged into another decree's conversion law). */
+        REPEALED,
+        /** No conversion law, not repealed by an imported act, and more than 60 days have passed. */
         NOT_CONVERTED
     }
 
@@ -90,11 +94,13 @@ public class RelationDetector {
     private static final Pattern TITLE_CONVERTS = Pattern.compile(
             "Conversione in legge(?:,? con modificazioni,?)?(?:,? del decreto-legge| del D\\.L\\.)\\s+(\\d{1,2}\\s+[a-z]+\\s+\\d{4},?\\s+n\\.\\s?\\d+)",
             Pattern.CASE_INSENSITIVE);
+    /** The decree's own note starts with ", convertito con modificazioni dalla L. …": the subject is the decree itself. */
     private static final Pattern DECREE_NOTE = Pattern.compile(
-            "convertit[oa]\\s+(?:con|senza)\\s+modificazioni\\s+dalla\\s+(L\\.\\s+\\d{1,2}\\s+[a-z]+\\s+\\d{4},?\\s+n\\.\\s?\\d+)",
+            "^\\W*convertit[oa]\\s+(?:con|senza)\\s+modificazioni\\s+dalla\\s+(L\\.\\s+\\d{1,2}\\s+[a-z]+\\s+\\d{4},?\\s+n\\.\\s?\\d+)",
             Pattern.CASE_INSENSITIVE);
 
     private final CorpusIndex corpus;
+    private Map<ActKey, String> listed = Map.of();
 
     public RelationDetector(CorpusIndex corpus) {
         this.corpus = corpus;
@@ -106,6 +112,16 @@ public class RelationDetector {
      * @param today    reference date for "60 days are over"
      */
     public Result detect(Map<String, Evidence> original, Map<String, Evidence> latest, LocalDate today) {
+        return detect(original, latest, today, Map.of());
+    }
+
+    /**
+     * @param listedConversionLaws decree-law → description of a law Normattiva lists as converting it
+     *                             but that was not imported (its text is not exported yet)
+     */
+    public Result detect(Map<String, Evidence> original, Map<String, Evidence> latest, LocalDate today,
+                         Map<ActKey, String> listedConversionLaws) {
+        this.listed = listedConversionLaws;
         // Lifecycle: which acts each imported act says changed it.
         Map<String, Set<ActKey>> changedBy = new LinkedHashMap<>();
         latest.forEach((codice, evidence) -> changedBy.put(codice, evidence.lifecycleChangedBy()));
@@ -128,23 +144,47 @@ public class RelationDetector {
                 if (mod.destination().equals(from.key())) {
                     continue; // an act changing itself
                 }
-                ModificationNote note = ModificationNote.parse(mod.note());
-                if (note.indirect() && !note.namedAct().equals(mod.destination())) {
-                    indirect++;
-                    continue;
+                Kind kind;
+                boolean whole;
+                if (mod.note() == null) {
+                    // Newer format: no note, the type attribute is meaningful.
+                    kind = switch (mod.type() == null ? "" : mod.type()) {
+                        case "repeal" -> Kind.REPEAL;
+                        case "insertion" -> Kind.INSERTION;
+                        case "substitution", "split", "join" -> Kind.REPLACEMENT;
+                        default -> Kind.OTHER;
+                    };
+                    whole = mod.wholeAct();
+                } else {
+                    ModificationNote note = ModificationNote.parse(mod.note());
+                    if (note.indirect() && !note.namedAct().equals(mod.destination())) {
+                        indirect++;
+                        continue;
+                    }
+                    if (note.kind() == Kind.CONVERSION) {
+                        continue; // handled by the conversion rules
+                    }
+                    kind = note.kind();
+                    // "l'abrogazione del D.L. …" naming the destination itself repeals the whole act.
+                    whole = note.wholeAct() || note.indirect();
                 }
-                if (note.kind() == Kind.CONVERSION) {
-                    continue; // handled by the conversion rules
-                }
-                // "l'abrogazione del D.L. …" naming the destination itself repeals the whole act.
-                boolean whole = note.wholeAct() || note.indirect();
-                Property property = note.kind() == Kind.REPEAL && whole ? Property.REPEALS
-                        : note.kind() == Kind.OTHER ? Property.CHANGES : Property.AMENDS;
+                Property property = kind == Kind.REPEAL && whole ? Property.REPEALS
+                        : kind == Kind.OTHER ? Property.CHANGES : Property.AMENDS;
                 Act to = corpus.resolve(mod.destination()).orElse(null);
                 String id = from.codice() + "|" + mod.destination();
                 Builder b = builders.computeIfAbsent(id, k -> new Builder(from, from.key(), to, mod.destination(),
                         from.originalFile()));
-                b.add(property, note.kind(), mod.note());
+                b.add(property, kind, mod.note());
+            }
+            // Whole repeals stated only in the text ("Il decreto-legge … e' abrogato").
+            for (ActKey repealed : evidence.textRepeals()) {
+                if (repealed.equals(from.key())) {
+                    continue;
+                }
+                Act to = corpus.resolve(repealed).orElse(null);
+                Builder b = builders.computeIfAbsent(from.codice() + "|" + repealed,
+                        k -> new Builder(from, from.key(), to, repealed, from.originalFile()));
+                b.add(Property.REPEALS, Kind.REPEAL, "testo: " + repealed + " è abrogato");
             }
         }
 
@@ -196,14 +236,17 @@ public class RelationDetector {
                 }
                 text.addAll(evidence.article1Converts());
             }
-            Matcher title = TITLE_CONVERTS.matcher(law.title());
-            if (title.find()) {
-                ModificationNote.namedAct("D.L. " + title.group(1)).ifPresent(text::add);
-            }
+            convertedDecree(law.title()).ifPresent(text::add);
             c2.put(law.codice(), notes);
             c3.put(law.codice(), text);
         }
 
+        Map<String, Set<String>> amendedBy = new LinkedHashMap<>();
+        for (Relation r : relations) {
+            if (r.textualMods() > 0 && r.to() != null && r.from() != null) {
+                amendedBy.computeIfAbsent(r.to().codice(), k -> new LinkedHashSet<>()).add(r.from().codice());
+            }
+        }
         Map<String, List<String>> repealedBy = new LinkedHashMap<>();
         for (Relation r : relations) {
             if (r.property() == Property.REPEALS && r.to() != null && r.from() != null) {
@@ -216,25 +259,36 @@ public class RelationDetector {
             if (!"DECRETO-LEGGE".equals(decree.key().typeCode())) {
                 continue;
             }
+            String decreeNote = decreeNoteNamesLaw(original.get(decree.codice()));
             Map<Act, Checks> candidates = new LinkedHashMap<>();
             for (Act law : corpus.acts()) {
-                boolean inC2 = c2.getOrDefault(law.codice(), Set.of()).contains(decree.key());
+                // C2: a structured Normattiva statement linking the two acts, from either side:
+                // the law's note "la conversione … del D.L. ⟨D⟩" or the decree's note "convertito … dalla L. ⟨L⟩".
+                boolean inC2 = c2.getOrDefault(law.codice(), Set.of()).contains(decree.key())
+                        || law.key().toString().equals(decreeNote);
                 boolean inC3 = c3.getOrDefault(law.codice(), Set.of()).contains(decree.key());
                 if (!inC2 && !inC3) {
                     continue;
+                }
+                // Newer files have no notes: the law's textualMods changing the decree (the "modificazioni"
+                // of the conversion) are the structured link. Used only for a law the text already names.
+                if (!inC2 && amendedBy.getOrDefault(decree.codice(), Set.of()).contains(law.codice())) {
+                    inC2 = true;
                 }
                 long days = ChronoUnit.DAYS.between(decree.publicationDate(), law.publicationDate());
                 candidates.put(law, new Checks("LEGGE".equals(law.key().typeCode()), inC2, inC3,
                         corpus.count(decree.key()) == 1, days > 0 && days <= 60, false, days));
             }
             long passing = candidates.values().stream().filter(c -> c.core() && (c.c2() || c.c3())).count();
-            String decreeNote = decreeNoteNamesLaw(original.get(decree.codice()));
             List<String> repealers = repealedBy.getOrDefault(decree.codice(), List.of());
 
             if (candidates.isEmpty()) {
                 long age = ChronoUnit.DAYS.between(decree.publicationDate(), today);
-                result.add(new Conversion(decree, age <= 60 ? ConversionStatus.PENDING : ConversionStatus.NOT_CONVERTED,
-                        null, null, 0, decreeNote, repealers));
+                ConversionStatus status = listed.containsKey(decree.key()) ? ConversionStatus.AWAITING_LAW_TEXT
+                        : !repealers.isEmpty() ? ConversionStatus.REPEALED
+                        : age <= 60 ? ConversionStatus.PENDING : ConversionStatus.NOT_CONVERTED;
+                result.add(new Conversion(decree, status, null, null, 0,
+                        listed.containsKey(decree.key()) ? listed.get(decree.key()) : decreeNote, repealers));
                 continue;
             }
             Map.Entry<Act, Checks> best = candidates.entrySet().stream()
@@ -251,6 +305,15 @@ public class RelationDetector {
         return result;
     }
 
+    /** The decree-law a title says it converts: "Conversione in legge[, con modificazioni,] del decreto-legge …". */
+    public static Optional<ActKey> convertedDecree(String title) {
+        if (title == null) {
+            return Optional.empty();
+        }
+        Matcher m = TITLE_CONVERTS.matcher(AknRelationReader.clean(title));
+        return m.find() ? ModificationNote.namedAct("D.L. " + m.group(1)) : Optional.empty();
+    }
+
     private static int score(Checks c) {
         return (c.c1() ? 1 : 0) + (c.c2() ? 1 : 0) + (c.c3() ? 1 : 0) + (c.c4() ? 1 : 0) + (c.c5() ? 1 : 0);
     }
@@ -264,7 +327,7 @@ public class RelationDetector {
             if (mod.note() == null) {
                 continue;
             }
-            Matcher m = DECREE_NOTE.matcher(mod.note());
+            Matcher m = DECREE_NOTE.matcher(AknRelationReader.clean(mod.note()));
             if (m.find()) {
                 Optional<ActKey> law = ModificationNote.namedAct(m.group(1));
                 if (law.isPresent()) {

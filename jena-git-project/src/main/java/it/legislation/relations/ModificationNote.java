@@ -85,7 +85,9 @@ public record ModificationNote(Kind kind, boolean wholeAct, ActKey namedAct) {
                 named = namedAct(text.substring(third.start(2))).orElse(null);
             }
         }
-        boolean whole = afterVerb >= 0 && text.substring(afterVerb).matches("(?is)^\\w+\\s+dell'intero provvedimento.*");
+        // "l'abrogazione dell'intero provvedimento", or "l'abrogazione" with no object ("l'abrogazione e la modifica dell'art. 1").
+        boolean whole = afterVerb >= 0 && kind == Kind.REPEAL
+                && text.substring(afterVerb).matches("(?is)^\\w+(?:\\s+dell'intero provvedimento.*|\\s*[.;].*|\\s*|\\s+e\\s+.*)");
         return new ModificationNote(kind, whole, named);
     }
 
