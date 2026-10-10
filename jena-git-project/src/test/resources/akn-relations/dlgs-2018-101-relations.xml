@@ -1,0 +1,231 @@
+<?xml version="1.0" encoding="UTF-8"?><akomaNtoso xmlns="http://docs.oasis-open.org/legaldocml/ns/akn/3.0" xmlns:eli="http://data.europa.eu/eli/ontology#" xmlns:fo="urn:oasis:names:tc:opendocument:xmlns:xsl-fo-compatible:1.0" xmlns:gu="http://www.gazzettaufficiale.it/eli/" xmlns:html="http://www.w3.org/1999/xhtml" xmlns:na="http://www.normattiva.it/eli/" xmlns:nakn="http://normattiva.it/akn/vocabulary" xmlns:nrdfa="http://www.normattiva.it/rdfa/" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:rdfa="http://www.w3.org/1999/xhtml#">
+    <act name="monovigente">
+        <meta>
+            <identification source="">
+                <FRBRWork>
+                    <FRBRthis value="/akn/it/act/decreto_legislativo/stato/2018-08-10/101/!main"/>
+                    <FRBRuri value="/akn/it/act/decreto_legislativo/stato/2018-08-10/101"/>
+                    <FRBRalias name="urn:nir" value="urn:nir:stato:decreto.legislativo:2018-08-10;101"/>
+                    <FRBRalias name="eli" value="eli/id/2018/09/04/18G00129/ORIGINAL"/>
+                    <FRBRdate date="2018-08-10" name=""/>
+                    <FRBRauthor as="#author" href=""/>
+                    
+                    <FRBRcountry value="it"/>
+                </FRBRWork>
+                <FRBRExpression>
+                    <FRBRthis value="/akn/it/act/decreto_legislativo/stato/2018-08-10/101/ita@2018-09-19/!main"/>
+                    <FRBRuri value="/akn/it/act/decreto_legislativo/stato/2018-08-10/101/ita@2018-09-19"/>
+                    <FRBRdate date="2018-09-19" name=""/>
+                    <FRBRauthor as="#author" href=""/>
+                    
+                    <FRBRlanguage language="ita"/>
+                </FRBRExpression>
+                <FRBRManifestation>
+                    <FRBRthis value="/akn/it/act/decreto_legislativo/stato/2018-08-10/101/ita@2018-09-19/!main.xml"/>
+                    <FRBRuri value="/akn/it/act/decreto_legislativo/stato/2018-08-10/101/ita@2018-09-19.xml"/>
+                    <FRBRdate date="2018-08-10" name=""/>
+                    <FRBRauthor as="#author" href=""/>
+                    
+                </FRBRManifestation>
+            </identification>
+            <publication date="2018-09-04" name="" number="205" showAs=""/>
+            <lifecycle source="">
+                <eventRef date="2018-09-04" eId="eventRef_0" source="ro1"/>
+            </lifecycle>
+            <analysis source="">
+                <activeModifications>
+                    <textualMod eId="amod_0" type="insertion">
+                        <source href="urn:nir:stato:decreto.legislativo:2018-08-10;101#1"/>
+                        <destination href="urn:nir:stato:decreto.legislativo:2003-06-30;196"/>
+                        <new>
+                            <nakn:text>ha disposto (con l'art. 1, comma 1) la seguente modifica al titolo: Codice in materia di protezione dei dati personali ((, recante disposizioni per l'adeguamento dell'ordinamento nazionale al regolamento (UE) n. 2016/679 del Parlamento europeo e del Consiglio, del 27 aprile 2016, relativo alla protezione delle persone fisiche con riguardo al trattamento dei dati personali, nonche' alla libera circolazione di tali dati e che abroga la direttiva 95/46/CE)).</nakn:text>
+                        </new>
+                    </textualMod>
+                    <textualMod eId="amod_1" type="insertion">
+                        <source href="urn:nir:stato:decreto.legislativo:2018-08-10;101#1"/>
+                        <destination href="urn:nir:stato:decreto.legislativo:2003-06-30;196#1"/>
+                        <new>
+                            <nakn:text>ha disposto (con l'art. 1, comma 2) la modifica dell'art. 1, premesse.</nakn:text>
+                        </new>
+                    </textualMod>
+                    <textualMod eId="amod_2" type="insertion">
+                        <source href="urn:nir:stato:decreto.legislativo:2018-08-10;101#2"/>
+                        <destination href="urn:nir:stato:decreto.legislativo:2003-06-30;196"/>
+                        <new>
+                            <nakn:text>ha disposto (con l'art. 2, comma 1, lettera a)) che la rubrica del titolo I, parte I, "PRINCIPI GENERALI" e' sostituita dalla seguente: "PRINCIPI E DISPOSIZIONI GENERALI"; (con l'art. 2, comma 1, lettera b)) l'introduzione nella parte I, titolo I, del seguente capo I: "(OGGETTO, FINALITA' E AUTORITA' DI CONTROLLO)" (comprendente gli artt. da 1 a 2-bis); (con l'art. 2, comma 1, lettera f)) l'introduzione nella parte I, titolo I, del seguente capo II: "(PRINCIPI)" (comprendente gli artt. da 2-ter a 2-decies); (con l'art. 2, comma 1, lettera f)) l'introduzione nella parte I, titolo I, del seguente capo III: "(DISPOSIZIONI IN MATERIA DI DIRITTI DELL'INTERESSATO)" (comprendente gli artt. da 2-undecies a 2-terdecies); (con l'art. 2, comma 1, lettera f)) l'introduzione nella parte I, titolo I, del seguente capo IV: "(DISPOSIZIONI RELATIVE AL TITOLARE DEL TRATTAMENTO E AL RESPONSABILE DEL TRATTAMENTO)" (comprendente gli artt. da 2-quaterdecies a 2-septiesdecies).</nakn:text>
+                        </new>
+                    </textualMod>
+                </activeModifications>
+            </analysis>
+            <references source="">
+                <original eId="ro1" href="/akn/it/act/DECRETO_LEGISLATIVO/stato/2018-08-10/101/!main" showAs=""/>
+            </references>
+            <proprietary source="">
+                <rdf:RDF>
+                    <rdf:Description rdf:about="na:id/2018/09/04/18G00129/ORIGINAL">
+                        <rdf:type rdf:resource="eli:LegalResource"/>
+                        <eli:title xml:lang="it">Disposizioni per l'adeguamento della normativa nazionale alle disposizioni del regolamento (UE) 2016/679 del Parlamento europeo e del Consiglio, del 27 aprile 2016, relativo alla protezione delle persone fisiche con riguardo al trattamento dei dati personali, nonche' alla libera circolazione di tali dati e che abroga la direttiva 95/46/CE (regolamento generale sulla protezione dei dati). (18G00129)  </eli:title>
+                        <eli:uri_schema>http://www.normattiva.it/eli/id/{yyyy}/{mm}/{dd}/{codiceRedazionale}/{tipoVersione}</eli:uri_schema>
+                        <eli:id_local>18G00129</eli:id_local>
+                        <eli:type_document rdf:resource="gu:tables/resource-type#DECRETO LEGISLATIVO"/>
+                        <eli:date_document rdf:datatype="xsd:date">2018-08-10</eli:date_document>
+                        <eli:version rdf:resource="gu:tables/versions#ORIGINAL"/>
+                    </rdf:Description>
+                    <rdf:Description rdf:about="na:id/2018/09/04/18G00129/ORIGINAL/ita">
+                        <rdf:type rdf:resource="eli:LegalExpression"/>
+                        <eli:realizes rdf:resource="na:id/2018/09/04/18G00129/ORIGINAL"/>
+                        <eli:is_embodied_by rdf:resource="na:id/2018/09/04/18G00129/ORIGINAL/ita/akn"/>
+                        <eli:language rdf:resource="http://publications.europa.eu/resource/authority/language/ITA"/>
+                        <eli:publisher_agent rdf:resource="http://www.ipzs.it"/>
+                    </rdf:Description>
+                    <rdf:Description rdf:about="na:id/2018/09/04/18G00129/ORIGINAL/ita/akn">
+                        <rdf:type rdf:resource="eli:format"/>
+                        <eli:format rdf:resource="http://www.iana.org/assignments/media-types/xml"/>
+                    </rdf:Description>
+                </rdf:RDF>
+            </proprietary>
+        </meta>
+        <preface>
+            <p>
+                <docType>DECRETO LEGISLATIVO</docType>
+                <docDate date="2018-08-10">10 agosto 2018</docDate>
+                <docNumber>101</docNumber>
+                <docTitle>Disposizioni per l'adeguamento della normativa nazionale alle disposizioni del regolamento (UE) 2016/679 del Parlamento europeo e del Consiglio, del 27 aprile 2016, relativo alla protezione delle persone fisiche con riguardo al trattamento dei dati personali, nonche' alla libera circolazione di tali dati e che abroga la direttiva 95/46/CE (regolamento generale sulla protezione dei dati). (18G00129) 
+</docTitle>
+            </p>
+            <p>
+                <authorialNote eId="atn1" placement="bottom">
+                    <p>Entrata in vigore del provvedimento: 19/09/2018</p>
+                </authorialNote>
+            </p>
+        </preface>
+        <preamble>
+            <formula name="formulaInizialePreambolo">
+                <p>IL PRESIDENTE DELLA REPUBBLICA</p>
+            </formula>
+            <citations eId="cits_1">
+                <citation eId="cits_1__cit_1">
+                    <p>Visti gli <ref eId="ref_1" href="/akn/it/act/costituzione/stato/1947-12-27/const/!main#art_76">articoli 76</ref> e <ref eId="ref_2" href="/akn/it/act/costituzione/stato/1947-12-27/const/!main#art_87">87 della Costituzione</ref>;</p>
+                </citation>
+            </citations>
+            <citations eId="cits_2">
+                <citation eId="cits_2__cit_1">
+                    <p>Vista la <ref eId="ref_3" href="/akn/it/act/legge/stato/2017-10-25/163/!main">legge 25 ottobre 2017, n. 163</ref>, recante delega al Governo per il recepimento delle direttive europee e l'attuazione di altri atti dell'Unione europea - Legge di delegazione europea 2016-2017, e in particolare l'articolo 13, che delega il Governo all'emanazione di uno o piu' decreti legislativi di adeguamento del quadro normativo nazionale alle disposizioni del regolamento (UE) 2016/679 del Parlamento europeo e del Consiglio, del 27 aprile 2016;</p>
+                </citation>
+            </citations>
+            <citations eId="cits_3">
+                <citation eId="cits_3__cit_1">
+                    <p>Vista la <ref eId="ref_4" href="/akn/it/act/legge/stato/2012-12-24/234/!main">legge 24 dicembre 2012, n. 234</ref>, recante norme generali sulla partecipazione dell'Italia alla formazione e all'attuazione della normativa e delle politiche dell'Unione europea;</p>
+                </citation>
+            </citations>
+            <citations eId="cits_4">
+                <citation eId="cits_4__cit_1">
+                    <p>Visto il <ref eId="ref_5" href="/akn/it/act/decretoLegislativo/stato/2003-06-30/196/!main">Codice in materia di protezione dei dati personali</ref> di cui al <ref eId="ref_6" href="/akn/it/act/decretoLegislativo/stato/2003-06-30/196/!main">decreto legislativo 30 giugno 2003, n. 196</ref>;</p>
+                </citation>
+            </citations>
+            <citations eId="cits_5">
+                <citation eId="cits_5__cit_1">
+                    <p>Visto il Regolamento (UE) 2016/679 del Parlamento europeo e del Consiglio, del 27 aprile 2016, relativo alla protezione delle persone fisiche con riguardo al trattamento dei dati personali, nonche' alla libera circolazione di tali dati e che abroga la <ref eId="ref_7" href="/akn/it/act/direttivaUe/eu/1995/46/!main">direttiva 95/46/CE (regolamento</ref> generale sulla protezione dei dati);</p>
+                </citation>
+            </citations>
+            <citations eId="cits_6">
+                <citation eId="cits_6__cit_1">
+                    <p>Vista la <ref eId="ref_8" href="/akn/it/act/direttivaUe/eu/2016/680/!main">direttiva (UE) 2016/680 del Parlamento europeo e del Consiglio, del 27 aprile 2016</ref>, relativa alla protezione delle persone fisiche con riguardo al trattamento dei dati personali da parte delle autorita' competenti a fini di prevenzione, indagine, accertamento e perseguimento di reati o esecuzione di sanzioni penali, nonche' alla libera circolazione di tali dati e che abroga la decisione quadro 2008/977/GAI del Consiglio;</p>
+                </citation>
+            </citations>
+            <citations eId="cits_7">
+                <citation eId="cits_7__cit_1">
+                    <p>Vista la <ref eId="ref_9" href="/akn/it/act/direttivaUe/eu/1995/46/!main">direttiva 95/46/CE del Parlamento europeo e del Consiglio, del 24 ottobre 1995</ref>, relativa alla tutela delle persone fisiche con riguardo al trattamento dei dati personali, nonche' alla libera circolazione di tali dati;</p>
+                </citation>
+            </citations>
+            <citations eId="cits_8">
+                <citation eId="cits_8__cit_1">
+                    <p>Vista la <ref eId="ref_10" href="/akn/it/act/direttivaUe/eu/2002/58/!main">direttiva 2002/58/CE del Parlamento europeo e del Consiglio, del 12 luglio 2002</ref>, relativa al trattamento dei dati personali e alla tutela della vita privata nel settore delle comunicazioni elettroniche;</p>
+                </citation>
+            </citations>
+            <citations eId="cits_9">
+                <citation eId="cits_9__cit_1">
+                    <p>Visto il <ref eId="ref_11" href="/akn/it/act/decretoLegislativo/stato/2018-05-18/51/!main">decreto legislativo 18 maggio 2018, n. 51</ref>, recante attuazione della <ref eId="ref_12" href="/akn/it/act/direttivaUe/eu/2016/680/!main">direttiva (UE) 2016/680 del Parlamento europeo e del Consiglio, del 27 aprile 2016</ref>, relativa alla protezione delle persone fisiche con riguardo al trattamento dei dati personali da parte delle autorita' competenti a fini di prevenzione, indagine, accertamento e perseguimento di reati o esecuzione di sanzioni penali, nonche' alla libera circolazione di tali dati e che abroga la decisione quadro 2008/977/GAI del Consiglio;</p>
+                </citation>
+            </citations>
+            <citations eId="cits_10">
+                <citation eId="cits_10__cit_1">
+                    <p>Vista la preliminare deliberazione del Consiglio dei ministri, adottata nella riunione del 21 marzo 2018;</p>
+                </citation>
+            </citations>
+            <p>Acquisito il parere del Garante per la protezione dei dati personali, adottato nell'adunanza del 22 maggio 2018;</p>
+            <p>Acquisiti i pareri delle competenti Commissioni parlamentari della Camera dei deputati e del Senato della Repubblica;</p>
+            <citations eId="cits_11">
+                <citation eId="cits_11__cit_1">
+                    <p>Vista la deliberazione del Consiglio dei ministri, adottata nella riunione dell'8 agosto 2018;</p>
+                </citation>
+            </citations>
+            <p>Sulla proposta del Presidente del Consiglio dei ministri e dei Ministri per gli affari europei e della giustizia, di concerto con i Ministri per la pubblica amministrazione, degli affari esteri e della cooperazione internazionale, dell'economia e delle finanze e dello sviluppo economico;</p>
+            <formula name="formulaFinalePreambolo">
+                <p>E M A N A il seguente decreto legislativo:</p>
+            </formula>
+        </preamble>
+        <body><article eId="art_1">
+                    <num>Art. 1.</num>
+                    <heading> Modifiche al titolo e alle premesse 
+ del decreto legislativo 30 giugno 2003, n. 196</heading>
+                    <paragraph eId="art_1__para_1">
+                        <num>1.</num>
+                        <content>
+                            <p>Al titolo del <ref eId="content__ref_13" href="/akn/it/act/decretoLegislativo/stato/2003-06-30/196/!main">decreto legislativo 30 giugno 2003, n. 196</ref>, dopo le parole «dati personali» sono aggiunte le seguenti: «, recante disposizioni per l'adeguamento dell'ordinamento nazionale al regolamento (UE) n. 2016/679 del Parlamento europeo e del Consiglio, del 27 aprile 2016, relativo alla protezione delle persone fisiche con riguardo al trattamento dei dati personali, nonche' alla libera circolazione di tali dati e che abroga la <ref eId="content__ref_14" href="/akn/it/act/direttivaUe/eu/1995/46/!main">direttiva 95/46/CE</ref>». 
+</p>
+                        </content>
+                    </paragraph>
+                    <paragraph eId="art_1__para_2">
+                        <num>2.</num>
+                        <content>
+                            <p>Alle premesse del <ref eId="content__ref_15" href="/akn/it/act/decretoLegislativo/stato/2003-06-30/196/!main">decreto legislativo 30 giugno 2003, n. 196</ref>, dopo il terzo Visto sono inseriti i seguenti: 
+ «Vista la <ref eId="content__ref_16" href="/akn/it/act/legge/stato/2017-10-25/163/!main">legge 25 ottobre 2017, n. 163</ref>, recante delega al Governo per il recepimento delle direttive europee e l'attuazione di altri atti dell'Unione europea - Legge di delegazione europea 2016-2017» e, in particolare, l'articolo 13, che delega il Governo all'emanazione di uno o piu' decreti legislativi di adeguamento del quadro normativo nazionale alle disposizioni del Regolamento (UE) 2016/679 del Parlamento europeo e del Consiglio, del 27 aprile 2016; 
+ Vista la <ref eId="content__ref_17" href="/akn/it/act/legge/stato/2012-12-24/234/!main">legge 24 dicembre 2012, n. 234</ref>, recante norme generali sulla partecipazione dell'Italia alla formazione e all'attuazione della normativa e delle politiche dell'Unione europea; 
+ Visto il Regolamento (UE) 2016/679 del Parlamento europeo e del Consiglio, del 27 aprile 2016, relativo alla protezione delle persone fisiche con riguardo al trattamento dei dati personali, nonche' alla libera circolazione di tali dati e che abroga la <ref eId="content__ref_18" href="/akn/it/act/direttivaUe/eu/1995/46/!main">direttiva 95/46/CE (regolamento</ref> generale sulla protezione dei dati);». 
+</p>
+                        </content>
+                    </paragraph>
+                    <section>
+                        <content>
+                            <p>
+                                <authorialNote eId="authorialNote_1" placement="bottom">
+                                    <p> N O T E 
+ 
+ Avvertenza: 
+ 
+ Il testo delle note qui pubblicato e' stato redatto dall'amministrazione competente per materia ai sensi dell'art. 10, commi 2 e 3, del testo unico delle disposizioni sulla promulgazione delle leggi, sull'emanazione dei decreti del Presidente della Repubblica e sulle pubblicazioni ufficiali della Repubblica italiana, approvato con <ref eId="content__ref_19" href="/akn/it/act/decretoDelPresidenteDellaRepubblica/stato/1985-12-28/1092/!main">decreto del Presidente della Repubblica 28 dicembre 1985, n. 1092</ref>, al solo fine di facilitare la lettura delle disposizioni di legge modificate o alle quali e' operato il rinvio. Restano invariati il valore e l'efficacia degli atti legislativi qui trascritti. 
+ Per gli atti dell'Unione europea vengono forniti gli estremi di pubblicazione nella Gazzetta Ufficiale dell'Unione Europea (GUUE). 
+ 
+ Note alle premesse 
+ 
+ L'<ref eId="content__ref_20" href="/akn/it/act/costituzione/stato/1947-12-27/const/!main#art_76">art. 76 della Costituzione</ref> stabilisce che l'esercizio della funzione legislativa non puo' essere delegato al Governo se non con determinazione di principi e criteri direttivi e soltanto per tempo limitato e per oggetti definiti. 
+ L'<ref eId="content__ref_21" href="/akn/it/act/costituzione/stato/1947-12-27/const/!main#art_87">art. 87 della Costituzione</ref> conferisce, tra l'altro, al Presidente della Repubblica il potere di promulgare le leggi e di emanare i decreti aventi valore di legge ed i regolamenti. 
+ La <ref eId="content__ref_22" href="/akn/it/act/legge/stato/2017-10-25/163/!main">legge 25 ottobre 2017, n. 163</ref> (Delega al Governo per il recepimento delle direttive europee e l'attuazione di altri atti dell'Unione europea - Legge di delegazione europea 2016-2017) e' pubblicata nella Gazzetta Ufficiale 6 novembre 2017, n. 259. 
+ La <ref eId="content__ref_23" href="/akn/it/act/legge/stato/2012-12-24/234/!main">legge 24 dicembre 2012 n. 234</ref> (Norme generali sulla partecipazione dell'Italia alla formazione e all'attuazione della normativa e delle politiche dell'Unione europea) e' pubblicata nella Gazzetta Ufficiale 4 gennaio 2013, n. 3. 
+ Il <ref eId="content__ref_24" href="/akn/it/act/decretoLegislativo/stato/2003-06-30/196/!main">decreto legislativo 30 giugno 2003, n. 196</ref> (<ref eId="content__ref_25" href="/akn/it/act/decretoLegislativo/stato/2003-06-30/196/!main">Codice in materia di protezione dei dati personali</ref>) e' pubblicato nella Gazzetta Ufficiale 29 luglio 2003, n. 174, S.O. 
+ Il regolamento (UE) n. 2016/679 del Parlamento europeo e del Consiglio, relativo alla protezione delle persone fisiche con riguardo al trattamento dei dati personali, nonche' alla libera circolazione di tali dati e che abroga la <ref eId="content__ref_26" href="/akn/it/act/direttivaUe/eu/1995/46/!main">direttiva 95/46/CE (regolamento</ref> generale sulla protezione dei dati), e' pubblicato nella G.U.U.E. 9 novembre 2012, n. L 310. 
+ La <ref eId="content__ref_27" href="/akn/it/act/direttivaUe/eu/2016/680/!main">direttiva (UE) 2016/680 del Parlamento europeo e del Consiglio</ref>, relativa alla protezione delle persone fisiche con riguardo al trattamento dei dati personali da parte delle autorita' competenti a fini di prevenzione, indagine, accertamento e perseguimento di reati o esecuzione di sanzioni penali, nonche' alla libera circolazione di tali dati e che abroga la decisione quadro 2008/977/GAI del Consiglio, e' pubblicata nella G.U.U.E. 4 maggio 2016, n. L 119. 
+ La <ref eId="content__ref_28" href="/akn/it/act/direttivaUe/eu/1995/46/!main">direttiva 95/46/CE del Parlamento europeo e del Consiglio</ref>, relativa alla tutela delle persone fisiche con riguardo al trattamento dei dati personali, nonche' alla libera circolazione di tali dati, e' pubblicata nella G.U.U.E. 23 novembre 1995, n. L 281. 
+ La <ref eId="content__ref_29" href="/akn/it/act/direttivaUe/eu/2002/58/!main">direttiva 2002/58/CE del Parlamento europeo e del Consiglio</ref>, relativa al trattamento dei dati personali e alla tutela della vita privata nel settore delle comunicazioni elettroniche, e' pubblicata nella G.U.C.E. 31 luglio 2002, n. L 201. 
+ Il <ref eId="content__ref_30" href="/akn/it/act/decretoLegislativo/stato/2018-05-18/51/!main">decreto legislativo 18 maggio 2018, n. 51</ref> (Attuazione della <ref eId="content__ref_31" href="/akn/it/act/direttivaUe/eu/2016/680/!main">direttiva (UE) 2016/680 del Parlamento europeo e del Consiglio, del 27 aprile 2016</ref>, relativa alla protezione delle persone fisiche con riguardo al trattamento dei dati personali da parte delle autorita' competenti a fini di prevenzione, indagine, accertamento e perseguimento di reati o esecuzione di sanzioni penali, nonche' alla libera circolazione di tali dati e che abroga la decisione quadro 2008/977/GAI del Consiglio), e' pubblicato nella Gazzetta Ufficiale 24 maggio 2018, n. 119. 
+ 
+ Note all'art. 1: 
+ 
+ - Il titolo del <ref eId="content__ref_32" href="/akn/it/act/decretoLegislativo/stato/2003-06-30/196/!main">decreto legislativo 30 giugno 2003, n. 196</ref>, citato nelle note alle premesse, come modificato dal presente decreto, cosi' recita: 
+ «<ref eId="content__ref_33" href="/akn/it/act/decretoLegislativo/stato/2003-06-30/196/!main">Codice in materia di protezione dei dati personali</ref>, recante disposizioni per l'adeguamento dell'ordinamento nazionale al regolamento (UE) 2016/679 del Parlamento europeo e del Consiglio, del 27 aprile 2016, relativo alla protezione delle persone fisiche con riguardo al trattamento dei dati personali, nonche' alla libera circolazione di tali dati e che abroga la <ref eId="content__ref_34" href="/akn/it/act/direttivaUe/eu/1995/46/!main">direttiva 95/46/CE</ref>.» 
+</p>
+                                </authorialNote>
+                            </p>
+                        </content>
+                    </section>
+                </article></body>
+        <conclusions>
+            <formula name="formulaFinaleConclusioni">
+                <p>Il presente decreto, munito del sigillo dello Stato, sara' inserito nella Raccolta ufficiale degli atti normativi della Repubblica italiana. E' fatto obbligo a chiunque spetti di osservarlo e di farlo osservare. </p>
+            </formula>
+            <p> Dato a Roma, addi' 10 agosto 2018 </p>
+            <p>MATTARELLA Conte, Presidente del Consiglio dei ministri Savona, Ministro per gli affari europei Bonafede, Ministro della giustizia Bongiorno, Ministro per la pubblica amministrazione Moavero Milanesi, Ministro degli affari esteri e della cooperazione internazionale Tria, Ministro dell'economia e delle finanze Di Maio, Ministro dello sviluppo economico Visto, il Guardasigilli: Bonafede</p>
+        </conclusions>
+    </act>
+</akomaNtoso>
