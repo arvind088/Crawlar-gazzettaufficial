@@ -41,4 +41,24 @@ class AknImportRunnerTest {
         Model model = RDFDataMgr.loadModel(out.toString());
         assertTrue(model.size() > 20);
     }
+
+    @Test
+    void comparesImportedActsWithNormattivaCounts() throws IOException {
+        Path in = Files.createDirectories(temp.resolve("raw"));
+        Files.copy(Path.of("src/test/resources/akn/legge-2020-27-original.xml"), in.resolve("a.xml"));
+        Files.createDirectories(in.resolve("corpus"));
+        Files.writeString(in.resolve("corpus/counts.tsv"),
+                "act_type\tyear\tcount\tcounted_at\nLEGGE\t2020\t1\t\nDECRETO-LEGGE\t2020\t3\t\n");
+
+        AknImportRunner.Summary summary = new AknImportRunner(new EliUriService("https://example.test"))
+                .run(in, temp.resolve("out.ttl"));
+
+        assertEquals(2, summary.countChecks().size());
+        AknImportRunner.CountCheck dl = summary.countChecks().get(0);
+        AknImportRunner.CountCheck legge = summary.countChecks().get(1);
+        assertEquals("DECRETO-LEGGE", dl.actType());
+        assertFalse(dl.ok());
+        assertEquals(0, dl.imported());
+        assertTrue(legge.ok());
+    }
 }

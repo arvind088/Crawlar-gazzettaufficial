@@ -21,6 +21,7 @@ import it.legislation.eli.EliUriService;
 import it.legislation.mapping.AknActReader;
 import it.legislation.mapping.AknToEli;
 import it.legislation.model.AknExpression;
+import it.legislation.source.normattiva.CorpusCounts;
 
 /**
  * Turns the Normattiva Akoma Ntoso files in the raw store into ELI RDF.
@@ -47,7 +48,14 @@ public class AknImportRunner {
 
     /** What one run did. */
     public record Summary(int filesRead, int acts, int expressions, int duplicates,
-                          List<AknExpression.Rejected> rejected, boolean written) {}
+                          List<AknExpression.Rejected> rejected, boolean written, List<CountCheck> countChecks) {}
+
+    /** Acts imported for one act type and year, against the number Normattiva reported. */
+    public record CountCheck(String actType, int year, int expected, int imported) {
+        public boolean ok() {
+            return expected == imported;
+        }
+    }
 
     private final AknActReader reader = new AknActReader();
     private final AknToEli mapper;
@@ -74,6 +82,27 @@ public class AknImportRunner {
         System.out.println("Rejected:     " + summary.rejected().size());
         summary.rejected().forEach(r -> System.out.println("  REJECTED " + r.sourceFile() + "  " + r.problems()));
         System.out.println(summary.written() ? "Wrote " + out : "No change: " + out + " is already up to date");
+        if (!summary.countChecks().isEmpty()) {
+            System.out.println("Corpus check (acts in Normattiva vs acts imported):");
+            summary.countChecks().forEach(c -> System.out.println("  " + (c.ok() ? "OK      " : "MISSING ")
+                    + c.actType() + " " + c.year() + ": " + c.expected() + " vs " + c.imported()));
+            long bad = summary.countChecks().stream().filter(c -> !c.ok()).count();
+            System.out.println(bad == 0 ? "Corpus complete." : bad + " slice(s) do not match: fetch again, then re-import.");
+        }
+    }
+
+    /** Compares imported acts per type and year with {@code corpus/counts.tsv}, when that file exists. */
+    static List<CountCheck> countChecks(Path in, Map<String, Map<String, AknExpression>> byAct) throws IOException {
+        CorpusCounts expected = CorpusCounts.read(in.resolve("corpus").resolve(CorpusCounts.FILE));
+        Map<CorpusCounts.Key, Integer> imported = new TreeMap<>();
+        for (Map<String, AknExpression> versions : byAct.values()) {
+            AknExpression any = versions.values().iterator().next();
+            imported.merge(new CorpusCounts.Key(any.actType(), any.documentDate().getYear()), 1, Integer::sum);
+        }
+        List<CountCheck> checks = new ArrayList<>();
+        expected.all().forEach((key, count) -> checks.add(
+                new CountCheck(key.actType(), key.year(), count, imported.getOrDefault(key, 0))));
+        return checks;
     }
 
     public Summary run(Path in, Path out) throws IOException {
@@ -120,6 +149,7 @@ public class AknImportRunner {
             Files.write(out, turtle);
             written = true;
         }
-        return new Summary(files.size(), byAct.size(), expressions, duplicates, List.copyOf(rejected), written);
+        return new Summary(files.size(), byAct.size(), expressions, duplicates, List.copyOf(rejected), written,
+                countChecks(in, byAct));
     }
 }
