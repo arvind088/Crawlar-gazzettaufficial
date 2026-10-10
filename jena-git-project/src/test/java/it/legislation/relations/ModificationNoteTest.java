@@ -39,6 +39,9 @@ class ModificationNoteTest {
         assertEquals(Kind.REPEAL, part.kind());
         assertFalse(part.wholeAct());
 
+        assertTrue(ModificationNote.parse("ha disposto (con l'art. 1, comma 2) l'abrogazione e la modifica dell'art. 1.")
+                .wholeAct(), "\"l'abrogazione\" with no object: D.L. 79/2023 repealed by L. 95/2023");
+
         assertEquals(Kind.REPEAL, ModificationNote.parse(
                 "ha disposto (con l'art. 183 comma 1 lettera i) l'abrogazionme dell'art. 9 comma 4.").kind(),
                 "unbalanced parenthesis and the misspelling found in D.Lgs. 196/2003");

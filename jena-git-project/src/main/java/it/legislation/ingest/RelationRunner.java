@@ -98,9 +98,12 @@ public class RelationRunner {
         System.out.println("Decree-laws: " + r.conversions().size());
         byStatus.forEach((k, v) -> System.out.println("  " + pad(k.name(), 22) + v));
         r.conversions().stream().filter(c -> c.status() == ConversionStatus.REVIEW
-                        || c.status() == ConversionStatus.CONVERTED_ONE_SOURCE)
+                        || c.status() == ConversionStatus.CONVERTED_ONE_SOURCE
+                        || c.status() == ConversionStatus.NOT_CONVERTED
+                        || c.status() == ConversionStatus.AWAITING_LAW_TEXT)
                 .forEach(c -> System.out.println("  " + pad(c.status().name(), 22) + c.decree().key()
-                        + " -> " + (c.law() == null ? "-" : c.law().key()) + "  " + checks(c)));
+                        + " -> " + (c.law() == null ? (c.decreeNoteNamesLaw() == null ? "-" : c.decreeNoteNamesLaw())
+                        : c.law().key()) + "  " + checks(c)));
         System.out.println(summary.written() ? "Wrote " + out + ", " + conversions + ", " + relations
                 : "No change: " + out + " is already up to date");
     }
@@ -130,12 +133,44 @@ public class RelationRunner {
             }
         }
 
-        RelationDetector.Result result = new RelationDetector(corpus).detect(original, latest, today);
+        RelationDetector.Result result = new RelationDetector(corpus)
+                .detect(original, latest, today, listedConversionLaws(in, corpus));
         Model model = toRdf(corpus, result);
         boolean written = writeIfChanged(out, turtle(model));
         written |= writeIfChanged(conversionsReport, conversionsTsv(result).getBytes(StandardCharsets.UTF_8));
         written |= writeIfChanged(relationsReport, relationsTsv(result).getBytes(StandardCharsets.UTF_8));
         return new Summary(corpus.acts().size(), files, unreadable, result, written);
+    }
+
+    /**
+     * Laws that Normattiva lists (corpus/lists/*.json, saved by NormattivaCorpusRunner) but whose text was
+     * not exported, so they were not imported; when such a law's title says it converts a decree-law, the
+     * decree is converted even though the law is not in the store yet.
+     */
+    static Map<ActKey, String> listedConversionLaws(Path in, CorpusIndex corpus) throws IOException {
+        Map<ActKey, String> laws = new LinkedHashMap<>();
+        Path lists = in.resolve("corpus").resolve("lists");
+        if (!Files.isDirectory(lists)) {
+            return laws;
+        }
+        java.util.Set<String> imported = new java.util.HashSet<>();
+        corpus.acts().forEach(a -> imported.add(a.codice()));
+        com.fasterxml.jackson.databind.ObjectMapper json = new com.fasterxml.jackson.databind.ObjectMapper();
+        try (java.util.stream.Stream<Path> files = Files.list(lists)) {
+            for (Path file : files.filter(f -> f.getFileName().toString().startsWith("LEGGE_")).sorted().toList()) {
+                for (com.fasterxml.jackson.databind.JsonNode act : json.readTree(file.toFile())) {
+                    String codice = act.path("codiceRedazionale").asText();
+                    if (imported.contains(codice)) {
+                        continue;
+                    }
+                    String title = act.path("titoloAtto").asText().replaceAll("^\\[|\\]$", "");
+                    RelationDetector.convertedDecree(title).ifPresent(decree -> laws.put(decree,
+                            act.path("descrizioneAtto").asText() + " (" + codice + ", GU " + act.path("dataGU").asText()
+                                    + ", listed by Normattiva, text not exported yet)"));
+                }
+            }
+        }
+        return laws;
     }
 
     private static Evidence read(AknRelationReader reader, Path in, String file, List<String> unreadable) {
