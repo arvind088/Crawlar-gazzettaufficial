@@ -238,19 +238,9 @@ class ValidationQueriesTest {
      * grows. The queries themselves are written against the whole store.
      */
 
-    /**
-     * TDB2 memory-maps its index files, and on Windows a mapped file cannot be
-     * deleted until the JVM releases the mapping — which does not reliably happen
-     * at {@code close()}. JUnit's {@code @TempDir} therefore fails the test during
-     * cleanup with a DirectoryNotEmptyException, even when every assertion passed.
-     *
-     * <p>Store directories are created under {@code target/} instead and left in
-     * place; {@code mvn clean} removes them.
-     */
+    /** Store directory; see {@link it.legislation.store.TestStores} for why stores are not deleted here. */
     private static Path newStoreDirectory() throws IOException {
-        Path directory = Path.of("target", "test-stores", UUID.randomUUID().toString());
-        Files.createDirectories(directory);
-        return directory;
+        return it.legislation.store.TestStores.newDirectory();
     }
 
     private Tdb2DatasetService store(Path dir) throws IOException {
