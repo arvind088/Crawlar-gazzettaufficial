@@ -241,8 +241,13 @@ public class GazzettaCheckRunner {
     }
 
     /** Reads the acts (ELI Works) from the Normattiva Turtle file. */
-    static List<NormattivaAct> readActs(Path in) {
-        Model model = RDFDataMgr.loadModel(in.toString());
+    static List<NormattivaAct> readActs(Path in) throws IOException {
+        // Read from a stream, not a path string: on Windows the path has
+        // back-slashes, which Jena rejects inside a file: IRI.
+        Model model = ModelFactory.createDefaultModel();
+        try (java.io.InputStream stream = Files.newInputStream(in)) {
+            RDFDataMgr.read(model, stream, org.apache.jena.riot.Lang.TURTLE);
+        }
         Property idLocal = model.createProperty(ELI, "id_local");
         Property datePublication = model.createProperty(ELI, "date_publication");
         Property dateDocument = model.createProperty(ELI, "date_document");
