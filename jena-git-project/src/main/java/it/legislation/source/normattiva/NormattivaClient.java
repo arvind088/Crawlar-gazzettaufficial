@@ -84,6 +84,21 @@ public class NormattivaClient {
         return postJson("Advanced search", ADVANCED_SEARCH, body.toString());
     }
 
+    /**
+     * How many acts match the criteria of an export, using {@code ricerca/avanzata}
+     * ({@code numeroAttiTrovati}). Used to size exports and, after import, to check
+     * that nothing is missing.
+     */
+    public int count(ExportRequest request) throws IOException {
+        JsonNode result = advancedSearch(request.criteria(json), 1, 1);
+        JsonNode found = result.path("numeroAttiTrovati");
+        if (!found.isNumber() && !found.isTextual()) {
+            throw new NormattivaApiException("Count for " + request.fileStem() + " has no numeroAttiTrovati: "
+                    + result.toString().substring(0, Math.min(200, result.toString().length())));
+        }
+        return found.asInt();
+    }
+
     /** A new, empty criteria object for {@link #advancedSearch}. */
     public ObjectNode criteria() {
         return json.createObjectNode();
