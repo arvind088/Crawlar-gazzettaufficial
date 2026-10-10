@@ -88,6 +88,32 @@ class NormattivaClientTest {
     }
 
     @Test
+    void downloadFollowsRedirectsByHand() throws IOException {
+        FakeTransport transport = new FakeTransport()
+                .reply(302, Map.of("location", "https://files.example/export.zip"), "")
+                .replyBytes(200, "ZIP".getBytes(StandardCharsets.UTF_8));
+        NormattivaClient client = new NormattivaClient(transport);
+
+        byte[] zip = client.downloadExport("tok", null);
+
+        assertEquals("ZIP", new String(zip, StandardCharsets.UTF_8));
+        assertEquals("collections/download/collection-asincrona/tok", transport.calls.get(0).path());
+        assertEquals("https://files.example/export.zip", transport.calls.get(1).path());
+    }
+
+    @Test
+    void statusSeeOtherMeansCompletedWithIpzsLocation() throws IOException {
+        FakeTransport transport = new FakeTransport()
+                .reply(303, Map.of("x-ipzs-location", "collections/download/collection-asincrona/tok"), "");
+        NormattivaClient client = new NormattivaClient(transport);
+
+        ExportStatus status = client.exportStatus("tok");
+
+        assertTrue(status.isCompleted());
+        assertEquals("collections/download/collection-asincrona/tok", status.location());
+    }
+
+    @Test
     void failedExportStateIsReported() {
         FakeTransport transport = new FakeTransport()
                 .reply(200, "tok")

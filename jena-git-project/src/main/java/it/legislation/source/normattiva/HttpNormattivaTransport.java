@@ -8,12 +8,21 @@ import java.net.http.HttpResponse;
 import java.time.Duration;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 /**
  * {@link NormattivaTransport} over {@code java.net.http}.
  *
  * <p>Sends a clear User-Agent, waits between calls so the public service is
  * not flooded, and retries a few times on transient errors (429 and 5xx).
+ *
+ * <p>Redirects are NOT followed here: Normattiva answers a finished export with
+ * HTTP 303 and an {@code x-ipzs-location} header instead of {@code Location},
+ * which the JDK client rejects as an "Invalid redirection". The client reads
+ * that response itself. Every call has a hard time limit, so a stalled
+ * connection can never block a run for hours.
  */
 public class HttpNormattivaTransport implements NormattivaTransport {
 
@@ -26,6 +35,8 @@ public class HttpNormattivaTransport implements NormattivaTransport {
     private final HttpClient client;
     private final Duration minInterval;
     private final int retries;
+    private static final Duration REQUEST_TIMEOUT = Duration.ofSeconds(60);
+    private static final Duration HARD_LIMIT = Duration.ofMinutes(3);
     private long lastCallNanos;
 
     public HttpNormattivaTransport() {
@@ -38,7 +49,7 @@ public class HttpNormattivaTransport implements NormattivaTransport {
         this.retries = retries;
         this.client = HttpClient.newBuilder()
                 .connectTimeout(Duration.ofSeconds(20))
-                .followRedirects(HttpClient.Redirect.NORMAL)
+                .followRedirects(HttpClient.Redirect.NEVER)
                 .build();
     }
 
@@ -72,7 +83,7 @@ public class HttpNormattivaTransport implements NormattivaTransport {
 
     private HttpRequest.Builder builder(String path) {
         return HttpRequest.newBuilder(URI.create(url(path)))
-                .timeout(Duration.ofSeconds(60))
+                .timeout(REQUEST_TIMEOUT)
                 .header("User-Agent", USER_AGENT)
                 .header("Accept", "application/json, application/zip, */*")
                 .header("Accept-Language", "it-IT,it;q=0.9");
@@ -83,7 +94,8 @@ public class HttpNormattivaTransport implements NormattivaTransport {
         for (int attempt = 0; attempt <= retries; attempt++) {
             pace();
             try {
-                HttpResponse<byte[]> response = client.send(request, HttpResponse.BodyHandlers.ofByteArray());
+                HttpResponse<byte[]> response = client.sendAsync(request, HttpResponse.BodyHandlers.ofByteArray())
+                        .get(HARD_LIMIT.toSeconds(), TimeUnit.SECONDS);
                 Map<String, String> headers = new LinkedHashMap<>();
                 response.headers().map().forEach((name, values) -> {
                     if (!values.isEmpty()) {
@@ -99,8 +111,14 @@ public class HttpNormattivaTransport implements NormattivaTransport {
             } catch (InterruptedException exception) {
                 Thread.currentThread().interrupt();
                 throw new IOException("Interrupted while calling " + request.uri(), exception);
-            } catch (IOException exception) {
-                last = exception;
+            } catch (TimeoutException exception) {
+                last = new IOException("No complete answer within " + HARD_LIMIT.toMinutes() + " min from "
+                        + request.method() + " " + request.uri());
+                sleep(Duration.ofSeconds(2L * (attempt + 1)));
+            } catch (ExecutionException exception) {
+                Throwable cause = exception.getCause() == null ? exception : exception.getCause();
+                last = new IOException(cause.getClass().getSimpleName() + " on " + request.method() + " "
+                        + request.uri() + ": " + cause.getMessage(), cause);
                 sleep(Duration.ofSeconds(2L * (attempt + 1)));
             }
         }
