@@ -1,0 +1,72 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<akomaNtoso xmlns="http://docs.oasis-open.org/legaldocml/ns/akn/3.0" xmlns:nrdfa="http://www.normattiva.it/rdfa/">
+    <act name="monovigente">
+        <meta>
+            <identification source="">
+                <FRBRWork>
+                    <FRBRthis value="/akn/it/act/decreto_legislativo/stato/2003-06-30/196/!main" />
+                    <FRBRuri value="/akn/it/act/decreto_legislativo/stato/2003-06-30/196" />
+                    <FRBRalias name="urn:nir" value="urn:nir:stato:decreto.legislativo:2003-06-30;196" />
+                    <FRBRalias name="eli" value="eli/id/2003/07/29/003G0218/CONSOLIDATED/20260220" />
+                    <FRBRdate date="2003-06-30" name="" />
+                    <FRBRauthor as="#author" href="" />
+                    <preservation>
+                        <nrdfa:eli about="na:id/2003/07/29/003G0218/CONSOLIDATED/20260220" aknrelname="eli/id/2003/07/29/003G0218/CONSOLIDATED/20260220">
+                            <nrdfa:span property="rdf:type" resource="eli:LegalResource" />
+                            <nrdfa:span content="Codice in materia di protezione dei dati personali ((, recante disposizioni per l'adeguamento dell'ordinamento nazionale al regolamento (UE) n. 2016/679 del Parlamento europeo e del Consiglio, del 27 aprile 2016, relativo alla protezione delle persone fisiche con riguardo al trattamento dei dati personali, nonche' alla libera circolazione di tali dati e che abroga la direttiva 95/46/CE)). " lang="it" property="eli:title" xml:lang="it" />
+                            <nrdfa:span content="http://www.normattiva.it/eli/id/{yyyy}/{mm}/{dd}/{codiceRedazionale}/{tipoVersione}" property="eli:uri_schema" />
+                            <nrdfa:span content="003G0218" property="eli:id_local" />
+                            <nrdfa:span property="eli:type_document" resource="gu:tables/resource-type#DECRETO LEGISLATIVO" />
+                            <nrdfa:span content="2003-06-30" datatype="xsd:date" property="eli:date_document" />
+                            <nrdfa:span property="eli:version" resource="gu:tables/versions#ORIGINAL" />
+                        </nrdfa:eli>
+                    </preservation>
+                    <FRBRcountry value="it" />
+                </FRBRWork>
+                <FRBRExpression>
+                    <FRBRthis value="/akn/it/act/decreto_legislativo/stato/2003-06-30/196/ita@2026-02-20/!main" />
+                    <FRBRuri value="/akn/it/act/decreto_legislativo/stato/2003-06-30/196/ita@2026-02-20" />
+                    <FRBRdate date="2026-02-20" name="" />
+                    <FRBRauthor as="#author" href="" />
+                    <preservation>
+                        <nrdfa:eli about="na:id/2003/07/29/003G0218/CONSOLIDATED/20260220/ita">
+                            <nrdfa:span property="rdf:type" resource="eli:LegalExpression" />
+                            <nrdfa:span property="eli:realizes" resource="na:id/2003/07/29/003G0218/CONSOLIDATED/20260220" />
+                            <nrdfa:span property="eli:is_embodied_by" resource="na:id/2003/07/29/003G0218/CONSOLIDATED/20260220/ita/akn" />
+                            <nrdfa:span property="eli:language" resource="http://publications.europa.eu/resource/authority/language/ITA" />
+                            <nrdfa:span property="eli:publisher_agent" resource="http://www.ipzs.it" />
+                        </nrdfa:eli>
+                    </preservation>
+                    <FRBRlanguage language="ita" />
+                </FRBRExpression>
+                <FRBRManifestation>
+                    <FRBRthis value="/akn/it/act/decreto_legislativo/stato/2003-06-30/196/ita@2026-02-20/!main.xml" />
+                    <FRBRuri value="/akn/it/act/decreto_legislativo/stato/2003-06-30/196/ita@2026-02-20.xml" />
+                    <FRBRdate date="2003-06-30" name="" />
+                    <FRBRauthor as="#author" href="" />
+                    <preservation>
+                        <nrdfa:eli about="na:id/2003/07/29/003G0218/CONSOLIDATED/20260220/ita/akn">
+                            <nrdfa:span property="rdf:type" resource="eli:Format" />
+                            <nrdfa:span property="eli:format" resource="http://www.iana.org/assignments/media-types/xml" />
+                        </nrdfa:eli>
+                    </preservation>
+                </FRBRManifestation>
+            </identification>
+            <publication date="2003-07-29" name="" number="174" showAs="" />
+            </meta>
+        <preface>
+            <p>
+                <docType>DECRETO LEGISLATIVO</docType>
+                <docDate date="2003-06-30">30 giugno 2003</docDate>
+                <docNumber>196</docNumber>
+                <docTitle>Codice in materia di protezione dei dati personali ((, recante disposizioni per l'adeguamento dell'ordinamento nazionale al regolamento (UE) n. 2016/679 del Parlamento europeo e del Consiglio, del 27 aprile 2016, relativo alla protezione delle persone fisiche con riguardo al trattamento dei dati personali, nonche' alla libera circolazione di tali dati e che abroga la direttiva 95/46/CE)).
+</docTitle>
+            </p>
+            <p>
+                <authorialNote eId="atn1" placement="bottom">
+                    <p>Entrata in vigore del decreto: 1-1-2004, ad eccezione delle disposizioni di cui agli artt. 156, 176, commi 3, 4 ,5 e 6, e 182 che entrano in vigore il 30/7/2003; dalla medesima data si osservano altresì i termini in materia di ricorsi di cui agli artt. 149, comma 8, e 150, comma 2.</p>
+                </authorialNote>
+            </p>
+        </preface>
+        </act>
+</akomaNtoso>

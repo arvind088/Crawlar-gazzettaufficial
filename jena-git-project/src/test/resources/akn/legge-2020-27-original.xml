@@ -1,0 +1,72 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<akomaNtoso xmlns="http://docs.oasis-open.org/legaldocml/ns/akn/3.0" xmlns:nrdfa="http://www.normattiva.it/rdfa/">
+    <act name="monovigente">
+        <meta>
+            <identification source="">
+                <FRBRWork>
+                    <FRBRthis value="/akn/it/act/legge/stato/2020-04-24/27/!main" />
+                    <FRBRuri value="/akn/it/act/legge/stato/2020-04-24/27" />
+                    <FRBRalias name="urn:nir" value="urn:nir:stato:legge:2020-04-24;27" />
+                    <FRBRalias name="eli" value="eli/id/2020/04/29/20G00045/ORIGINAL" />
+                    <FRBRdate date="2020-04-24" name="" />
+                    <FRBRauthor as="#author" href="" />
+                    <preservation>
+                        <nrdfa:eli about="na:id/2020/04/29/20G00045/ORIGINAL" aknrelname="eli/id/2020/04/29/20G00045/ORIGINAL">
+                            <nrdfa:span property="rdf:type" resource="eli:LegalResource" />
+                            <nrdfa:span content="Conversione in legge, con modificazioni, del decreto-legge 17 marzo 2020, n. 18, recante misure di potenziamento del Servizio sanitario nazionale e di sostegno economico per famiglie, lavoratori e imprese connesse all'emergenza epidemiologica da COVID-19. Proroga dei termini per l'adozione di decreti legislativi. (20G00045)  " lang="it" property="eli:title" xml:lang="it" />
+                            <nrdfa:span content="http://www.normattiva.it/eli/id/{yyyy}/{mm}/{dd}/{codiceRedazionale}/{tipoVersione}" property="eli:uri_schema" />
+                            <nrdfa:span content="20G00045" property="eli:id_local" />
+                            <nrdfa:span property="eli:type_document" resource="gu:tables/resource-type#LEGGE" />
+                            <nrdfa:span content="2020-04-24" datatype="xsd:date" property="eli:date_document" />
+                            <nrdfa:span property="eli:version" resource="gu:tables/versions#ORIGINAL" />
+                        </nrdfa:eli>
+                    </preservation>
+                    <FRBRcountry value="it" />
+                </FRBRWork>
+                <FRBRExpression>
+                    <FRBRthis value="/akn/it/act/legge/stato/2020-04-24/27/ita@2020-04-30/!main" />
+                    <FRBRuri value="/akn/it/act/legge/stato/2020-04-24/27/ita@2020-04-30" />
+                    <FRBRdate date="2020-04-30" name="" />
+                    <FRBRauthor as="#author" href="" />
+                    <preservation>
+                        <nrdfa:eli about="na:id/2020/04/29/20G00045/ORIGINAL/ita">
+                            <nrdfa:span property="rdf:type" resource="eli:LegalExpression" />
+                            <nrdfa:span property="eli:realizes" resource="na:id/2020/04/29/20G00045/ORIGINAL" />
+                            <nrdfa:span property="eli:is_embodied_by" resource="na:id/2020/04/29/20G00045/ORIGINAL/ita/akn" />
+                            <nrdfa:span property="eli:language" resource="http://publications.europa.eu/resource/authority/language/ITA" />
+                            <nrdfa:span property="eli:publisher_agent" resource="http://www.ipzs.it" />
+                        </nrdfa:eli>
+                    </preservation>
+                    <FRBRlanguage language="ita" />
+                </FRBRExpression>
+                <FRBRManifestation>
+                    <FRBRthis value="/akn/it/act/legge/stato/2020-04-24/27/ita@2020-04-30/!main.xml" />
+                    <FRBRuri value="/akn/it/act/legge/stato/2020-04-24/27/ita@2020-04-30.xml" />
+                    <FRBRdate date="2020-04-24" name="" />
+                    <FRBRauthor as="#author" href="" />
+                    <preservation>
+                        <nrdfa:eli about="na:id/2020/04/29/20G00045/ORIGINAL/ita/akn">
+                            <nrdfa:span property="rdf:type" resource="eli:Format" />
+                            <nrdfa:span property="eli:format" resource="http://www.iana.org/assignments/media-types/xml" />
+                        </nrdfa:eli>
+                    </preservation>
+                </FRBRManifestation>
+            </identification>
+            <publication date="2020-04-29" name="" number="110" showAs="" />
+            </meta>
+        <preface>
+            <p>
+                <docType>LEGGE</docType>
+                <docDate date="2020-04-24">24 aprile 2020</docDate>
+                <docNumber>27</docNumber>
+                <docTitle>Conversione in legge, con modificazioni, del decreto-legge 17 marzo 2020, n. 18, recante misure di potenziamento del Servizio sanitario nazionale e di sostegno economico per famiglie, lavoratori e imprese connesse all'emergenza epidemiologica da COVID-19. Proroga dei termini per l'adozione di decreti legislativi. (20G00045) 
+</docTitle>
+            </p>
+            <p>
+                <authorialNote eId="atn1" placement="bottom">
+                    <p>Entrata in vigore del provvedimento: 30/04/2020</p>
+                </authorialNote>
+            </p>
+        </preface>
+        </act>
+</akomaNtoso>
