@@ -36,7 +36,8 @@ public record GazzettaActPage(String codice, LocalDate publicationDate, String t
                               String number, String title, String guNumber, String guIssueUri,
                               LocalDate entryIntoForce) {
 
-    private static final Pattern NUMBER = Pattern.compile("n\\.\\s*(\\d+[A-Za-z\\-]*)\\s*$");
+    private static final Pattern NUMBER = Pattern.compile(
+            "n\\.\\s*(\\d+[A-Za-z\\-]*)\\s*(?:\\(Raccolta\\s+\\d{4}\\))?\\s*$");
     private static final Pattern GU_ISSUE = Pattern.compile("Serie\\s+Generale\\s+n\\.\\s*(\\d+)");
     private static final Pattern ENTRY_INTO_FORCE = Pattern.compile(
             "Entrata in vigore del provvedimento:\\s*(\\d{2}/\\d{2}/\\d{4})");

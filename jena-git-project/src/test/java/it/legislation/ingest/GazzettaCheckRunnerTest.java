@@ -122,4 +122,10 @@ class GazzettaCheckRunnerTest {
         assertEquals(0, fetcher.urls.size());
         assertEquals(3, summary.counts().get(GazzettaCheckRunner.Status.ERROR));
     }
+
+    @Test
+    void titlesDifferingOnlyInSpacingAreEqual() {
+        assertEquals(GazzettaCheckRunner.normalizeTitle("decreto-legge 30 giugno 2025, n. \u200a95, recante"),
+                GazzettaCheckRunner.normalizeTitle("decreto-legge 30 giugno 2025, n.\u200a95 , recante"));
+    }
 }

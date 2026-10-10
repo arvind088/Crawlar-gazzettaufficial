@@ -78,4 +78,12 @@ class AknActReaderTest {
         assertTrue(result.rejected().problems().stream().anyMatch(p -> p.contains("codice redazionale")),
                 () -> result.rejected().problems().toString());
     }
+
+    @Test
+    void numberLosesRaccoltaNoteAndTitleEntitiesAreDecoded() {
+        assertEquals("1", AknActReader.actNumber("1 (Raccolta 2020)"));
+        assertEquals("27", AknActReader.actNumber("27"));
+        assertEquals("del decreto-legge 26 giugno 2025, n.\u200a92",
+                AknActReader.decodeEntities("del decreto-legge 26 giugno 2025, n.&#x200a;92"));
+    }
 }
