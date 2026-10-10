@@ -99,10 +99,10 @@ public class AknActReader {
         }
 
         String actType = text(first(root, "docType"));
-        String number = text(first(root, "docNumber"));
+        String number = actNumber(text(first(root, "docNumber")));
         Element docDate = first(root, "docDate");
         LocalDate documentDate = docDate == null ? null : date(docDate.getAttribute("date"), "document date", problems);
-        String title = text(first(root, "docTitle"));
+        String title = decodeEntities(text(first(root, "docTitle")));
 
         require(problems, codice, "codice redazionale");
         require(problems, gazzettaDate, "GU date");
@@ -163,6 +163,38 @@ public class AknActReader {
             return null;
         }
         return blankToNull(element.getTextContent().replaceAll("\\s+", " ").trim());
+    }
+
+    private static final java.util.regex.Pattern RACCOLTA = java.util.regex.Pattern.compile("\\s*\\(Raccolta\\s+\\d{4}\\)\\s*$");
+    private static final java.util.regex.Pattern NUMERIC_ENTITY = java.util.regex.Pattern.compile("&#(x[0-9A-Fa-f]+|\\d+);");
+
+    /**
+     * The act number without the "(Raccolta 2020)" note. The first act of a
+     * year is numbered "1 (Raccolta 2020)" in both sources; the number is 1,
+     * the note only names the yearly collection it opens.
+     */
+    public static String actNumber(String number) {
+        return number == null ? null : RACCOLTA.matcher(number).replaceFirst("");
+    }
+
+    /**
+     * Replaces numeric character references left as text (for example
+     * {@code &#x200a;}, a hair space, written escaped twice in some
+     * Normattiva titles) with the character they stand for.
+     */
+    public static String decodeEntities(String text) {
+        if (text == null || !text.contains("&#")) {
+            return text;
+        }
+        java.util.regex.Matcher m = NUMERIC_ENTITY.matcher(text);
+        StringBuilder sb = new StringBuilder();
+        while (m.find()) {
+            String code = m.group(1);
+            int cp = code.startsWith("x") ? Integer.parseInt(code.substring(1), 16) : Integer.parseInt(code);
+            m.appendReplacement(sb, java.util.regex.Matcher.quoteReplacement(new String(Character.toChars(cp))));
+        }
+        m.appendTail(sb);
+        return sb.toString();
     }
 
     private static String blankToNull(String value) {

@@ -233,9 +233,10 @@ public class GazzettaCheckRunner {
         if (title == null) {
             return null;
         }
-        return title.toLowerCase(java.util.Locale.ROOT)
+        return it.legislation.mapping.AknActReader.decodeEntities(title).toLowerCase(java.util.Locale.ROOT)
                 .replaceAll("[«»\"'’`]", "")
-                .replaceAll("\\s+", " ")
+                .replaceAll("[\\s\\u00a0\\u2000-\\u200b\\u202f]+", " ")
+                .replaceAll(" ([,.;:])", "$1")
                 .replaceAll("[ .]+$", "")
                 .trim();
     }
@@ -273,7 +274,8 @@ public class GazzettaCheckRunner {
                     LocalDate.parse(work.getProperty(datePublication).getString()),
                     type == null ? null : type.substring(type.indexOf('#') + 1),
                     work.getProperty(dateDocument) == null ? null : LocalDate.parse(work.getProperty(dateDocument).getString()),
-                    work.getProperty(number) == null ? null : work.getProperty(number).getString(),
+                    work.getProperty(number) == null ? null
+                            : it.legislation.mapping.AknActReader.actNumber(work.getProperty(number).getString()),
                     work.getProperty(title) == null ? null : work.getProperty(title).getString(),
                     gazzetta));
         });

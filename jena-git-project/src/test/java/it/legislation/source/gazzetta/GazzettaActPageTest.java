@@ -49,4 +49,11 @@ class GazzettaActPageTest {
     void pageWithoutActIsEmpty() {
         assertTrue(GazzettaActPage.parse("<html><body><h1>Pagina non trovata</h1></body></html>", "https://x").isEmpty());
     }
+
+    @Test
+    void firstActOfTheYearHasPlainNumber() throws IOException {
+        String html = Files.readString(Path.of("src/test/resources/gazzetta/decreto-legge-2026-154.html"))
+                .replace("28 agosto 2026, n. 154", "9 gennaio 2020, n. 1 (Raccolta 2020)");
+        assertEquals("1", GazzettaActPage.parse(html, "https://x").orElseThrow().number());
+    }
 }
