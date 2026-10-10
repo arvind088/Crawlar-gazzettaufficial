@@ -60,6 +60,8 @@ public class Tdb2DatasetService {
     static final Path NORMATTIVA_MULTIVERSION_SAMPLE = Path.of("data", "rdf", "normattiva_multiversion_sample.ttl");
     static final Path IN_FORCE = Path.of("data", "rdf", "in_force.ttl");
     static final Path SEED_ACTS = Path.of("data", "rdf", "seed_acts.ttl");
+    /** ELI RDF built from Normattiva Akoma Ntoso by {@code AknImportRunner}. */
+    static final Path NORMATTIVA_AKN = Path.of("data", "rdf", "normattiva_akn.ttl");
 
     private static final String GRAPH_BASE = "http://example.org/italian-legislation/graph/";
     private static final String PROVENANCE_GRAPH = GRAPH_BASE + "provenance";
@@ -114,7 +116,8 @@ public class Tdb2DatasetService {
                 new RdfGraphSource(GRAPH_BASE + "normattiva/auto", NORMATTIVA_AUTO_MODIFICATIONS),
                 new RdfGraphSource(GRAPH_BASE + "normattiva/multiversion-sample", NORMATTIVA_MULTIVERSION_SAMPLE),
                 new RdfGraphSource(GRAPH_BASE + "in-force", IN_FORCE),
-                new RdfGraphSource(GRAPH_BASE + "seed", SEED_ACTS)
+                new RdfGraphSource(GRAPH_BASE + "seed", SEED_ACTS),
+                new RdfGraphSource(GRAPH_BASE + "normattiva/akn", NORMATTIVA_AKN)
         );
     }
 

@@ -1,0 +1,14 @@
+# All versions (ELI Expressions) of one act, oldest first.
+# Example: D.Lgs. 30 giugno 2003, n. 196 (codice redazionale 003G0218) has 59.
+PREFIX eli:  <http://data.europa.eu/eli/ontology#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+
+SELECT ?expression ?versionDate ?file
+WHERE {
+  ?act eli:id_local "003G0218" ;
+       eli:is_realized_by ?expression .
+  ?expression eli:version_date ?versionDate ;
+              eli:is_embodied_by ?format .
+  OPTIONAL { ?format <http://purl.org/dc/terms/source> ?file . }
+}
+ORDER BY ?versionDate
