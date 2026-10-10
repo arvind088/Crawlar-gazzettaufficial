@@ -1,0 +1,13 @@
+# How many Normattiva acts were confirmed by their Gazzetta Ufficiale page,
+# by act type. MATCH = type, number, date of the act and GU date agree.
+PREFIX eli: <http://data.europa.eu/eli/ontology#>
+PREFIX ilg: <http://example.org/italian-legislation/ontology#>
+
+SELECT ?type ?check (COUNT(?act) AS ?acts)
+WHERE {
+  ?act a eli:LegalResource ;
+       eli:type_document ?type ;
+       ilg:gazzettaCheck ?check .
+}
+GROUP BY ?type ?check
+ORDER BY ?type ?check
