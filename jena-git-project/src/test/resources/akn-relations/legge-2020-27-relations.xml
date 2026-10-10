@@ -1,0 +1,192 @@
+<?xml version="1.0" encoding="UTF-8"?><akomaNtoso xmlns="http://docs.oasis-open.org/legaldocml/ns/akn/3.0" xmlns:eli="http://data.europa.eu/eli/ontology#" xmlns:fo="urn:oasis:names:tc:opendocument:xmlns:xsl-fo-compatible:1.0" xmlns:gu="http://www.gazzettaufficiale.it/eli/" xmlns:html="http://www.w3.org/1999/xhtml" xmlns:na="http://www.normattiva.it/eli/" xmlns:nakn="http://normattiva.it/akn/vocabulary" xmlns:nrdfa="http://www.normattiva.it/rdfa/" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:rdfa="http://www.w3.org/1999/xhtml#">
+    <act name="monovigente">
+        <meta>
+            <identification source="">
+                <FRBRWork>
+                    <FRBRthis value="/akn/it/act/legge/stato/2020-04-24/27/!main"/>
+                    <FRBRuri value="/akn/it/act/legge/stato/2020-04-24/27"/>
+                    <FRBRalias name="urn:nir" value="urn:nir:stato:legge:2020-04-24;27"/>
+                    <FRBRalias name="eli" value="eli/id/2020/04/29/20G00045/ORIGINAL"/>
+                    <FRBRdate date="2020-04-24" name=""/>
+                    <FRBRauthor as="#author" href=""/>
+                    
+                    <FRBRcountry value="it"/>
+                </FRBRWork>
+                <FRBRExpression>
+                    <FRBRthis value="/akn/it/act/legge/stato/2020-04-24/27/ita@2020-04-30/!main"/>
+                    <FRBRuri value="/akn/it/act/legge/stato/2020-04-24/27/ita@2020-04-30"/>
+                    <FRBRdate date="2020-04-30" name=""/>
+                    <FRBRauthor as="#author" href=""/>
+                    
+                    <FRBRlanguage language="ita"/>
+                </FRBRExpression>
+                <FRBRManifestation>
+                    <FRBRthis value="/akn/it/act/legge/stato/2020-04-24/27/ita@2020-04-30/!main.xml"/>
+                    <FRBRuri value="/akn/it/act/legge/stato/2020-04-24/27/ita@2020-04-30.xml"/>
+                    <FRBRdate date="2020-04-24" name=""/>
+                    <FRBRauthor as="#author" href=""/>
+                    
+                </FRBRManifestation>
+            </identification>
+            <publication date="2020-04-29" name="" number="110" showAs=""/>
+            <lifecycle source="">
+                <eventRef date="2020-04-29" eId="eventRef_0" source="ro1"/>
+            </lifecycle>
+            <workflow source="">
+                <step by="#senato" date="2020-04-24" refersTo="#S.1766"/>
+                <step by="#camera" date="2020-04-24" refersTo="#C.2463"/>
+            </workflow>
+            <analysis source="">
+                <activeModifications>
+                    <textualMod eId="amod_0" type="insertion">
+                        <source href="urn:nir:stato:legge:2020-04-24;27#1"/>
+                        <destination href="urn:nir:stato:regio.decreto:1934-07-27;1265#Testo unico delle leggi sanitarie-art. 100"/>
+                        <new>
+                            <nakn:text>ha disposto (con l'art. 1, comma 2) l'abrogazione del D.L. 2 marzo 2020, n. 9 (in G.U. 02/03/2020, n. 53).</nakn:text>
+                        </new>
+                    </textualMod>
+                    <textualMod eId="amod_2" type="insertion">
+                        <source href="urn:nir:stato:legge:2020-04-24;27#1"/>
+                        <destination href="urn:nir:stato:legge:1970-05-25;352#15"/>
+                        <new>
+                            <nakn:text>ha disposto (con l'art. 1, comma 1) la conversione, con modificazioni, del D.L. 17 marzo 2020, n. 18 (in G.U. 17/03/2020, n. 70).</nakn:text>
+                        </new>
+                    </textualMod>
+                    <textualMod eId="amod_92" type="insertion">
+                        <source href="urn:nir:stato:legge:2020-04-24;27#1"/>
+                        <destination href="urn:nir:stato:decreto.legge:2020-03-02;9"/>
+                        <new>
+                            <nakn:text>ha disposto (con l'art. 1, comma 2) che "Restano validi gli atti ed i
+provvedimenti adottati e sono fatti salvi gli effetti prodottisi e i rapporti giuridici sorti sulla base dei medesimi decreti-legge 2 marzo 2020, n. 9, 8 marzo 2020, n. 11, e 9 marzo 2020, n. 14".</nakn:text>
+                        </new>
+                    </textualMod>
+                    <textualMod eId="amod_93" type="insertion">
+                        <source href="urn:nir:stato:legge:2020-04-24;27#1"/>
+                        <destination href="urn:nir:stato:decreto.legge:2020-03-02;9#1"/>
+                        <new>
+                            <nakn:text>ha disposto (con l'art. 1, comma 2) l'abrogazione dell'intero provvedimento e la modifica dell'art. 1.</nakn:text>
+                        </new>
+                    </textualMod>
+                    <textualMod eId="amod_157" type="insertion">
+                        <source href="urn:nir:stato:legge:2020-04-24;27#1"/>
+                        <destination href="urn:nir:stato:decreto.legge:2020-03-17;18#1"/>
+                        <new>
+                            <nakn:text>, di conversione, ha disposto (con l'art. 1, comma 1) la modifica dell'art. 1, commi 1, 2 e 3.</nakn:text>
+                        </new>
+                    </textualMod>
+                </activeModifications>
+            </analysis>
+            <references source="">
+                <original eId="ro1" href="/akn/it/act/LEGGE/stato/2020-04-24/27/!main" showAs=""/>
+                <passiveRef eId="S.1766" href="/akn/it/senato-it:parl:ddl:senato;18.legislatura;1766" showAs=""/>
+                <passiveRef eId="C.2463" href="/akn/it/camera-it:parlamento:scheda.progetto.legge:camera;18.legislatura;2463" showAs=""/>
+            </references>
+            <proprietary source="">
+                <rdf:RDF>
+                    <rdf:Description rdf:about="na:id/2020/04/29/20G00045/ORIGINAL">
+                        <rdf:type rdf:resource="eli:LegalResource"/>
+                        <eli:title xml:lang="it">Conversione in legge, con modificazioni, del decreto-legge 17 marzo 2020, n. 18, recante misure di potenziamento del Servizio sanitario nazionale e di sostegno economico per famiglie, lavoratori e imprese connesse all'emergenza epidemiologica da COVID-19. Proroga dei termini per l'adozione di decreti legislativi. (20G00045)  </eli:title>
+                        <eli:uri_schema>http://www.normattiva.it/eli/id/{yyyy}/{mm}/{dd}/{codiceRedazionale}/{tipoVersione}</eli:uri_schema>
+                        <eli:id_local>20G00045</eli:id_local>
+                        <eli:type_document rdf:resource="gu:tables/resource-type#LEGGE"/>
+                        <eli:date_document rdf:datatype="xsd:date">2020-04-24</eli:date_document>
+                        <eli:version rdf:resource="gu:tables/versions#ORIGINAL"/>
+                    </rdf:Description>
+                    <rdf:Description rdf:about="na:id/2020/04/29/20G00045/ORIGINAL/ita">
+                        <rdf:type rdf:resource="eli:LegalExpression"/>
+                        <eli:realizes rdf:resource="na:id/2020/04/29/20G00045/ORIGINAL"/>
+                        <eli:is_embodied_by rdf:resource="na:id/2020/04/29/20G00045/ORIGINAL/ita/akn"/>
+                        <eli:language rdf:resource="http://publications.europa.eu/resource/authority/language/ITA"/>
+                        <eli:publisher_agent rdf:resource="http://www.ipzs.it"/>
+                    </rdf:Description>
+                    <rdf:Description rdf:about="na:id/2020/04/29/20G00045/ORIGINAL/ita/akn">
+                        <rdf:type rdf:resource="eli:format"/>
+                        <eli:format rdf:resource="http://www.iana.org/assignments/media-types/xml"/>
+                    </rdf:Description>
+                </rdf:RDF>
+            </proprietary>
+        </meta>
+        <preface>
+            <p>
+                <docType>LEGGE</docType>
+                <docDate date="2020-04-24">24 aprile 2020</docDate>
+                <docNumber>27</docNumber>
+                <docTitle>Conversione in legge, con modificazioni, del decreto-legge 17 marzo 2020, n. 18, recante misure di potenziamento del Servizio sanitario nazionale e di sostegno economico per famiglie, lavoratori e imprese connesse all'emergenza epidemiologica da COVID-19. Proroga dei termini per l'adozione di decreti legislativi. (20G00045) 
+</docTitle>
+            </p>
+            <p>
+                <authorialNote eId="atn1" placement="bottom">
+                    <p>Entrata in vigore del provvedimento: 30/04/2020</p>
+                </authorialNote>
+            </p>
+        </preface>
+        <preamble>
+            <formula name="primaDiFormulaInizialePreambolo">
+                <p>La Camera dei deputati ed il Senato della Repubblica hanno approvato;</p>
+            </formula>
+            <formula name="formulaInizialePreambolo">
+                <p>IL PRESIDENTE DELLA REPUBBLICA</p>
+            </formula>
+            <formula name="formulaFinalePreambolo">
+                <p>Promulga la seguente legge:</p>
+            </formula>
+        </preamble>
+        <body><article eId="art_1">
+                <num>Art. 1.</num>
+                <heading/>
+                <paragraph eId="art_1__para_1">
+                    <num>1.</num>
+                    <content>
+                        <p>Il <ref eId="content__ref_1" href="/akn/it/act/decretoLegge/stato/2020-03-17/18/!main">decreto-legge 17 marzo 2020, n. 18</ref>, recante misure di potenziamento del Servizio sanitario nazionale e di sostegno economico per famiglie, lavoratori e imprese connesse all'emergenza epidemiologica da COVID-19, e' convertito in legge con le modificazioni riportate in allegato alla presente legge. 
+</p>
+                    </content>
+                </paragraph>
+                <paragraph eId="art_1__para_2">
+                    <num>2.</num>
+                    <content>
+                        <p>I <ref eId="content__ref_2" href="/akn/it/act/decretoLegge/stato/2020-03-09/14/!main">decreti-legge 2 marzo 2020, n. 9, 8 marzo 2020, n. 11, e 9 marzo 2020, n. 14</ref>, sono abrogati. Restano validi gli atti ed i provvedimenti adottati e sono fatti salvi gli effetti prodottisi e i rapporti giuridici sorti sulla base dei medesimi <ref eId="content__ref_3" href="/akn/it/act/decretoLegge/stato/2020-03-09/14/!main">decreti-legge 2 marzo 2020, n. 9, 8 marzo 2020, n. 11, e 9 marzo 2020, n. 14</ref>. 
+</p>
+                    </content>
+                </paragraph>
+                <paragraph eId="art_1__para_3">
+                    <num>3.</num>
+                    <content>
+                        <p>In considerazione dello stato di emergenza sul territorio nazionale relativo al rischio sanitario connesso all'insorgenza di patologie derivanti da agenti virali trasmissibili, dichiarato con la delibera del Consiglio dei ministri del 31 gennaio 2020, pubblicata nella Gazzetta Ufficiale n. 26 del 1° febbraio 2020, i termini per l'adozione di decreti legislativi con scadenza tra il 10 febbraio 2020 e il 31 agosto 2020, che non siano scaduti alla data di entrata in vigore della presente legge, sono prorogati di tre mesi, decorrenti dalla data di scadenza di ciascuno di essi. I decreti legislativi di cui al primo periodo, il cui termine di adozione sia scaduto alla data di entrata in vigore della presente legge, possono essere adottati entro tre mesi dalla data di entrata in vigore della presente legge, nel rispetto dei principi e criteri direttivi e delle procedure previsti dalle rispettive leggi di delega. 
+</p>
+                    </content>
+                </paragraph>
+                <paragraph eId="art_1__para_4">
+                    <num>4.</num>
+                    <content>
+                        <p>La presente legge entra in vigore il giorno successivo a quello della sua pubblicazione nella Gazzetta Ufficiale. 
+ </p>
+                    </content>
+                </paragraph>
+                <section>
+                    <content>
+                        <p>
+                            <authorialNote eId="authorialNote_1" placement="bottom">
+                                <p> Avvertenza: 
+ 
+ La presente legge di conversione del <ref eId="content__ref_4" href="/akn/it/act/decretoLegge/stato/2020-03-17/18/!main">decreto-legge 17 marzo 2020, n. 18</ref>, pubblicato in Gazzetta Ufficiale - Serie generale - Edizione straordinaria n. 70 del 17 marzo 2020, e' pubblicata, per motivi di massima urgenza, senza note, ai sensi dell'art. 8, comma 3 del regolamento di esecuzione del testo unico delle disposizioni sulla promulgazione delle leggi, sulla emanazione dei decreti del Presidente della Repubblica e sulle pubblicazioni ufficiali della Repubblica italiana, approvato con <ref eId="content__ref_5" href="/akn/it/act/decretoDelPresidenteDellaRepubblica/stato/1986-03-14/217/!main">decreto del Presidente della Repubblica 14 marzo 1986, n. 217</ref>. 
+ 
+ Nel Supplemento ordinario alla Gazzetta Ufficiale del 15 maggio 2020 si procedera' alla ripubblicazione del testo della presente legge coordinata con il decreto-legge sopra citato, corredato delle relative note, ai sensi dell'<ref eId="content__ref_6" href="/akn/it/act/decretoDelPresidenteDellaRepubblica/stato/1985-12-28/1092/!main#art_10-com2">art. 10, commi 2</ref> e <ref eId="content__ref_7" href="/akn/it/act/decretoDelPresidenteDellaRepubblica/stato/1985-12-28/1092/!main#art_10-com3">3 del decreto del Presidente della Repubblica 28 dicembre 1985, n. 1092</ref>. 
+ 
+ Il testo del decreto-legge coordinato con la legge di conversione e' pubblicato in questo stesso Supplemento ordinario. 
+ 
+</p>
+                            </authorialNote>
+                        </p>
+                    </content>
+                </section>
+            </article></body>
+        <conclusions>
+            <formula name="formulaFinaleConclusioni">
+                <p>La presente legge, munita del sigillo dello Stato, sara' inserita nella Raccolta ufficiale degli atti normativi della Repubblica italiana. E' fatto obbligo a chiunque spetti di osservarla e di farla osservare come legge dello Stato. </p>
+            </formula>
+            <p> Data a Roma, addi' 24 aprile 2020 </p>
+            <p>MATTARELLA Conte, Presidente del Consiglio dei ministri Gualtieri, Ministro dell'economia e delle finanze Visto, il Guardasigilli: Bonafede</p>
+        </conclusions>
+        
+    </act>
+</akomaNtoso>
