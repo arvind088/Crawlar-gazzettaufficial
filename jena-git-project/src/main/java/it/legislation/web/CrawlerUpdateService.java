@@ -13,8 +13,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import it.legislation.crawler.GazzettaRssUpdateRunner;
-import it.legislation.crawler.GazzettaScraper;
+import it.legislation.source.gazzetta.GazzettaRssUpdateRunner;
+import it.legislation.source.gazzetta.GazzettaScraper;
 
 @Service
 public class CrawlerUpdateService {

@@ -12,8 +12,8 @@ import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
-import it.legislation.crawler.CrawlRegistry;
-import it.legislation.crawler.GazzettaRssUpdateRunner;
+import it.legislation.source.gazzetta.CrawlRegistry;
+import it.legislation.source.gazzetta.GazzettaRssUpdateRunner;
 
 class CrawlerUpdateServiceTest {
 

@@ -14,7 +14,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import it.legislation.crawler.NormattivaUpdateRunner;
+import it.legislation.source.normattiva.NormattivaUpdateRunner;
 
 @Service
 public class NormattivaUpdateService {
