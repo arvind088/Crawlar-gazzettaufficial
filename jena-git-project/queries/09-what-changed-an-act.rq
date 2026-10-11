@@ -1,5 +1,5 @@
-# Which acts amended, repealed or changed one act, with trust level and evidence.
-# Example: D.Lgs. 30 giugno 2003, n. 196 (codice redazionale 003G0218).
+# Which acts amended, repealed or changed one act, with the current trust level
+# (latest assessment). Example: D.Lgs. 30 giugno 2003, n. 196 (codice 003G0218).
 PREFIX eli: <http://data.europa.eu/eli/ontology#>
 PREFIX ilg: <http://example.org/italian-legislation/ontology#>
 PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
@@ -10,10 +10,18 @@ WHERE {
   ?relation a ilg:Relation ;
             ilg:toAct ?act ;
             ilg:fromAct ?source ;
-            ilg:relationProperty ?property ;
-            ilg:trustLevel ?trust ;
-            ilg:textualModCount ?textualMods ;
-            ilg:confirmedByLifecycle ?confirmedByLifecycle .
+            ilg:relationProperty ?property .
+  ?assessment a ilg:RelationAssessment ;
+              ilg:assesses ?relation ;
+              ilg:assessedOn ?date ;
+              ilg:status "FOUND" ;
+              ilg:trustLevel ?trust ;
+              ilg:textualModCount ?textualMods ;
+              ilg:confirmedByLifecycle ?confirmedByLifecycle .
+  FILTER NOT EXISTS {
+    ?newer a ilg:RelationAssessment ; ilg:assesses ?relation ; ilg:assessedOn ?later .
+    FILTER (?later > ?date)
+  }
   OPTIONAL { ?source rdfs:label ?sourceLabel . }
 }
 ORDER BY ?trust ?source
