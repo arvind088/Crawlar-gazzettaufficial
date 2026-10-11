@@ -52,8 +52,7 @@ class ValidationQueriesTest {
     /** Query 1 - every act, with title and publication date. */
     @Test
     void allActsAreListedWithTitleAndDate() throws IOException {
-        Path dir = newStoreDirectory();
-        List<QuerySolution> rows = run(dir, PREFIXES + """
+        List<QuerySolution> rows = run(PREFIXES + """
                 SELECT ?act ?label ?date WHERE {
                   ?act a eli:LegalResource ;
                        rdfs:label ?label ;
@@ -68,15 +67,14 @@ class ValidationQueriesTest {
     /** Query 2 - acts filtered by publication year. */
     @Test
     void actsCanBeFilteredByYear() throws IOException {
-        Path dir = newStoreDirectory();
-        assertEquals(4, run(dir, PREFIXES + """
+        assertEquals(4, run(PREFIXES + """
                 SELECT ?act WHERE {
                   ?act a eli:LegalResource ; eli:date_publication ?date .
                   FILTER(YEAR(?date) = 2020)
                 }
                 """).size());
 
-        assertEquals(0, run(dir, PREFIXES + """
+        assertEquals(0, run(PREFIXES + """
                 SELECT ?act WHERE {
                   ?act a eli:LegalResource ; eli:date_publication ?date .
                   FILTER(YEAR(?date) = 1999)
@@ -87,14 +85,13 @@ class ValidationQueriesTest {
     /** Query 3 - acts filtered by type: Decreto Legge versus Legge. */
     @Test
     void actsCanBeFilteredByDocumentType() throws IOException {
-        Path dir = newStoreDirectory();
-        assertEquals(2, run(dir, PREFIXES + """
+        assertEquals(2, run(PREFIXES + """
                 SELECT ?act WHERE {
                   ?act eli:type_document <%stables/resource-type#DECRETOLEGGE> .
                 }
                 """.formatted(GU)).size());
 
-        assertEquals(2, run(dir, PREFIXES + """
+        assertEquals(2, run(PREFIXES + """
                 SELECT ?act WHERE {
                   ?act eli:type_document <%stables/resource-type#LEGGE> .
                 }
@@ -104,8 +101,7 @@ class ValidationQueriesTest {
     /** Query 4 - most recently published acts. */
     @Test
     void latestActsComeBackNewestFirst() throws IOException {
-        Path dir = newStoreDirectory();
-        List<QuerySolution> rows = run(dir, PREFIXES + """
+        List<QuerySolution> rows = run(PREFIXES + """
                 SELECT ?act ?date WHERE {
                   ?act a eli:LegalResource ; eli:date_publication ?date .
                 } ORDER BY DESC(?date) LIMIT 2
@@ -122,8 +118,7 @@ class ValidationQueriesTest {
      */
     @Test
     void everyConversionLinkRunsFromALeggeToADecretoLegge() throws IOException {
-        Path dir = newStoreDirectory();
-        List<QuerySolution> wrongWayRound = run(dir, PREFIXES + """
+        List<QuerySolution> wrongWayRound = run(PREFIXES + """
                 SELECT ?legge ?decreto WHERE {
                   ?legge eli:commences ?decreto .
                   FILTER NOT EXISTS {
@@ -136,7 +131,7 @@ class ValidationQueriesTest {
         assertTrue(wrongWayRound.isEmpty(),
                 "found a conversion that is not Legge -> Decreto Legge: " + wrongWayRound);
 
-        List<QuerySolution> conversions = run(dir, PREFIXES + """
+        List<QuerySolution> conversions = run(PREFIXES + """
                 SELECT ?legge ?decreto WHERE { ?legge eli:commences ?decreto . } ORDER BY ?legge
                 """);
         assertEquals(2, conversions.size(), "the seed data defines two conversion pairs");
@@ -149,8 +144,7 @@ class ValidationQueriesTest {
     /** Query 6 - ELI-level validation: flag acts missing a title or a date. */
     @Test
     void everySeedActHasATitleAndAPublicationDate() throws IOException {
-        Path dir = newStoreDirectory();
-        List<QuerySolution> incomplete = run(dir, PREFIXES + """
+        List<QuerySolution> incomplete = run(PREFIXES + """
                 SELECT ?act WHERE {
                   ?act a eli:LegalResource .
                   FILTER (NOT EXISTS { ?act rdfs:label ?label } ||
@@ -168,8 +162,7 @@ class ValidationQueriesTest {
      */
     @Test
     void multiVersionActsAreFoundWithTheirExpressions() throws IOException {
-        Path dir = newStoreDirectory();
-        List<QuerySolution> rows = run(dir, PREFIXES + """
+        List<QuerySolution> rows = run(PREFIXES + """
                 SELECT ?work (COUNT(?expression) AS ?versions) WHERE {
                   ?work eli:is_realized_by ?expression .
                 } GROUP BY ?work HAVING (COUNT(?expression) > 1)
@@ -182,8 +175,7 @@ class ValidationQueriesTest {
     /** Exactly one Expression of a multi-version Work may be in force (US-A3). */
     @Test
     void exactlyOneExpressionOfTheMultiVersionActIsInForce() throws IOException {
-        Path dir = newStoreDirectory();
-        List<QuerySolution> inForce = run(dir, PREFIXES + """
+        List<QuerySolution> inForce = run(PREFIXES + """
                 SELECT ?expression WHERE {
                   <%s> eli:is_realized_by ?expression .
                   ?expression eli:in_force
@@ -203,19 +195,19 @@ class ValidationQueriesTest {
      */
     @Test
     void nonConversionRelationsExistToNavigate() throws IOException {
-        Path dir = newStoreDirectory();
-        assertTrue(run(dir, PREFIXES + "SELECT ?act ?topic WHERE { ?act eli:is_about ?topic . }")
+        assertTrue(run(PREFIXES + "SELECT ?act ?topic WHERE { ?act eli:is_about ?topic . }")
                 .size() >= 1, "eli:is_about is required by TC-03");
-        assertTrue(run(dir, PREFIXES + "SELECT ?act ?body WHERE { ?act eli:passed_by ?body . }")
+        assertTrue(run(PREFIXES + "SELECT ?act ?body WHERE { ?act eli:passed_by ?body . }")
                 .size() >= 1, "eli:passed_by is required by TC-03");
     }
 
     // ------------------------------------------------------------------ setup
 
-    private List<QuerySolution> run(Path dir, String query) throws IOException {
-        // A fresh store directory per query keeps TDB2 lock handling out of the
-        // picture; the seed file is small enough that re-ingesting is free.
-        Tdb2DatasetService store = store(newStoreDirectory());
+    private List<QuerySolution> run(String query) throws IOException {
+        // These tests check the queries, not persistence, so an in-memory store
+        // is enough. (A TDB2 store on disk takes about 192 MB on Windows even
+        // for this small seed file, and one was made for every query.)
+        Tdb2DatasetService store = store();
         try {
             return store.read(dataset -> {
                 List<QuerySolution> rows = new ArrayList<>();
@@ -237,17 +229,11 @@ class ValidationQueriesTest {
      * Loads only the seed file, so these assertions stay stable as crawled data
      * grows. The queries themselves are written against the whole store.
      */
-
-    /** Store directory; see {@link it.legislation.store.TestStores} for why stores are not deleted here. */
-    private static Path newStoreDirectory() throws IOException {
-        return it.legislation.store.TestStores.newDirectory();
-    }
-
-    private Tdb2DatasetService store(Path dir) throws IOException {
+    private Tdb2DatasetService store() {
         Path seed = Path.of("data", "rdf", "seed_acts.ttl");
         assertTrue(Files.exists(seed),
                 "seed data required by CONTEXT.md 3.1 is missing at " + seed.toAbsolutePath());
-        return Tdb2DatasetService.forRdfPaths(dir, List.of(seed));
+        return Tdb2DatasetService.inMemoryForRdfPaths(List.of(seed));
     }
 
     private String uri(QuerySolution solution, String name) {
