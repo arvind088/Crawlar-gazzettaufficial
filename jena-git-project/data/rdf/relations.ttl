@@ -43,17 +43,6 @@
         ilg:trustLevel            "B";
         dcterms:source            "corpus/LEGGE/2025/LEGGE_2025-12_M_AKN/LEGGE_20251230_199/2025-12-30_25G00212_ORIGINALE_V0.xml" .
 
-<https://osservatorio-eli.example.it/relation/21G00012/repeals/20G00030>
-        a                         ilg:Relation;
-        ilg:confirmedByLifecycle  false;
-        ilg:exampleNote           "testo: DECRETO-LEGGE 2020-03-09 n. 14 è abrogato"@it;
-        ilg:fromAct               <https://osservatorio-eli.example.it/eli/id/2021/02/05/21G00012/sg>;
-        ilg:relationProperty      eli:repeals;
-        ilg:textualModCount       "1"^^xsd:int;
-        ilg:toAct                 <https://osservatorio-eli.example.it/eli/id/2020/03/09/20G00030/sg>;
-        ilg:trustLevel            "B";
-        dcterms:source            "corpus/DECRETO_LEGISLATIVO/2021/DECRETO_LEGISLATIVO_2021_M_AKN/DECRETO LEGISLATIVO_20210202_9/2021-02-05_21G00012_ORIGINALE_V0.xml" .
-
 <https://osservatorio-eli.example.it/relation/21G00025/repeals/21G00010>
         a                         ilg:Relation;
         ilg:confirmedByLifecycle  true;
@@ -335,17 +324,6 @@
         eli:date_document  "1996-04-01"^^xsd:date;
         eli:number         "239";
         eli:type_document  <http://www.gazzettaufficiale.it/eli/tables/resource-type#DECRETO_LEGISLATIVO> .
-
-<https://osservatorio-eli.example.it/relation/20G00119/repeals/20G00026>
-        a                         ilg:Relation;
-        ilg:confirmedByLifecycle  false;
-        ilg:exampleNote           "testo: DECRETO-LEGGE 2020-03-02 n. 9 è abrogato"@it;
-        ilg:fromAct               <https://osservatorio-eli.example.it/eli/id/2020/08/11/20G00119/sg>;
-        ilg:relationProperty      eli:repeals;
-        ilg:textualModCount       "1"^^xsd:int;
-        ilg:toAct                 <https://osservatorio-eli.example.it/eli/id/2020/03/02/20G00026/sg>;
-        ilg:trustLevel            "B";
-        dcterms:source            "corpus/DECRETO_LEGISLATIVO/2020/DECRETO_LEGISLATIVO_2020_M_AKN/DECRETO LEGISLATIVO_20200730_100/2020-08-11_20G00119_ORIGINALE_V0.xml" .
 
 <https://osservatorio-eli.example.it/relation/21G00166/amends/decreto_legislativo_del_capo_provvisorio_dello_stato-1946-09-13-233>
         a                         ilg:Relation;
@@ -1446,7 +1424,7 @@
         ilg:exampleNote           "ha disposto (con l'art. 1, comma 2) che \"Il decreto-legge 20 ottobre 2022, n. 153, e' abrogato. Restano validi gli atti e i provvedimenti adottati e sono fatti salvi gli effetti prodottisi e i rapporti giuridici sorti sulla base del medesimo decreto-legge n. 153 del 2022\"."@it , "ha disposto (con l'art. 1, comma 2) l'abrogazione dell'intero provvedimento e la modifica dell'art. 1."@it;
         ilg:fromAct               <https://osservatorio-eli.example.it/eli/id/2022/11/17/22G00187/sg>;
         ilg:relationProperty      eli:repeals;
-        ilg:textualModCount       "6"^^xsd:int;
+        ilg:textualModCount       "5"^^xsd:int;
         ilg:toAct                 <https://osservatorio-eli.example.it/eli/id/2022/10/21/22G00170/sg>;
         ilg:trustLevel            "A";
         dcterms:source            "corpus/LEGGE/2022/LEGGE_2022_M_AKN/LEGGE_20221117_175/2022-11-17_22G00187_ORIGINALE_V0.xml" .
@@ -3150,7 +3128,7 @@
         ilg:exampleNote           "ha disposto (con l'art. 1, comma 2) l'abrogazione dell'intero provvedimento e la modifica dell'art. 1."@it , "ha disposto (con l'art. 1, comma 2) che \"Il decreto-legge 4 febbraio 2022, n. 5, e' abrogato. Restano validi gli atti e i provvedimenti adottati e sono fatti salvi gli effetti prodottisi e i rapporti giuridici sorti sulla base del medesimo decreto-legge 4 febbraio 2022, n. 5\"."@it;
         ilg:fromAct               <https://osservatorio-eli.example.it/eli/id/2022/03/08/22G00027/sg>;
         ilg:relationProperty      eli:repeals;
-        ilg:textualModCount       "10"^^xsd:int;
+        ilg:textualModCount       "9"^^xsd:int;
         ilg:toAct                 <https://osservatorio-eli.example.it/eli/id/2022/02/04/22G00014/sg>;
         ilg:trustLevel            "A";
         dcterms:source            "corpus/LEGGE/2022/LEGGE_2022_M_AKN/LEGGE_20220304_18/2022-03-08_22G00027_ORIGINALE_V0.xml" .
@@ -5446,17 +5424,6 @@
         ilg:trustLevel            "B";
         dcterms:source            "corpus/LEGGE/2025/LEGGE_2025-09_M_AKN/LEGGE_20250923_132/2025-09-25_25G00143_ORIGINALE_V0.xml" .
 
-<https://osservatorio-eli.example.it/relation/20G00136/repeals/20G00026>
-        a                         ilg:Relation;
-        ilg:confirmedByLifecycle  false;
-        ilg:exampleNote           "testo: DECRETO-LEGGE 2020-03-02 n. 9 è abrogato"@it;
-        ilg:fromAct               <https://osservatorio-eli.example.it/eli/id/2020/09/12/20G00136/sg>;
-        ilg:relationProperty      eli:repeals;
-        ilg:textualModCount       "1"^^xsd:int;
-        ilg:toAct                 <https://osservatorio-eli.example.it/eli/id/2020/03/02/20G00026/sg>;
-        ilg:trustLevel            "B";
-        dcterms:source            "corpus/DECRETO_LEGISLATIVO/2020/DECRETO_LEGISLATIVO_2020_M_AKN/DECRETO LEGISLATIVO_20200903_118/2020-09-12_20G00136_ORIGINALE_V0.xml" .
-
 <https://osservatorio-eli.example.it/relation/21G00255/amends/legge-1990-08-07-230>
         a                         ilg:Relation;
         ilg:confirmedByLifecycle  false;
@@ -5865,17 +5832,6 @@
         ilg:trustLevel            "B";
         dcterms:source            "corpus/DECRETO_LEGGE/2022/DECRETO_LEGGE_2022_M_AKN/DECRETO-LEGGE_20221229_198/2022-12-29_22G00212_ORIGINALE_V0.xml" .
 
-<https://osservatorio-eli.example.it/relation/20G00067/repeals/20G00026>
-        a                         ilg:Relation;
-        ilg:confirmedByLifecycle  false;
-        ilg:exampleNote           "testo: DECRETO-LEGGE 2020-03-02 n. 9 è abrogato"@it;
-        ilg:fromAct               <https://osservatorio-eli.example.it/eli/id/2020/06/10/20G00067/sg>;
-        ilg:relationProperty      eli:repeals;
-        ilg:textualModCount       "1"^^xsd:int;
-        ilg:toAct                 <https://osservatorio-eli.example.it/eli/id/2020/03/02/20G00026/sg>;
-        ilg:trustLevel            "B";
-        dcterms:source            "corpus/DECRETO_LEGISLATIVO/2020/DECRETO_LEGISLATIVO_2020_M_AKN/DECRETO LEGISLATIVO_20200610_49/2020-06-10_20G00067_ORIGINALE_V0.xml" .
-
 <https://osservatorio-eli.example.it/relation/23G00007/amends/decreto_legislativo-2005-09-06-206>
         a                         ilg:Relation;
         ilg:confirmedByLifecycle  false;
@@ -6025,10 +5981,10 @@
 <https://osservatorio-eli.example.it/relation/23G00090/repeals/decreto_legislativo-2015-09-14-150>
         a                         ilg:Relation;
         ilg:confirmedByLifecycle  false;
-        ilg:exampleNote           ", convertito con modificazioni dalla L. 10 agosto 2023, n. 112 (in G.U. 16/08/2023, n. 190), ha disposto (con l'art. 3, comma 1) che \"Al fine di garantire l'efficace coordinamento dei servizi e delle politiche attive del lavoro, incluso quello relativo all'utilizzo delle risorse europee e all'effett…"@it , "testo: DECRETO_LEGISLATIVO 2015-09-14 n. 150 è abrogato"@it;
+        ilg:exampleNote           ", convertito con modificazioni dalla L. 10 agosto 2023, n. 112 (in G.U. 16/08/2023, n. 190), ha disposto (con l'art. 3, comma 1) che \"Al fine di garantire l'efficace coordinamento dei servizi e delle politiche attive del lavoro, incluso quello relativo all'utilizzo delle risorse europee e all'effett…"@it;
         ilg:fromAct               <https://osservatorio-eli.example.it/eli/id/2023/06/22/23G00090/sg>;
         ilg:relationProperty      eli:repeals;
-        ilg:textualModCount       "3"^^xsd:int;
+        ilg:textualModCount       "2"^^xsd:int;
         ilg:toAct                 <https://osservatorio-eli.example.it/eli/ext/decreto_legislativo/2015-09-14/150>;
         ilg:trustLevel            "B";
         dcterms:source            "corpus/DECRETO_LEGGE/2023/DECRETO_LEGGE_2023_M_AKN/DECRETO-LEGGE_20230622_75/2023-06-22_23G00090_ORIGINALE_V0.xml" .
@@ -6086,17 +6042,6 @@
         ilg:toAct                 <https://osservatorio-eli.example.it/eli/ext/legge/2010-12-30/240>;
         ilg:trustLevel            "B";
         dcterms:source            "corpus/DECRETO_LEGGE/2021/DECRETO_LEGGE_2021_M_AKN/DECRETO-LEGGE_20210531_77/2021-05-31_21G00087_ORIGINALE_V0.xml" .
-
-<https://osservatorio-eli.example.it/relation/20G00063/repeals/20G00026>
-        a                         ilg:Relation;
-        ilg:confirmedByLifecycle  false;
-        ilg:exampleNote           "testo: DECRETO-LEGGE 2020-03-02 n. 9 è abrogato"@it;
-        ilg:fromAct               <https://osservatorio-eli.example.it/eli/id/2020/06/09/20G00063/sg>;
-        ilg:relationProperty      eli:repeals;
-        ilg:textualModCount       "1"^^xsd:int;
-        ilg:toAct                 <https://osservatorio-eli.example.it/eli/id/2020/03/02/20G00026/sg>;
-        ilg:trustLevel            "B";
-        dcterms:source            "corpus/DECRETO_LEGISLATIVO/2020/DECRETO_LEGISLATIVO_2020_M_AKN/DECRETO LEGISLATIVO_20200601_45/2020-06-09_20G00063_ORIGINALE_V0.xml" .
 
 <https://osservatorio-eli.example.it/relation/23G00139/amends/23G00110>
         a                         ilg:Relation;
@@ -7693,17 +7638,6 @@
         eli:number         "77";
         eli:type_document  <http://www.gazzettaufficiale.it/eli/tables/resource-type#LEGGE> .
 
-<https://osservatorio-eli.example.it/relation/20G00135/repeals/20G00030>
-        a                         ilg:Relation;
-        ilg:confirmedByLifecycle  false;
-        ilg:exampleNote           "testo: DECRETO-LEGGE 2020-03-09 n. 14 è abrogato"@it;
-        ilg:fromAct               <https://osservatorio-eli.example.it/eli/id/2020/09/11/20G00135/sg>;
-        ilg:relationProperty      eli:repeals;
-        ilg:textualModCount       "1"^^xsd:int;
-        ilg:toAct                 <https://osservatorio-eli.example.it/eli/id/2020/03/09/20G00030/sg>;
-        ilg:trustLevel            "B";
-        dcterms:source            "corpus/DECRETO_LEGISLATIVO/2020/DECRETO_LEGISLATIVO_2020_M_AKN/DECRETO LEGISLATIVO_20200903_116/2020-09-11_20G00135_ORIGINALE_V0.xml" .
-
 <https://osservatorio-eli.example.it/conversion/21G00108>
         a                     ilg:ConversionCheck;
         ilg:conversionStatus  "REPEALED";
@@ -8016,17 +7950,6 @@
         ilg:trustLevel            "B";
         dcterms:source            "corpus/DECRETO_LEGGE/2021/DECRETO_LEGGE_2021_M_AKN/DECRETO-LEGGE_20210614_82/2021-06-14_21G00098_VIGENZA_2025-10-10_V16.xml" .
 
-<https://osservatorio-eli.example.it/relation/20G00066/repeals/20G00030>
-        a                         ilg:Relation;
-        ilg:confirmedByLifecycle  false;
-        ilg:exampleNote           "testo: DECRETO-LEGGE 2020-03-09 n. 14 è abrogato"@it;
-        ilg:fromAct               <https://osservatorio-eli.example.it/eli/id/2020/06/10/20G00066/sg>;
-        ilg:relationProperty      eli:repeals;
-        ilg:textualModCount       "1"^^xsd:int;
-        ilg:toAct                 <https://osservatorio-eli.example.it/eli/id/2020/03/09/20G00030/sg>;
-        ilg:trustLevel            "B";
-        dcterms:source            "corpus/DECRETO_LEGISLATIVO/2020/DECRETO_LEGISLATIVO_2020_M_AKN/DECRETO LEGISLATIVO_20200610_48/2020-06-10_20G00066_ORIGINALE_V0.xml" .
-
 <https://osservatorio-eli.example.it/conversion/21G00145>
         a                     ilg:ConversionCheck;
         ilg:checkC1           true;
@@ -8091,17 +8014,6 @@
         ilg:toAct                 <https://osservatorio-eli.example.it/eli/id/2022/03/24/22G00034/sg>;
         ilg:trustLevel            "A";
         dcterms:source            "corpus/DECRETO_LEGGE/2023/DECRETO_LEGGE_2023_M_AKN/DECRETO-LEGGE_20230810_105/2023-08-10_23G00118_ORIGINALE_V0.xml" .
-
-<https://osservatorio-eli.example.it/relation/20G00064/repeals/20G00030>
-        a                         ilg:Relation;
-        ilg:confirmedByLifecycle  false;
-        ilg:exampleNote           "testo: DECRETO-LEGGE 2020-03-09 n. 14 è abrogato"@it;
-        ilg:fromAct               <https://osservatorio-eli.example.it/eli/id/2020/06/09/20G00064/sg>;
-        ilg:relationProperty      eli:repeals;
-        ilg:textualModCount       "1"^^xsd:int;
-        ilg:toAct                 <https://osservatorio-eli.example.it/eli/id/2020/03/09/20G00030/sg>;
-        ilg:trustLevel            "B";
-        dcterms:source            "corpus/DECRETO_LEGISLATIVO/2020/DECRETO_LEGISLATIVO_2020_M_AKN/DECRETO LEGISLATIVO_20200601_46/2020-06-09_20G00064_ORIGINALE_V0.xml" .
 
 <https://osservatorio-eli.example.it/relation/23G00053/changes/21G00087>
         a                         ilg:Relation;
@@ -8187,17 +8099,6 @@
         eli:amends            <https://osservatorio-eli.example.it/eli/ext/decreto-legge/2015-06-19/78>;
         ilg:conversionStatus  "REPEALED" .
 
-<https://osservatorio-eli.example.it/relation/20G00137/repeals/20G00026>
-        a                         ilg:Relation;
-        ilg:confirmedByLifecycle  false;
-        ilg:exampleNote           "testo: DECRETO-LEGGE 2020-03-02 n. 9 è abrogato"@it;
-        ilg:fromAct               <https://osservatorio-eli.example.it/eli/id/2020/09/12/20G00137/sg>;
-        ilg:relationProperty      eli:repeals;
-        ilg:textualModCount       "1"^^xsd:int;
-        ilg:toAct                 <https://osservatorio-eli.example.it/eli/id/2020/03/02/20G00026/sg>;
-        ilg:trustLevel            "B";
-        dcterms:source            "corpus/DECRETO_LEGISLATIVO/2020/DECRETO_LEGISLATIVO_2020_M_AKN/DECRETO LEGISLATIVO_20200903_119/2020-09-12_20G00137_ORIGINALE_V0.xml" .
-
 <https://osservatorio-eli.example.it/relation/22G00049/amends/legge-2019-06-19-56>
         a                         ilg:Relation;
         ilg:confirmedByLifecycle  false;
@@ -8252,16 +8153,12 @@
         ilg:trustLevel            "B";
         dcterms:source            "corpus/DECRETO_LEGGE/2024/DECRETO_LEGGE_2024_M_AKN/DECRETO-LEGGE_20240704_92/2024-07-04_24G00111_ORIGINALE_V0.xml" .
 
-<https://osservatorio-eli.example.it/relation/20G00062/repeals/20G00030>
-        a                         ilg:Relation;
-        ilg:confirmedByLifecycle  false;
-        ilg:exampleNote           "testo: DECRETO-LEGGE 2020-03-09 n. 14 è abrogato"@it;
-        ilg:fromAct               <https://osservatorio-eli.example.it/eli/id/2020/06/09/20G00062/sg>;
-        ilg:relationProperty      eli:repeals;
-        ilg:textualModCount       "1"^^xsd:int;
-        ilg:toAct                 <https://osservatorio-eli.example.it/eli/id/2020/03/09/20G00030/sg>;
-        ilg:trustLevel            "B";
-        dcterms:source            "corpus/DECRETO_LEGISLATIVO/2020/DECRETO_LEGISLATIVO_2020_M_AKN/DECRETO LEGISLATIVO_20200601_44/2020-06-09_20G00062_ORIGINALE_V0.xml" .
+<https://osservatorio-eli.example.it/eli/ext/regio_decreto/1942-03-30/318>
+        a                  ilg:ExternalAct;
+        rdfs:label         "REGIO_DECRETO 1942-03-30 n. 318";
+        eli:date_document  "1942-03-30"^^xsd:date;
+        eli:number         "318";
+        eli:type_document  <http://www.gazzettaufficiale.it/eli/tables/resource-type#REGIO_DECRETO> .
 
 <https://osservatorio-eli.example.it/relation/22G00123/amends/decreto-legge-2001-09-25-351>
         a                         ilg:Relation;
@@ -8273,13 +8170,6 @@
         ilg:toAct                 <https://osservatorio-eli.example.it/eli/ext/decreto-legge/2001-09-25/351>;
         ilg:trustLevel            "B";
         dcterms:source            "corpus/DECRETO_LEGISLATIVO/2022/DECRETO_LEGISLATIVO_2022_M_AKN/DECRETO LEGISLATIVO_20220803_114/2022-08-08_22G00123_ORIGINALE_V0.xml" .
-
-<https://osservatorio-eli.example.it/eli/ext/regio_decreto/1942-03-30/318>
-        a                  ilg:ExternalAct;
-        rdfs:label         "REGIO_DECRETO 1942-03-30 n. 318";
-        eli:date_document  "1942-03-30"^^xsd:date;
-        eli:number         "318";
-        eli:type_document  <http://www.gazzettaufficiale.it/eli/tables/resource-type#REGIO_DECRETO> .
 
 <https://osservatorio-eli.example.it/relation/20G00034/amends/legge-1996-12-23-662>
         a                         ilg:Relation;
@@ -8551,17 +8441,6 @@
         ilg:conversionStatus  "REPEALED";
         ilg:decree            <https://osservatorio-eli.example.it/eli/id/2020/08/14/20G00123/sg> .
 
-<https://osservatorio-eli.example.it/relation/20G00068/repeals/20G00026>
-        a                         ilg:Relation;
-        ilg:confirmedByLifecycle  false;
-        ilg:exampleNote           "testo: DECRETO-LEGGE 2020-03-02 n. 9 è abrogato"@it;
-        ilg:fromAct               <https://osservatorio-eli.example.it/eli/id/2020/06/10/20G00068/sg>;
-        ilg:relationProperty      eli:repeals;
-        ilg:textualModCount       "1"^^xsd:int;
-        ilg:toAct                 <https://osservatorio-eli.example.it/eli/id/2020/03/02/20G00026/sg>;
-        ilg:trustLevel            "B";
-        dcterms:source            "corpus/DECRETO_LEGISLATIVO/2020/DECRETO_LEGISLATIVO_2020_M_AKN/DECRETO LEGISLATIVO_20200610_50/2020-06-10_20G00068_ORIGINALE_V0.xml" .
-
 <https://osservatorio-eli.example.it/relation/24G00128/amends/decreto_legislativo-1999-04-13-112>
         a                         ilg:Relation;
         ilg:confirmedByLifecycle  false;
@@ -8729,8 +8608,7 @@
         dcterms:source            "corpus/LEGGE/2022/LEGGE_2022_M_AKN/LEGGE_20220519_52/2022-05-23_22G00063_ORIGINALE_V0.xml" .
 
 <https://osservatorio-eli.example.it/eli/id/2021/02/05/21G00012/sg>
-        eli:amends   <https://osservatorio-eli.example.it/eli/ext/legge/1991-03-05/71>;
-        eli:repeals  <https://osservatorio-eli.example.it/eli/id/2020/03/09/20G00030/sg> , <https://osservatorio-eli.example.it/eli/id/2020/03/08/20G00029/sg> , <https://osservatorio-eli.example.it/eli/id/2020/03/02/20G00026/sg> .
+        eli:amends  <https://osservatorio-eli.example.it/eli/ext/legge/1991-03-05/71> .
 
 <https://osservatorio-eli.example.it/relation/24G00089/changes/21G00084>
         a                         ilg:Relation;
@@ -9538,17 +9416,6 @@
 <https://osservatorio-eli.example.it/eli/id/2024/03/12/24G00041/sg>
         eli:amends  <https://osservatorio-eli.example.it/eli/ext/decreto_legislativo/2010-01-27/39> , <https://osservatorio-eli.example.it/eli/id/2020/05/19/20G00052/sg> , <https://osservatorio-eli.example.it/eli/ext/decreto_legislativo/2005-02-28/38> , <https://osservatorio-eli.example.it/eli/id/2020/03/17/20G00034/sg> , <https://osservatorio-eli.example.it/eli/ext/regio_decreto/1942-03-16/262> , <https://osservatorio-eli.example.it/eli/ext/legge/2005-12-28/262> , <https://osservatorio-eli.example.it/eli/ext/decreto-legge/2012-10-18/179> , <https://osservatorio-eli.example.it/eli/ext/decreto-legge/2016-12-23/237> , <https://osservatorio-eli.example.it/eli/ext/regio_decreto/1942-03-30/318> , <https://osservatorio-eli.example.it/eli/ext/decreto_legislativo/1993-09-01/385> , <https://osservatorio-eli.example.it/eli/ext/decreto_legislativo/2013-04-08/39> , <https://osservatorio-eli.example.it/eli/ext/decreto-legge/2019-04-30/34> , <https://osservatorio-eli.example.it/eli/ext/legge/2019-08-20/92> , <https://osservatorio-eli.example.it/eli/ext/decreto_legislativo/1998-02-24/58> , <https://osservatorio-eli.example.it/eli/ext/decreto_legislativo/2007-09-17/164> , <https://osservatorio-eli.example.it/eli/ext/legge/2015-12-28/208> .
 
-<https://osservatorio-eli.example.it/relation/20G00141/repeals/20G00026>
-        a                         ilg:Relation;
-        ilg:confirmedByLifecycle  false;
-        ilg:exampleNote           "testo: DECRETO-LEGGE 2020-03-02 n. 9 è abrogato"@it;
-        ilg:fromAct               <https://osservatorio-eli.example.it/eli/id/2020/09/15/20G00141/sg>;
-        ilg:relationProperty      eli:repeals;
-        ilg:textualModCount       "1"^^xsd:int;
-        ilg:toAct                 <https://osservatorio-eli.example.it/eli/id/2020/03/02/20G00026/sg>;
-        ilg:trustLevel            "B";
-        dcterms:source            "corpus/DECRETO_LEGISLATIVO/2020/DECRETO_LEGISLATIVO_2020_M_AKN/DECRETO LEGISLATIVO_20200915_122/2020-09-15_20G00141_ORIGINALE_V0.xml" .
-
 <https://osservatorio-eli.example.it/relation/22G00086/repeals/decreto-legge-2011-08-13-138>
         a                         ilg:Relation;
         ilg:confirmedByLifecycle  false;
@@ -9882,7 +9749,7 @@
         ilg:exampleNote           "ha disposto (con l'art. 1, comma 2) l'abrogazione dell'intero provvedimento e la modifica dell'art. 1."@it , "ha disposto (con l'art. 1, comma 2) che \"Le disposizioni di cui al presente decreto possono applicarsi, altresi', ad altri territori delle medesime Regioni Emilia-Romagna, Toscana e Marche non ricompresi nell'allegato 1 del decreto-legge 1° giugno 2023, n. 61, per i quali e' stato dichiarato lo stat…"@it;
         ilg:fromAct               <https://osservatorio-eli.example.it/eli/id/2023/07/31/23G00111/sg>;
         ilg:relationProperty      eli:repeals;
-        ilg:textualModCount       "15"^^xsd:int;
+        ilg:textualModCount       "14"^^xsd:int;
         ilg:toAct                 <https://osservatorio-eli.example.it/eli/id/2023/07/05/23G00097/sg>;
         ilg:trustLevel            "A";
         dcterms:source            "corpus/LEGGE/2023/LEGGE_2023_M_AKN/LEGGE_20230731_100/2023-07-31_23G00111_ORIGINALE_V0.xml" .
@@ -10115,17 +9982,6 @@
         ilg:toAct                 <https://osservatorio-eli.example.it/eli/ext/decreto_del_presidente_della_repubblica/2001-06-06/380>;
         ilg:trustLevel            "B";
         dcterms:source            "corpus/LEGGE/2025/LEGGE_2025-12_M_AKN/LEGGE_20251202_182/2025-12-03_25G00190_ORIGINALE_V0.xml" .
-
-<https://osservatorio-eli.example.it/relation/20G00138/repeals/20G00030>
-        a                         ilg:Relation;
-        ilg:confirmedByLifecycle  false;
-        ilg:exampleNote           "testo: DECRETO-LEGGE 2020-03-09 n. 14 è abrogato"@it;
-        ilg:fromAct               <https://osservatorio-eli.example.it/eli/id/2020/09/14/20G00138/sg>;
-        ilg:relationProperty      eli:repeals;
-        ilg:textualModCount       "1"^^xsd:int;
-        ilg:toAct                 <https://osservatorio-eli.example.it/eli/id/2020/03/09/20G00030/sg>;
-        ilg:trustLevel            "B";
-        dcterms:source            "corpus/DECRETO_LEGISLATIVO/2020/DECRETO_LEGISLATIVO_2020_M_AKN/DECRETO LEGISLATIVO_20200903_121/2020-09-14_20G00138_ORIGINALE_V0.xml" .
 
 <https://osservatorio-eli.example.it/relation/24G00229/amends/decreto_legislativo-2001-03-19-68>
         a                         ilg:Relation;
@@ -11499,7 +11355,7 @@
         ilg:exampleNote           "ha disposto (con l'art. 1, comma 2) che \"Il decreto-legge 16 gennaio 2025, n. 1, e' abrogato. Restano validi gli atti e i provvedimenti adottati e sono fatti salvi gli effetti prodottisi e i rapporti giuridici sorti sulla base del medesimo decreto-legge n. 1 del 2025\"."@it , "ha disposto (con l'art. 1, comma 2) l'abrogazione dell'intero provvedimento e la modifica dell'art. 1."@it;
         ilg:fromAct               <https://osservatorio-eli.example.it/eli/id/2025/03/01/25G00028/sg>;
         ilg:relationProperty      eli:repeals;
-        ilg:textualModCount       "5"^^xsd:int;
+        ilg:textualModCount       "4"^^xsd:int;
         ilg:toAct                 <https://osservatorio-eli.example.it/eli/id/2025/01/16/25G00006/sg>;
         ilg:trustLevel            "A";
         dcterms:source            "corpus/LEGGE/2025/LEGGE_2025-02_M_AKN/LEGGE_20250228_20/2025-03-01_25G00028_ORIGINALE_V0.xml" .
@@ -11756,8 +11612,7 @@
         dcterms:source            "corpus/DECRETO_LEGGE/2025/DECRETO_LEGGE_2025_M_AKN/DECRETO-LEGGE_20251231_200/2025-12-31_25G00213_ORIGINALE_V0.xml" .
 
 <https://osservatorio-eli.example.it/eli/id/2020/09/12/20G00136/sg>
-        eli:amends   <https://osservatorio-eli.example.it/eli/ext/decreto_legislativo/2008-11-20/188> , <https://osservatorio-eli.example.it/eli/ext/decreto_legislativo/2014-03-14/49>;
-        eli:repeals  <https://osservatorio-eli.example.it/eli/id/2020/03/09/20G00030/sg> , <https://osservatorio-eli.example.it/eli/id/2020/03/08/20G00029/sg> , <https://osservatorio-eli.example.it/eli/id/2020/03/02/20G00026/sg> .
+        eli:amends  <https://osservatorio-eli.example.it/eli/ext/decreto_legislativo/2008-11-20/188> , <https://osservatorio-eli.example.it/eli/ext/decreto_legislativo/2014-03-14/49> .
 
 <https://osservatorio-eli.example.it/eli/ext/decreto_legislativo/2003-09-10/276>
         a                  ilg:ExternalAct;
@@ -14197,7 +14052,7 @@
         ilg:exampleNote           "ha disposto (con l'art. 1, comma 2) l'abrogazione dell'intero provvedimento e la modifica dell'art. 1"@it , "ha disposto (con l'art. 1, comma 2) che \"Il decreto-legge 2 febbraio 2024, n. 9, recante disposizioni urgenti a tutela dell'indotto delle grandi imprese in stato di insolvenza ammesse alla procedura di amministrazione straordinaria, è abrogato. Restano validi gli atti e i provvedimenti adottati e so…"@it;
         ilg:fromAct               <https://osservatorio-eli.example.it/eli/id/2024/03/18/24G00045/sg>;
         ilg:relationProperty      eli:repeals;
-        ilg:textualModCount       "8"^^xsd:int;
+        ilg:textualModCount       "7"^^xsd:int;
         ilg:toAct                 <https://osservatorio-eli.example.it/eli/id/2024/02/02/24G00021/sg>;
         ilg:trustLevel            "A";
         dcterms:source            "corpus/LEGGE/2024/LEGGE_2024_M_AKN/LEGGE_20240315_28/2024-03-18_24G00045_ORIGINALE_V0.xml" .
@@ -16447,17 +16302,6 @@
         ilg:trustLevel            "A";
         dcterms:source            "corpus/DECRETO_LEGISLATIVO/2026/DECRETO_LEGISLATIVO_2026_M_AKN/DECRETO LEGISLATIVO_20260619_117/2026-07-03_26G00131_ORIGINALE_V0.xml" .
 
-<https://osservatorio-eli.example.it/relation/23G00054/amends/legge-2018-12-30-145>
-        a                         ilg:Relation;
-        ilg:confirmedByLifecycle  false;
-        ilg:exampleNote           ", convertito con modificazioni dalla L. 21 giugno 2023, n. 74 (in S.O. n. 23, relativo alla G.U. 21/06/2023, n. 143), ha disposto (con l'art. 20, comma 3-bis) la modifica dell'art. 1, comma 569, lettera b))."@it;
-        ilg:fromAct               <https://osservatorio-eli.example.it/eli/id/2023/04/22/23G00054/sg>;
-        ilg:relationProperty      eli:amends;
-        ilg:textualModCount       "1"^^xsd:int;
-        ilg:toAct                 <https://osservatorio-eli.example.it/eli/ext/legge/2018-12-30/145>;
-        ilg:trustLevel            "B";
-        dcterms:source            "corpus/DECRETO_LEGGE/2023/DECRETO_LEGGE_2023_M_AKN/DECRETO-LEGGE_20230422_44/2023-04-22_23G00054_ORIGINALE_V0.xml" .
-
 <https://osservatorio-eli.example.it/conversion/21G00084>
         a                     ilg:ConversionCheck;
         ilg:checkC1           true;
@@ -16471,6 +16315,17 @@
         ilg:decree            <https://osservatorio-eli.example.it/eli/id/2021/05/25/21G00084/sg>;
         ilg:law               <https://osservatorio-eli.example.it/eli/id/2021/07/24/21G00116/sg>;
         ilg:trustLevel        "A" .
+
+<https://osservatorio-eli.example.it/relation/23G00054/amends/legge-2018-12-30-145>
+        a                         ilg:Relation;
+        ilg:confirmedByLifecycle  false;
+        ilg:exampleNote           ", convertito con modificazioni dalla L. 21 giugno 2023, n. 74 (in S.O. n. 23, relativo alla G.U. 21/06/2023, n. 143), ha disposto (con l'art. 20, comma 3-bis) la modifica dell'art. 1, comma 569, lettera b))."@it;
+        ilg:fromAct               <https://osservatorio-eli.example.it/eli/id/2023/04/22/23G00054/sg>;
+        ilg:relationProperty      eli:amends;
+        ilg:textualModCount       "1"^^xsd:int;
+        ilg:toAct                 <https://osservatorio-eli.example.it/eli/ext/legge/2018-12-30/145>;
+        ilg:trustLevel            "B";
+        dcterms:source            "corpus/DECRETO_LEGGE/2023/DECRETO_LEGGE_2023_M_AKN/DECRETO-LEGGE_20230422_44/2023-04-22_23G00054_ORIGINALE_V0.xml" .
 
 <https://osservatorio-eli.example.it/relation/22G00142/repeals/decreto_legislativo-2014-12-03-199>
         a                         ilg:Relation;
@@ -17046,8 +16901,7 @@
         dcterms:source            "corpus/DECRETO_LEGGE/2022/DECRETO_LEGGE_2022_M_AKN/DECRETO-LEGGE_20221229_198/2022-12-29_22G00212_ORIGINALE_V0.xml" .
 
 <https://osservatorio-eli.example.it/eli/id/2020/06/10/20G00068/sg>
-        eli:amends   <https://osservatorio-eli.example.it/eli/ext/decreto_legislativo/1992-04-30/285> , <https://osservatorio-eli.example.it/eli/ext/decreto_legislativo/2005-11-21/286>;
-        eli:repeals  <https://osservatorio-eli.example.it/eli/id/2020/03/09/20G00030/sg> , <https://osservatorio-eli.example.it/eli/id/2020/03/08/20G00029/sg> , <https://osservatorio-eli.example.it/eli/id/2020/03/02/20G00026/sg> .
+        eli:amends  <https://osservatorio-eli.example.it/eli/ext/decreto_legislativo/1992-04-30/285> , <https://osservatorio-eli.example.it/eli/ext/decreto_legislativo/2005-11-21/286> .
 
 <https://osservatorio-eli.example.it/eli/id/2026/01/20/26G00018/sg>
         eli:changes  <https://osservatorio-eli.example.it/eli/id/2021/11/30/21G00214/sg> .
@@ -17577,17 +17431,6 @@
         ilg:trustLevel            "B";
         dcterms:source            "corpus/DECRETO_LEGISLATIVO/2021/DECRETO_LEGISLATIVO_2021_M_AKN/DECRETO LEGISLATIVO_20211108_210/2021-12-11_21G00233_VIGENZA_2026-08-15_V11.xml" .
 
-<https://osservatorio-eli.example.it/relation/20G00165/repeals/20G00026>
-        a                         ilg:Relation;
-        ilg:confirmedByLifecycle  false;
-        ilg:exampleNote           "testo: DECRETO-LEGGE 2020-03-02 n. 9 è abrogato"@it;
-        ilg:fromAct               <https://osservatorio-eli.example.it/eli/id/2020/10/30/20G00165/sg>;
-        ilg:relationProperty      eli:repeals;
-        ilg:textualModCount       "1"^^xsd:int;
-        ilg:toAct                 <https://osservatorio-eli.example.it/eli/id/2020/03/02/20G00026/sg>;
-        ilg:trustLevel            "B";
-        dcterms:source            "corpus/DECRETO_LEGISLATIVO/2020/DECRETO_LEGISLATIVO_2020_M_AKN/DECRETO LEGISLATIVO_20201016_142/2020-10-30_20G00165_ORIGINALE_V0.xml" .
-
 <https://osservatorio-eli.example.it/relation/22G00049/amends/decreto_legislativo-1993-09-01-385>
         a                         ilg:Relation;
         ilg:confirmedByLifecycle  false;
@@ -17737,17 +17580,6 @@
         ilg:toAct                 <https://osservatorio-eli.example.it/eli/ext/decreto_legislativo/2010-01-27/39>;
         ilg:trustLevel            "B";
         dcterms:source            "corpus/DECRETO_LEGISLATIVO/2021/DECRETO_LEGISLATIVO_2021_M_AKN/DECRETO LEGISLATIVO_20210202_17/2021-02-24_21G00020_ORIGINALE_V0.xml" .
-
-<https://osservatorio-eli.example.it/relation/21G00012/repeals/20G00029>
-        a                         ilg:Relation;
-        ilg:confirmedByLifecycle  false;
-        ilg:exampleNote           "testo: DECRETO-LEGGE 2020-03-08 n. 11 è abrogato"@it;
-        ilg:fromAct               <https://osservatorio-eli.example.it/eli/id/2021/02/05/21G00012/sg>;
-        ilg:relationProperty      eli:repeals;
-        ilg:textualModCount       "1"^^xsd:int;
-        ilg:toAct                 <https://osservatorio-eli.example.it/eli/id/2020/03/08/20G00029/sg>;
-        ilg:trustLevel            "B";
-        dcterms:source            "corpus/DECRETO_LEGISLATIVO/2021/DECRETO_LEGISLATIVO_2021_M_AKN/DECRETO LEGISLATIVO_20210202_9/2021-02-05_21G00012_ORIGINALE_V0.xml" .
 
 <https://osservatorio-eli.example.it/eli/id/2021/05/14/21G00072/sg>
         eli:amends  <https://osservatorio-eli.example.it/eli/ext/decreto_del_presidente_della_repubblica/1967-01-05/18> .
@@ -19844,6 +19676,11 @@
         eli:number         "174";
         eli:type_document  <http://www.gazzettaufficiale.it/eli/tables/resource-type#DECRETO-LEGGE> .
 
+<https://osservatorio-eli.example.it/conversion/20G00169>
+        a                     ilg:ConversionCheck;
+        ilg:conversionStatus  "REPEALED";
+        ilg:decree            <https://osservatorio-eli.example.it/eli/id/2020/11/07/20G00169/sg> .
+
 <https://osservatorio-eli.example.it/relation/23G00220/amends/decreto_legislativo-2000-05-23-164>
         a                         ilg:Relation;
         ilg:confirmedByLifecycle  false;
@@ -19854,11 +19691,6 @@
         ilg:toAct                 <https://osservatorio-eli.example.it/eli/ext/decreto_legislativo/2000-05-23/164>;
         ilg:trustLevel            "B";
         dcterms:source            "corpus/LEGGE/2023/LEGGE_2023_M_AKN/LEGGE_20231230_214/2023-12-30_23G00220_ORIGINALE_V0.xml" .
-
-<https://osservatorio-eli.example.it/conversion/20G00169>
-        a                     ilg:ConversionCheck;
-        ilg:conversionStatus  "REPEALED";
-        ilg:decree            <https://osservatorio-eli.example.it/eli/id/2020/11/07/20G00169/sg> .
 
 <https://osservatorio-eli.example.it/relation/23G00059/amends/22G00176>
         a                         ilg:Relation;
@@ -20693,17 +20525,6 @@
         ilg:trustLevel            "B";
         dcterms:source            "corpus/DECRETO_LEGGE/2020/DECRETO_LEGGE_2020_M_AKN/DECRETO-LEGGE_20200716_76/2020-07-16_20G00096_ORIGINALE_V0.xml" .
 
-<https://osservatorio-eli.example.it/relation/20G00093/repeals/20G00030>
-        a                         ilg:Relation;
-        ilg:confirmedByLifecycle  false;
-        ilg:exampleNote           "testo: DECRETO-LEGGE 2020-03-09 n. 14 è abrogato"@it;
-        ilg:fromAct               <https://osservatorio-eli.example.it/eli/id/2020/07/14/20G00093/sg>;
-        ilg:relationProperty      eli:repeals;
-        ilg:textualModCount       "1"^^xsd:int;
-        ilg:toAct                 <https://osservatorio-eli.example.it/eli/id/2020/03/09/20G00030/sg>;
-        ilg:trustLevel            "B";
-        dcterms:source            "corpus/DECRETO_LEGISLATIVO/2020/DECRETO_LEGISLATIVO_2020_M_AKN/DECRETO LEGISLATIVO_20200714_73/2020-07-14_20G00093_ORIGINALE_V0.xml" .
-
 <https://osservatorio-eli.example.it/eli/id/2020/10/16/20G00147/sg>
         eli:amends  <https://osservatorio-eli.example.it/eli/ext/legge/2019-12-27/160> .
 
@@ -20805,17 +20626,6 @@
         ilg:decree            <https://osservatorio-eli.example.it/eli/id/2022/11/18/22G00189/sg>;
         ilg:law               <https://osservatorio-eli.example.it/eli/id/2023/01/17/23G00010/sg>;
         ilg:trustLevel        "A" .
-
-<https://osservatorio-eli.example.it/relation/20G00091/repeals/20G00030>
-        a                         ilg:Relation;
-        ilg:confirmedByLifecycle  false;
-        ilg:exampleNote           "testo: DECRETO-LEGGE 2020-03-09 n. 14 è abrogato"@it;
-        ilg:fromAct               <https://osservatorio-eli.example.it/eli/id/2020/07/15/20G00091/sg>;
-        ilg:relationProperty      eli:repeals;
-        ilg:textualModCount       "1"^^xsd:int;
-        ilg:toAct                 <https://osservatorio-eli.example.it/eli/id/2020/03/09/20G00030/sg>;
-        ilg:trustLevel            "B";
-        dcterms:source            "corpus/DECRETO_LEGISLATIVO/2020/DECRETO_LEGISLATIVO_2020_M_AKN/DECRETO LEGISLATIVO_20200714_75/2020-07-15_20G00091_ORIGINALE_V0.xml" .
 
 <https://osservatorio-eli.example.it/relation/23G00227/amends/decreto_legislativo-1996-06-29-367>
         a                         ilg:Relation;
@@ -22172,27 +21982,6 @@
         ilg:trustLevel            "B";
         dcterms:source            "corpus/DECRETO_LEGGE/2021/DECRETO_LEGGE_2021_M_AKN/DECRETO-LEGGE_20210401_44/2021-04-01_21G00056_VIGENZA_2026-03-01_V30.xml" .
 
-<https://osservatorio-eli.example.it/relation/25G00157/amends/decreto_legislativo-1998-07-25-286>
-        a                         ilg:Relation;
-        ilg:confirmedByLifecycle  false;
-        ilg:exampleNote           "ha disposto (con l'art. 1, comma 1, lettera a)) la modifica dell'art. 22, comma 5."@it , ",convertito con modificazioni dalla L. 1 dicembre 2025, n. 179 (in G.U. 01/12/2025, n. 279), ha disposto (con l'art. 1, comma 1, lettera a-bis)) la modifica dell'art. 22, comma 5-quinquies; (con l'art. 1, comma 1, lettera a-ter)) la modifica dell'art. 22, comma 6."@it;
-        ilg:fromAct               <https://osservatorio-eli.example.it/eli/id/2025/10/03/25G00157/sg>;
-        ilg:relationProperty      eli:amends;
-        ilg:textualModCount       "48"^^xsd:int;
-        ilg:toAct                 <https://osservatorio-eli.example.it/eli/ext/decreto_legislativo/1998-07-25/286>;
-        ilg:trustLevel            "B";
-        dcterms:source            "corpus/DECRETO_LEGGE/2025/DECRETO_LEGGE_2025_M_AKN/DECRETO-LEGGE_20251003_146/2025-10-03_25G00157_ORIGINALE_V0.xml" .
-
-<https://osservatorio-eli.example.it/relation/22G00061/changes/20G00096>
-        a                         ilg:Relation;
-        ilg:confirmedByLifecycle  true;
-        ilg:fromAct               <https://osservatorio-eli.example.it/eli/id/2022/05/20/22G00061/sg>;
-        ilg:relationProperty      eli:changes;
-        ilg:textualModCount       "0"^^xsd:int;
-        ilg:toAct                 <https://osservatorio-eli.example.it/eli/id/2020/07/16/20G00096/sg>;
-        ilg:trustLevel            "B";
-        dcterms:source            "corpus/DECRETO_LEGGE/2020/DECRETO_LEGGE_2020_M_AKN/DECRETO-LEGGE_20200716_76/2020-07-16_20G00096_VIGENZA_2026-03-01_V54.xml" .
-
 <https://osservatorio-eli.example.it/conversion/20G00043>
         a                     ilg:ConversionCheck;
         ilg:checkC1           true;
@@ -22206,6 +21995,27 @@
         ilg:decree            <https://osservatorio-eli.example.it/eli/id/2020/04/08/20G00043/sg>;
         ilg:law               <https://osservatorio-eli.example.it/eli/id/2020/06/06/20G00060/sg>;
         ilg:trustLevel        "A" .
+
+<https://osservatorio-eli.example.it/relation/22G00061/changes/20G00096>
+        a                         ilg:Relation;
+        ilg:confirmedByLifecycle  true;
+        ilg:fromAct               <https://osservatorio-eli.example.it/eli/id/2022/05/20/22G00061/sg>;
+        ilg:relationProperty      eli:changes;
+        ilg:textualModCount       "0"^^xsd:int;
+        ilg:toAct                 <https://osservatorio-eli.example.it/eli/id/2020/07/16/20G00096/sg>;
+        ilg:trustLevel            "B";
+        dcterms:source            "corpus/DECRETO_LEGGE/2020/DECRETO_LEGGE_2020_M_AKN/DECRETO-LEGGE_20200716_76/2020-07-16_20G00096_VIGENZA_2026-03-01_V54.xml" .
+
+<https://osservatorio-eli.example.it/relation/25G00157/amends/decreto_legislativo-1998-07-25-286>
+        a                         ilg:Relation;
+        ilg:confirmedByLifecycle  false;
+        ilg:exampleNote           "ha disposto (con l'art. 1, comma 1, lettera a)) la modifica dell'art. 22, comma 5."@it , ",convertito con modificazioni dalla L. 1 dicembre 2025, n. 179 (in G.U. 01/12/2025, n. 279), ha disposto (con l'art. 1, comma 1, lettera a-bis)) la modifica dell'art. 22, comma 5-quinquies; (con l'art. 1, comma 1, lettera a-ter)) la modifica dell'art. 22, comma 6."@it;
+        ilg:fromAct               <https://osservatorio-eli.example.it/eli/id/2025/10/03/25G00157/sg>;
+        ilg:relationProperty      eli:amends;
+        ilg:textualModCount       "48"^^xsd:int;
+        ilg:toAct                 <https://osservatorio-eli.example.it/eli/ext/decreto_legislativo/1998-07-25/286>;
+        ilg:trustLevel            "B";
+        dcterms:source            "corpus/DECRETO_LEGGE/2025/DECRETO_LEGGE_2025_M_AKN/DECRETO-LEGGE_20251003_146/2025-10-03_25G00157_ORIGINALE_V0.xml" .
 
 <https://osservatorio-eli.example.it/relation/20G00197/repeals/20G00170>
         a                         ilg:Relation;
@@ -24084,17 +23894,6 @@
         ilg:trustLevel            "B";
         dcterms:source            "corpus/DECRETO_LEGISLATIVO/2024/DECRETO_LEGISLATIVO_2024_M_AKN/DECRETO LEGISLATIVO_20240205_20/2024-03-05_24G00034_ORIGINALE_V0.xml" .
 
-<https://osservatorio-eli.example.it/relation/20G00173/repeals/20G00030>
-        a                         ilg:Relation;
-        ilg:confirmedByLifecycle  false;
-        ilg:exampleNote           "testo: DECRETO-LEGGE 2020-03-09 n. 14 è abrogato"@it;
-        ilg:fromAct               <https://osservatorio-eli.example.it/eli/id/2020/11/16/20G00173/sg>;
-        ilg:relationProperty      eli:repeals;
-        ilg:textualModCount       "1"^^xsd:int;
-        ilg:toAct                 <https://osservatorio-eli.example.it/eli/id/2020/03/09/20G00030/sg>;
-        ilg:trustLevel            "B";
-        dcterms:source            "corpus/DECRETO_LEGISLATIVO/2020/DECRETO_LEGISLATIVO_2020_M_AKN/DECRETO LEGISLATIVO_20201026_152/2020-11-16_20G00173_ORIGINALE_V0.xml" .
-
 <https://osservatorio-eli.example.it/eli/id/2024/07/08/24G00115/sg>
         eli:repeals   <https://osservatorio-eli.example.it/eli/id/2024/05/09/24G00078/sg>;
         ilg:converts  <https://osservatorio-eli.example.it/eli/id/2024/05/09/24G00078/sg> .
@@ -25904,17 +25703,6 @@
         ilg:trustLevel            "A";
         dcterms:source            "corpus/DECRETO_LEGGE/2024/DECRETO_LEGGE_2024_M_AKN/DECRETO-LEGGE_20241231_208/2024-12-31_24G00232_ORIGINALE_V0.xml" .
 
-<https://osservatorio-eli.example.it/relation/20G00135/repeals/20G00029>
-        a                         ilg:Relation;
-        ilg:confirmedByLifecycle  false;
-        ilg:exampleNote           "testo: DECRETO-LEGGE 2020-03-08 n. 11 è abrogato"@it;
-        ilg:fromAct               <https://osservatorio-eli.example.it/eli/id/2020/09/11/20G00135/sg>;
-        ilg:relationProperty      eli:repeals;
-        ilg:textualModCount       "1"^^xsd:int;
-        ilg:toAct                 <https://osservatorio-eli.example.it/eli/id/2020/03/08/20G00029/sg>;
-        ilg:trustLevel            "B";
-        dcterms:source            "corpus/DECRETO_LEGISLATIVO/2020/DECRETO_LEGISLATIVO_2020_M_AKN/DECRETO LEGISLATIVO_20200903_116/2020-09-11_20G00135_ORIGINALE_V0.xml" .
-
 <https://osservatorio-eli.example.it/relation/25G00120/changes/21G00087>
         a                         ilg:Relation;
         ilg:confirmedByLifecycle  true;
@@ -26188,17 +25976,6 @@
         ilg:trustLevel            "A";
         dcterms:source            "corpus/DECRETO_LEGGE/2023/DECRETO_LEGGE_2023_M_AKN/DECRETO-LEGGE_20230929_132/2023-09-29_23G00142_ORIGINALE_V0.xml" .
 
-<https://osservatorio-eli.example.it/relation/20G00066/repeals/20G00029>
-        a                         ilg:Relation;
-        ilg:confirmedByLifecycle  false;
-        ilg:exampleNote           "testo: DECRETO-LEGGE 2020-03-08 n. 11 è abrogato"@it;
-        ilg:fromAct               <https://osservatorio-eli.example.it/eli/id/2020/06/10/20G00066/sg>;
-        ilg:relationProperty      eli:repeals;
-        ilg:textualModCount       "1"^^xsd:int;
-        ilg:toAct                 <https://osservatorio-eli.example.it/eli/id/2020/03/08/20G00029/sg>;
-        ilg:trustLevel            "B";
-        dcterms:source            "corpus/DECRETO_LEGISLATIVO/2020/DECRETO_LEGISLATIVO_2020_M_AKN/DECRETO LEGISLATIVO_20200610_48/2020-06-10_20G00066_ORIGINALE_V0.xml" .
-
 <https://osservatorio-eli.example.it/relation/25G00024/changes/24G00215>
         a                         ilg:Relation;
         ilg:confirmedByLifecycle  true;
@@ -26343,16 +26120,15 @@
         ilg:trustLevel            "A";
         dcterms:source            "corpus/DECRETO_LEGISLATIVO/2025/DECRETO_LEGISLATIVO_2025_M_AKN/DECRETO LEGISLATIVO_20250801_123/2025-08-12_25G00124_ORIGINALE_V0.xml" .
 
-<https://osservatorio-eli.example.it/relation/20G00064/repeals/20G00029>
+<https://osservatorio-eli.example.it/relation/22G00032/changes/20G00034>
         a                         ilg:Relation;
-        ilg:confirmedByLifecycle  false;
-        ilg:exampleNote           "testo: DECRETO-LEGGE 2020-03-08 n. 11 è abrogato"@it;
-        ilg:fromAct               <https://osservatorio-eli.example.it/eli/id/2020/06/09/20G00064/sg>;
-        ilg:relationProperty      eli:repeals;
-        ilg:textualModCount       "1"^^xsd:int;
-        ilg:toAct                 <https://osservatorio-eli.example.it/eli/id/2020/03/08/20G00029/sg>;
+        ilg:confirmedByLifecycle  true;
+        ilg:fromAct               <https://osservatorio-eli.example.it/eli/id/2022/03/21/22G00032/sg>;
+        ilg:relationProperty      eli:changes;
+        ilg:textualModCount       "0"^^xsd:int;
+        ilg:toAct                 <https://osservatorio-eli.example.it/eli/id/2020/03/17/20G00034/sg>;
         ilg:trustLevel            "B";
-        dcterms:source            "corpus/DECRETO_LEGISLATIVO/2020/DECRETO_LEGISLATIVO_2020_M_AKN/DECRETO LEGISLATIVO_20200601_46/2020-06-09_20G00064_ORIGINALE_V0.xml" .
+        dcterms:source            "corpus/DECRETO_LEGGE/2020/DECRETO_LEGGE_2020_M_AKN/DECRETO-LEGGE_20200317_18/2020-03-17_20G00034_VIGENZA_2026-05-23_V87.xml" .
 
 <https://osservatorio-eli.example.it/relation/22G00086/amends/regio_decreto-1923-11-18-2440>
         a                         ilg:Relation;
@@ -26365,19 +26141,6 @@
         ilg:trustLevel            "B";
         dcterms:source            "corpus/DECRETO_LEGGE/2022/DECRETO_LEGGE_2022_M_AKN/DECRETO-LEGGE_20220621_73/2022-06-21_22G00086_ORIGINALE_V0.xml" .
 
-<https://osservatorio-eli.example.it/relation/22G00032/changes/20G00034>
-        a                         ilg:Relation;
-        ilg:confirmedByLifecycle  true;
-        ilg:fromAct               <https://osservatorio-eli.example.it/eli/id/2022/03/21/22G00032/sg>;
-        ilg:relationProperty      eli:changes;
-        ilg:textualModCount       "0"^^xsd:int;
-        ilg:toAct                 <https://osservatorio-eli.example.it/eli/id/2020/03/17/20G00034/sg>;
-        ilg:trustLevel            "B";
-        dcterms:source            "corpus/DECRETO_LEGGE/2020/DECRETO_LEGGE_2020_M_AKN/DECRETO-LEGGE_20200317_18/2020-03-17_20G00034_VIGENZA_2026-05-23_V87.xml" .
-
-<https://osservatorio-eli.example.it/eli/id/2023/03/23/23G00036/sg>
-        eli:amends  <https://osservatorio-eli.example.it/eli/ext/decreto_legislativo/2003-06-27/168> , <https://osservatorio-eli.example.it/eli/ext/decreto_legislativo/2010-03-04/28> , <https://osservatorio-eli.example.it/eli/ext/decreto_legislativo/2005-09-06/206> .
-
 <https://osservatorio-eli.example.it/relation/21G00084/amends/decreto-legge-2019-04-30-34>
         a                         ilg:Relation;
         ilg:confirmedByLifecycle  false;
@@ -26388,6 +26151,9 @@
         ilg:toAct                 <https://osservatorio-eli.example.it/eli/ext/decreto-legge/2019-04-30/34>;
         ilg:trustLevel            "B";
         dcterms:source            "corpus/DECRETO_LEGGE/2021/DECRETO_LEGGE_2021_M_AKN/DECRETO-LEGGE_20210525_73/2021-05-25_21G00084_ORIGINALE_V0.xml" .
+
+<https://osservatorio-eli.example.it/eli/id/2023/03/23/23G00036/sg>
+        eli:amends  <https://osservatorio-eli.example.it/eli/ext/decreto_legislativo/2003-06-27/168> , <https://osservatorio-eli.example.it/eli/ext/decreto_legislativo/2010-03-04/28> , <https://osservatorio-eli.example.it/eli/ext/decreto_legislativo/2005-09-06/206> .
 
 <https://osservatorio-eli.example.it/eli/ext/legge/2019-03-08/21>
         a                  ilg:ExternalAct;
@@ -26471,17 +26237,6 @@
         ilg:decree            <https://osservatorio-eli.example.it/eli/id/2023/05/29/23G00070/sg>;
         ilg:law               <https://osservatorio-eli.example.it/eli/id/2023/07/27/23G00105/sg>;
         ilg:trustLevel        "A" .
-
-<https://osservatorio-eli.example.it/relation/20G00062/repeals/20G00029>
-        a                         ilg:Relation;
-        ilg:confirmedByLifecycle  false;
-        ilg:exampleNote           "testo: DECRETO-LEGGE 2020-03-08 n. 11 è abrogato"@it;
-        ilg:fromAct               <https://osservatorio-eli.example.it/eli/id/2020/06/09/20G00062/sg>;
-        ilg:relationProperty      eli:repeals;
-        ilg:textualModCount       "1"^^xsd:int;
-        ilg:toAct                 <https://osservatorio-eli.example.it/eli/id/2020/03/08/20G00029/sg>;
-        ilg:trustLevel            "B";
-        dcterms:source            "corpus/DECRETO_LEGISLATIVO/2020/DECRETO_LEGISLATIVO_2020_M_AKN/DECRETO LEGISLATIVO_20200601_44/2020-06-09_20G00062_ORIGINALE_V0.xml" .
 
 <https://osservatorio-eli.example.it/eli/ext/legge/1981-11-24/689>
         a                  ilg:ExternalAct;
@@ -26985,7 +26740,7 @@
         ilg:exampleNote           "ha disposto (con l'art. 1, comma 2) l'abrogazione dell'intero provvedimento e la modifica dell'allegato."@it , "ha disposto (con l'art. 1, comma 1) che \"Il decreto-legge 25 febbraio 2022, n. 13, e' abrogato. Restano validi gli atti e i provvedimenti adottati e sono fatti salvi gli effetti prodottisi e i rapporti giuridici sorti sulla base del medesimo decreto-legge n. 13 del 2022\"."@it;
         ilg:fromAct               <https://osservatorio-eli.example.it/eli/id/2022/03/28/22G00035/sg>;
         ilg:relationProperty      eli:repeals;
-        ilg:textualModCount       "11"^^xsd:int;
+        ilg:textualModCount       "10"^^xsd:int;
         ilg:toAct                 <https://osservatorio-eli.example.it/eli/id/2022/02/25/22G00021/sg>;
         ilg:trustLevel            "A";
         dcterms:source            "corpus/LEGGE/2022/LEGGE_2022_M_AKN/LEGGE_20220328_25/2022-03-28_22G00035_ORIGINALE_V0.xml" .
@@ -28574,17 +28329,6 @@ ilg:converts  a             owl:ObjectProperty;
         eli:number         "262";
         eli:type_document  <http://www.gazzettaufficiale.it/eli/tables/resource-type#DECRETO-LEGGE> .
 
-<https://osservatorio-eli.example.it/relation/20G00138/repeals/20G00029>
-        a                         ilg:Relation;
-        ilg:confirmedByLifecycle  false;
-        ilg:exampleNote           "testo: DECRETO-LEGGE 2020-03-08 n. 11 è abrogato"@it;
-        ilg:fromAct               <https://osservatorio-eli.example.it/eli/id/2020/09/14/20G00138/sg>;
-        ilg:relationProperty      eli:repeals;
-        ilg:textualModCount       "1"^^xsd:int;
-        ilg:toAct                 <https://osservatorio-eli.example.it/eli/id/2020/03/08/20G00029/sg>;
-        ilg:trustLevel            "B";
-        dcterms:source            "corpus/DECRETO_LEGISLATIVO/2020/DECRETO_LEGISLATIVO_2020_M_AKN/DECRETO LEGISLATIVO_20200903_121/2020-09-14_20G00138_ORIGINALE_V0.xml" .
-
 <https://osservatorio-eli.example.it/relation/decreto_del_presidente_della_repubblica-2023-06-16-82/changes/20G00052>
         a                         ilg:Relation;
         ilg:confirmedByLifecycle  true;
@@ -29714,8 +29458,7 @@ ilg:converts  a             owl:ObjectProperty;
         dcterms:source            "corpus/DECRETO_LEGGE/2020/DECRETO_LEGGE_2020_M_AKN/DECRETO-LEGGE_20200408_22/2020-04-08_20G00042_VIGENZA_2025-09-10_V30.xml" .
 
 <https://osservatorio-eli.example.it/eli/id/2020/06/09/20G00062/sg>
-        eli:amends   <https://osservatorio-eli.example.it/eli/ext/decreto_legislativo/2008-04-09/81>;
-        eli:repeals  <https://osservatorio-eli.example.it/eli/id/2020/03/09/20G00030/sg> , <https://osservatorio-eli.example.it/eli/id/2020/03/08/20G00029/sg> , <https://osservatorio-eli.example.it/eli/id/2020/03/02/20G00026/sg> .
+        eli:amends  <https://osservatorio-eli.example.it/eli/ext/decreto_legislativo/2008-04-09/81> .
 
 <https://osservatorio-eli.example.it/relation/25G00053/amends/decreto_legislativo-2000-05-19-139>
         a                         ilg:Relation;
@@ -30244,7 +29987,7 @@ ilg:converts  a             owl:ObjectProperty;
         ilg:exampleNote           "ha disposto (con l'art. 1, comma 2) l'abrogazione dell'intero provvedimento e la modifica dell'art. 1."@it , "ha disposto (con l'art. 1, comma 2) che \"Il decreto-legge 14 novembre 2024, n. 167, e' abrogato. Restano validi gli atti e i provvedimenti adottati e sono fatti salvi gli effetti prodottisi e i rapporti giuridici sorti sulla base del medesimo decreto-legge n. 167 del 2024\"."@it;
         ilg:fromAct               <https://osservatorio-eli.example.it/eli/id/2024/12/12/24G00208/sg>;
         ilg:relationProperty      eli:repeals;
-        ilg:textualModCount       "7"^^xsd:int;
+        ilg:textualModCount       "6"^^xsd:int;
         ilg:toAct                 <https://osservatorio-eli.example.it/eli/id/2024/11/14/24G00188/sg>;
         ilg:trustLevel            "A";
         dcterms:source            "corpus/LEGGE/2024/LEGGE_2024_M_AKN/LEGGE_20241209_189/2024-12-12_24G00208_ORIGINALE_V0.xml" .
@@ -31807,28 +31550,6 @@ ilg:converts  a             owl:ObjectProperty;
         ilg:trustLevel            "B";
         dcterms:source            "corpus/DECRETO_LEGISLATIVO/2024/DECRETO_LEGISLATIVO_2024_M_AKN/DECRETO LEGISLATIVO_20240926_141/2024-10-03_24G00156_ORIGINALE_V0.xml" .
 
-<https://osservatorio-eli.example.it/relation/24G00178/amends/legge-2000-11-14-338>
-        a                         ilg:Relation;
-        ilg:confirmedByLifecycle  false;
-        ilg:exampleNote           ",convertito con modificazioni dalla L. 20 dicembre 2024, n. 199 (in G.U. 27/12/2024, n. 302), ha disposto (con l'art. 6, comma 1-ter) l'abrogazione dell'art. 1-ter."@it , ",convertito con modificazioni dalla L. 20 dicembre 2024, n. 199 (in G.U. 27/12/2024, n. 302), ha disposto (con l'art. 6, comma 1-bis) la modifica dell'art. 1-quater, comma 1."@it;
-        ilg:fromAct               <https://osservatorio-eli.example.it/eli/id/2024/10/28/24G00178/sg>;
-        ilg:relationProperty      eli:amends;
-        ilg:textualModCount       "2"^^xsd:int;
-        ilg:toAct                 <https://osservatorio-eli.example.it/eli/ext/legge/2000-11-14/338>;
-        ilg:trustLevel            "B";
-        dcterms:source            "corpus/DECRETO_LEGGE/2024/DECRETO_LEGGE_2024_M_AKN/DECRETO-LEGGE_20241028_160/2024-10-28_24G00178_ORIGINALE_V0.xml" .
-
-<https://osservatorio-eli.example.it/relation/24G00078/amends/decreto_legislativo-2010-03-15-66>
-        a                         ilg:Relation;
-        ilg:confirmedByLifecycle  false;
-        ilg:exampleNote           "ha disposto (con l'art. 2, comma 1) la modifica dell'art. 2257-ter, comma 2."@it;
-        ilg:fromAct               <https://osservatorio-eli.example.it/eli/id/2024/05/09/24G00078/sg>;
-        ilg:relationProperty      eli:amends;
-        ilg:textualModCount       "2"^^xsd:int;
-        ilg:toAct                 <https://osservatorio-eli.example.it/eli/ext/decreto_legislativo/2010-03-15/66>;
-        ilg:trustLevel            "B";
-        dcterms:source            "corpus/DECRETO_LEGGE/2024/DECRETO_LEGGE_2024_M_AKN/DECRETO-LEGGE_20240509_61/2024-05-09_24G00078_ORIGINALE_V0.xml" .
-
 <https://osservatorio-eli.example.it/conversion/20G00042>
         a                     ilg:ConversionCheck;
         ilg:checkC1           true;
@@ -31842,6 +31563,28 @@ ilg:converts  a             owl:ObjectProperty;
         ilg:decree            <https://osservatorio-eli.example.it/eli/id/2020/04/08/20G00042/sg>;
         ilg:law               <https://osservatorio-eli.example.it/eli/id/2020/06/06/20G00059/sg>;
         ilg:trustLevel        "A" .
+
+<https://osservatorio-eli.example.it/relation/24G00078/amends/decreto_legislativo-2010-03-15-66>
+        a                         ilg:Relation;
+        ilg:confirmedByLifecycle  false;
+        ilg:exampleNote           "ha disposto (con l'art. 2, comma 1) la modifica dell'art. 2257-ter, comma 2."@it;
+        ilg:fromAct               <https://osservatorio-eli.example.it/eli/id/2024/05/09/24G00078/sg>;
+        ilg:relationProperty      eli:amends;
+        ilg:textualModCount       "2"^^xsd:int;
+        ilg:toAct                 <https://osservatorio-eli.example.it/eli/ext/decreto_legislativo/2010-03-15/66>;
+        ilg:trustLevel            "B";
+        dcterms:source            "corpus/DECRETO_LEGGE/2024/DECRETO_LEGGE_2024_M_AKN/DECRETO-LEGGE_20240509_61/2024-05-09_24G00078_ORIGINALE_V0.xml" .
+
+<https://osservatorio-eli.example.it/relation/24G00178/amends/legge-2000-11-14-338>
+        a                         ilg:Relation;
+        ilg:confirmedByLifecycle  false;
+        ilg:exampleNote           ",convertito con modificazioni dalla L. 20 dicembre 2024, n. 199 (in G.U. 27/12/2024, n. 302), ha disposto (con l'art. 6, comma 1-ter) l'abrogazione dell'art. 1-ter."@it , ",convertito con modificazioni dalla L. 20 dicembre 2024, n. 199 (in G.U. 27/12/2024, n. 302), ha disposto (con l'art. 6, comma 1-bis) la modifica dell'art. 1-quater, comma 1."@it;
+        ilg:fromAct               <https://osservatorio-eli.example.it/eli/id/2024/10/28/24G00178/sg>;
+        ilg:relationProperty      eli:amends;
+        ilg:textualModCount       "2"^^xsd:int;
+        ilg:toAct                 <https://osservatorio-eli.example.it/eli/ext/legge/2000-11-14/338>;
+        ilg:trustLevel            "B";
+        dcterms:source            "corpus/DECRETO_LEGGE/2024/DECRETO_LEGGE_2024_M_AKN/DECRETO-LEGGE_20241028_160/2024-10-28_24G00178_ORIGINALE_V0.xml" .
 
 <https://osservatorio-eli.example.it/relation/20G00096/amends/20G00035>
         a                         ilg:Relation;
@@ -35338,8 +35081,7 @@ ilg:converts  a             owl:ObjectProperty;
         dcterms:source            "corpus/DECRETO_LEGGE/2023/DECRETO_LEGGE_2023_M_AKN/DECRETO-LEGGE_20230510_51/2023-05-10_23G00059_ORIGINALE_V0.xml" .
 
 <https://osservatorio-eli.example.it/eli/id/2020/11/16/20G00173/sg>
-        eli:amends   <https://osservatorio-eli.example.it/eli/ext/decreto_del_presidente_della_repubblica/2002-05-30/115>;
-        eli:repeals  <https://osservatorio-eli.example.it/eli/id/2020/03/09/20G00030/sg> , <https://osservatorio-eli.example.it/eli/id/2020/03/08/20G00029/sg> , <https://osservatorio-eli.example.it/eli/id/2020/03/02/20G00026/sg> .
+        eli:amends  <https://osservatorio-eli.example.it/eli/ext/decreto_del_presidente_della_repubblica/2002-05-30/115> .
 
 <https://osservatorio-eli.example.it/relation/25G00126/changes/24G00095>
         a                         ilg:Relation;
@@ -35952,7 +35694,7 @@ ilg:converts  a             owl:ObjectProperty;
         ilg:exampleNote           "ha disposto (con l'art. 1, comma 2) che \"Il decreto-legge 31 agosto 2023, n. 118, recante misure urgenti in materia di finanziamento di investimenti di interesse strategico, e' abrogato. Restano validi gli atti e i provvedimenti adottati e sono fatti salvi gli effetti prodottisi e i rapporti giuridi…"@it , "ha disposto (con l'art. 1, comma 2) l'abrogazione dell'intero provvedimento e la modifica dell'art. 1."@it;
         ilg:fromAct               <https://osservatorio-eli.example.it/eli/id/2023/10/09/23G00148/sg>;
         ilg:relationProperty      eli:repeals;
-        ilg:textualModCount       "5"^^xsd:int;
+        ilg:textualModCount       "4"^^xsd:int;
         ilg:toAct                 <https://osservatorio-eli.example.it/eli/id/2023/08/31/23G00128/sg>;
         ilg:trustLevel            "A";
         dcterms:source            "corpus/LEGGE/2023/LEGGE_2023_M_AKN/LEGGE_20231009_136/2023-10-09_23G00148_ORIGINALE_V0.xml" .
@@ -38864,17 +38606,6 @@ ilg:converts  a             owl:ObjectProperty;
         ilg:trustLevel            "A";
         dcterms:source            "corpus/LEGGE/2021/LEGGE_2021_M_AKN/LEGGE_20210422_55/2021-04-29_21G00065_ORIGINALE_V0.xml" .
 
-<https://osservatorio-eli.example.it/relation/20G00093/repeals/20G00029>
-        a                         ilg:Relation;
-        ilg:confirmedByLifecycle  false;
-        ilg:exampleNote           "testo: DECRETO-LEGGE 2020-03-08 n. 11 è abrogato"@it;
-        ilg:fromAct               <https://osservatorio-eli.example.it/eli/id/2020/07/14/20G00093/sg>;
-        ilg:relationProperty      eli:repeals;
-        ilg:textualModCount       "1"^^xsd:int;
-        ilg:toAct                 <https://osservatorio-eli.example.it/eli/id/2020/03/08/20G00029/sg>;
-        ilg:trustLevel            "B";
-        dcterms:source            "corpus/DECRETO_LEGISLATIVO/2020/DECRETO_LEGISLATIVO_2020_M_AKN/DECRETO LEGISLATIVO_20200714_73/2020-07-14_20G00093_ORIGINALE_V0.xml" .
-
 <https://osservatorio-eli.example.it/relation/25G00212/changes/25G00047>
         a                         ilg:Relation;
         ilg:confirmedByLifecycle  true;
@@ -38940,17 +38671,6 @@ ilg:converts  a             owl:ObjectProperty;
         ilg:toAct                 <https://osservatorio-eli.example.it/eli/id/2026/03/18/26G00052/sg>;
         ilg:trustLevel            "A";
         dcterms:source            "corpus/DECRETO_LEGGE/2026/DECRETO_LEGGE_2026_M_AKN/DECRETO-LEGGE_20260522_89/2026-05-22_26G00110_ORIGINALE_V0.xml" .
-
-<https://osservatorio-eli.example.it/relation/20G00091/repeals/20G00029>
-        a                         ilg:Relation;
-        ilg:confirmedByLifecycle  false;
-        ilg:exampleNote           "testo: DECRETO-LEGGE 2020-03-08 n. 11 è abrogato"@it;
-        ilg:fromAct               <https://osservatorio-eli.example.it/eli/id/2020/07/15/20G00091/sg>;
-        ilg:relationProperty      eli:repeals;
-        ilg:textualModCount       "1"^^xsd:int;
-        ilg:toAct                 <https://osservatorio-eli.example.it/eli/id/2020/03/08/20G00029/sg>;
-        ilg:trustLevel            "B";
-        dcterms:source            "corpus/DECRETO_LEGISLATIVO/2020/DECRETO_LEGISLATIVO_2020_M_AKN/DECRETO LEGISLATIVO_20200714_75/2020-07-15_20G00091_ORIGINALE_V0.xml" .
 
 <https://osservatorio-eli.example.it/relation/20G00046/amends/regio_decreto-1941-12-18-1368>
         a                         ilg:Relation;
@@ -40048,8 +39768,7 @@ ilg:converts  a             owl:ObjectProperty;
         eli:type_document  <http://www.gazzettaufficiale.it/eli/tables/resource-type#LEGGE> .
 
 <https://osservatorio-eli.example.it/eli/id/2020/09/15/20G00141/sg>
-        eli:amends   <https://osservatorio-eli.example.it/eli/ext/decreto_legislativo/2016-07-17/136>;
-        eli:repeals  <https://osservatorio-eli.example.it/eli/id/2020/03/09/20G00030/sg> , <https://osservatorio-eli.example.it/eli/id/2020/03/08/20G00029/sg> , <https://osservatorio-eli.example.it/eli/id/2020/03/02/20G00026/sg> .
+        eli:amends  <https://osservatorio-eli.example.it/eli/ext/decreto_legislativo/2016-07-17/136> .
 
 <https://osservatorio-eli.example.it/eli/id/2025/06/24/25G00102/sg>
         eli:amends            <https://osservatorio-eli.example.it/eli/ext/decreto_legislativo/2016-11-25/218> , <https://osservatorio-eli.example.it/eli/ext/decreto_legislativo/2001-03-30/165> , <https://osservatorio-eli.example.it/eli/ext/decreto_legislativo/1999-07-30/300> , <https://osservatorio-eli.example.it/eli/ext/decreto-legge/2001-07-03/255> , <https://osservatorio-eli.example.it/eli/id/2024/10/28/24G00178/sg> , <https://osservatorio-eli.example.it/eli/id/2024/12/31/24G00229/sg> , <https://osservatorio-eli.example.it/eli/id/2020/12/30/20G00202/sg> , <https://osservatorio-eli.example.it/eli/ext/decreto_legislativo/2017-04-13/65> , <https://osservatorio-eli.example.it/eli/id/2021/05/31/21G00087/sg>;
@@ -41239,8 +40958,7 @@ ilg:converts  a             owl:ObjectProperty;
         eli:amends  <https://osservatorio-eli.example.it/eli/id/2020/03/17/20G00034/sg> , <https://osservatorio-eli.example.it/eli/ext/decreto-legge/2014-09-12/132> , <https://osservatorio-eli.example.it/eli/ext/decreto_legislativo/2010-03-04/28> .
 
 <https://osservatorio-eli.example.it/eli/id/2020/07/14/20G00093/sg>
-        eli:amends   <https://osservatorio-eli.example.it/eli/ext/decreto_legislativo/2008-05-30/115> , <https://osservatorio-eli.example.it/eli/ext/decreto_legislativo/2014-07-04/102>;
-        eli:repeals  <https://osservatorio-eli.example.it/eli/id/2020/03/09/20G00030/sg> , <https://osservatorio-eli.example.it/eli/id/2020/03/08/20G00029/sg> , <https://osservatorio-eli.example.it/eli/id/2020/03/02/20G00026/sg> .
+        eli:amends  <https://osservatorio-eli.example.it/eli/ext/decreto_legislativo/2008-05-30/115> , <https://osservatorio-eli.example.it/eli/ext/decreto_legislativo/2014-07-04/102> .
 
 <https://osservatorio-eli.example.it/relation/25G00213/amends/21G00166>
         a                         ilg:Relation;
@@ -41853,7 +41571,7 @@ ilg:converts  a             owl:ObjectProperty;
         ilg:exampleNote           ", ha disposto (con l'art. 1, comma 2) l'abrogazione dell'intero provvedimento e la modifica dell'art. 1."@it , "ha disposto (con l'art. 1, comma 2) che \"Il decreto-legge 23 novembre 2022, n. 179, e' abrogato. Restano validi gli atti e i provvedimenti adottati e sono fatti salvi gli effetti prodottisi e i rapporti giuridici sorti sulla base del medesimo decreto-legge n. 179 del 2022\"."@it;
         ilg:fromAct               <https://osservatorio-eli.example.it/eli/id/2023/01/17/23G00010/sg>;
         ilg:relationProperty      eli:repeals;
-        ilg:textualModCount       "8"^^xsd:int;
+        ilg:textualModCount       "7"^^xsd:int;
         ilg:toAct                 <https://osservatorio-eli.example.it/eli/id/2022/11/23/22G00192/sg>;
         ilg:trustLevel            "B";
         dcterms:source            "corpus/LEGGE/2023/LEGGE_2023_M_AKN/LEGGE_20230113_6/2023-01-17_23G00010_ORIGINALE_V0.xml" .
@@ -42647,17 +42365,6 @@ ilg:converts  a             owl:ObjectProperty;
         ilg:toAct                 <https://osservatorio-eli.example.it/eli/ext/decreto_del_presidente_della_repubblica/1972-10-26/640>;
         ilg:trustLevel            "B";
         dcterms:source            "corpus/DECRETO_LEGISLATIVO/2024/DECRETO_LEGISLATIVO_2024_M_AKN/DECRETO LEGISLATIVO_20241105_173/2024-11-28_24G00191_ORIGINALE_V0.xml" .
-
-<https://osservatorio-eli.example.it/relation/20G00173/repeals/20G00029>
-        a                         ilg:Relation;
-        ilg:confirmedByLifecycle  false;
-        ilg:exampleNote           "testo: DECRETO-LEGGE 2020-03-08 n. 11 è abrogato"@it;
-        ilg:fromAct               <https://osservatorio-eli.example.it/eli/id/2020/11/16/20G00173/sg>;
-        ilg:relationProperty      eli:repeals;
-        ilg:textualModCount       "1"^^xsd:int;
-        ilg:toAct                 <https://osservatorio-eli.example.it/eli/id/2020/03/08/20G00029/sg>;
-        ilg:trustLevel            "B";
-        dcterms:source            "corpus/DECRETO_LEGISLATIVO/2020/DECRETO_LEGISLATIVO_2020_M_AKN/DECRETO LEGISLATIVO_20201026_152/2020-11-16_20G00173_ORIGINALE_V0.xml" .
 
 <https://osservatorio-eli.example.it/conversion/25G00084>
         a                     ilg:ConversionCheck;
@@ -45266,10 +44973,10 @@ ilg:converts  a             owl:ObjectProperty;
 <https://osservatorio-eli.example.it/relation/23G00159/repeals/decreto_legislativo-2018-02-23-20>
         a                         ilg:Relation;
         ilg:confirmedByLifecycle  false;
-        ilg:exampleNote           "ha disposto (con l'art. 31, comma 1) l'abrogazione dell'intero provvedimento."@it , "testo: DECRETO_LEGISLATIVO 2018-02-23 n. 20 è abrogato"@it;
+        ilg:exampleNote           "ha disposto (con l'art. 31, comma 1) l'abrogazione dell'intero provvedimento."@it;
         ilg:fromAct               <https://osservatorio-eli.example.it/eli/id/2023/10/30/23G00159/sg>;
         ilg:relationProperty      eli:repeals;
-        ilg:textualModCount       "22"^^xsd:int;
+        ilg:textualModCount       "21"^^xsd:int;
         ilg:toAct                 <https://osservatorio-eli.example.it/eli/ext/decreto_legislativo/2018-02-23/20>;
         ilg:trustLevel            "B";
         dcterms:source            "corpus/DECRETO_LEGISLATIVO/2023/DECRETO_LEGISLATIVO_2023_M_AKN/DECRETO LEGISLATIVO_20231006_148/2023-10-30_23G00159_ORIGINALE_V0.xml" .
@@ -45968,8 +45675,7 @@ ilg:converts  a             owl:ObjectProperty;
         dcterms:source            "corpus/DECRETO_LEGGE/2021/DECRETO_LEGGE_2021_M_AKN/DECRETO-LEGGE_20211106_152/2021-11-06_21G00166_VIGENZA_2026-06-27_V35.xml" .
 
 <https://osservatorio-eli.example.it/eli/id/2020/09/12/20G00137/sg>
-        eli:amends   <https://osservatorio-eli.example.it/eli/ext/decreto_del_presidente_della_repubblica/1992-12-16/495> , <https://osservatorio-eli.example.it/eli/ext/decreto_legislativo/2003-06-24/209>;
-        eli:repeals  <https://osservatorio-eli.example.it/eli/id/2020/03/09/20G00030/sg> , <https://osservatorio-eli.example.it/eli/id/2020/03/08/20G00029/sg> , <https://osservatorio-eli.example.it/eli/id/2020/03/02/20G00026/sg> .
+        eli:amends  <https://osservatorio-eli.example.it/eli/ext/decreto_del_presidente_della_repubblica/1992-12-16/495> , <https://osservatorio-eli.example.it/eli/ext/decreto_legislativo/2003-06-24/209> .
 
 <https://osservatorio-eli.example.it/relation/22G00212/amends/legge-1991-12-16-398>
         a                         ilg:Relation;
@@ -46441,13 +46147,6 @@ ilg:converts  a             owl:ObjectProperty;
         ilg:toAct                 <https://osservatorio-eli.example.it/eli/ext/decreto_legislativo/2017-05-15/70>;
         ilg:trustLevel            "B";
         dcterms:source            "corpus/DECRETO_LEGGE/2023/DECRETO_LEGGE_2023_M_AKN/DECRETO-LEGGE_20231230_215/2023-12-30_23G00227_ORIGINALE_V0.xml" .
-
-<https://osservatorio-eli.example.it/eli/ext/decreto-legge/2022-01-22/2>
-        a                  ilg:ExternalAct;
-        rdfs:label         "DECRETO-LEGGE 2022-01-22 n. 2";
-        eli:date_document  "2022-01-22"^^xsd:date;
-        eli:number         "2";
-        eli:type_document  <http://www.gazzettaufficiale.it/eli/tables/resource-type#DECRETO-LEGGE> .
 
 <https://osservatorio-eli.example.it/relation/21G00244/amends/21G00117>
         a                         ilg:Relation;
@@ -48202,17 +47901,6 @@ ilg:converts  a             owl:ObjectProperty;
         ilg:law               <https://osservatorio-eli.example.it/eli/id/2026/02/28/26G00044/sg>;
         ilg:trustLevel        "A" .
 
-<https://osservatorio-eli.example.it/relation/21G00012/repeals/20G00026>
-        a                         ilg:Relation;
-        ilg:confirmedByLifecycle  false;
-        ilg:exampleNote           "testo: DECRETO-LEGGE 2020-03-02 n. 9 è abrogato"@it;
-        ilg:fromAct               <https://osservatorio-eli.example.it/eli/id/2021/02/05/21G00012/sg>;
-        ilg:relationProperty      eli:repeals;
-        ilg:textualModCount       "1"^^xsd:int;
-        ilg:toAct                 <https://osservatorio-eli.example.it/eli/id/2020/03/02/20G00026/sg>;
-        ilg:trustLevel            "B";
-        dcterms:source            "corpus/DECRETO_LEGISLATIVO/2021/DECRETO_LEGISLATIVO_2021_M_AKN/DECRETO LEGISLATIVO_20210202_9/2021-02-05_21G00012_ORIGINALE_V0.xml" .
-
 <https://osservatorio-eli.example.it/eli/id/2025/11/14/25G00174/sg>
         eli:amends   <https://osservatorio-eli.example.it/eli/ext/decreto_legislativo/2006-04-11/198> , <https://osservatorio-eli.example.it/eli/ext/legge/2005-11-28/246> , <https://osservatorio-eli.example.it/eli/ext/legge/1997-03-15/59>;
         eli:changes  <https://osservatorio-eli.example.it/eli/ext/decreto_legislativo/1999-08-17/298> , <https://osservatorio-eli.example.it/eli/ext/decreto_legislativo/1999-07-27/272> , <https://osservatorio-eli.example.it/eli/ext/decreto_legislativo/1999-07-27/271> , <https://osservatorio-eli.example.it/eli/ext/decreto_del_presidente_della_repubblica/1956-01-07/164> , <https://osservatorio-eli.example.it/eli/ext/decreto_del_presidente_della_repubblica/1955-04-27/547> .
@@ -49110,17 +48798,6 @@ ilg:converts  a             owl:ObjectProperty;
         ilg:toAct                 <https://osservatorio-eli.example.it/eli/id/2023/08/10/23G00118/sg>;
         ilg:trustLevel            "A";
         dcterms:source            "corpus/DECRETO_LEGGE/2026/DECRETO_LEGGE_2026_M_AKN/DECRETO-LEGGE_20260612_100/2026-06-12_26G00119_ORIGINALE_V0.xml" .
-
-<https://osservatorio-eli.example.it/relation/20G00102/repeals/20G00030>
-        a                         ilg:Relation;
-        ilg:confirmedByLifecycle  false;
-        ilg:exampleNote           "testo: DECRETO-LEGGE 2020-03-09 n. 14 è abrogato"@it;
-        ilg:fromAct               <https://osservatorio-eli.example.it/eli/id/2020/07/30/20G00102/sg>;
-        ilg:relationProperty      eli:repeals;
-        ilg:textualModCount       "1"^^xsd:int;
-        ilg:toAct                 <https://osservatorio-eli.example.it/eli/id/2020/03/09/20G00030/sg>;
-        ilg:trustLevel            "B";
-        dcterms:source            "corpus/DECRETO_LEGISLATIVO/2020/DECRETO_LEGISLATIVO_2020_M_AKN/DECRETO LEGISLATIVO_20200714_84/2020-07-30_20G00102_ORIGINALE_V0.xml" .
 
 <https://osservatorio-eli.example.it/relation/20G00046/amends/decreto_legislativo-2016-04-18-50>
         a                         ilg:Relation;
@@ -50355,8 +50032,7 @@ ilg:converts  a             owl:ObjectProperty;
         eli:type_document  <http://www.gazzettaufficiale.it/eli/tables/resource-type#DECRETO-LEGGE> .
 
 <https://osservatorio-eli.example.it/eli/id/2020/09/14/20G00138/sg>
-        eli:amends   <https://osservatorio-eli.example.it/eli/ext/decreto_legislativo/2003-01-13/36>;
-        eli:repeals  <https://osservatorio-eli.example.it/eli/id/2020/03/09/20G00030/sg> , <https://osservatorio-eli.example.it/eli/id/2020/03/08/20G00029/sg> , <https://osservatorio-eli.example.it/eli/id/2020/03/02/20G00026/sg> .
+        eli:amends  <https://osservatorio-eli.example.it/eli/ext/decreto_legislativo/2003-01-13/36> .
 
 <https://osservatorio-eli.example.it/relation/20G00096/amends/decreto-legge-2019-04-18-32>
         a                         ilg:Relation;
@@ -51485,8 +51161,7 @@ ilg:converts  a             owl:ObjectProperty;
         dcterms:source            "corpus/LEGGE/2022/LEGGE_2022_M_AKN/LEGGE_20220831_130/2022-09-01_22G00141_VIGENZA_2027-01-01_V14.xml" .
 
 <https://osservatorio-eli.example.it/eli/id/2020/06/10/20G00066/sg>
-        eli:amends   <https://osservatorio-eli.example.it/eli/ext/decreto_legislativo/2014-07-04/102> , <https://osservatorio-eli.example.it/eli/ext/decreto_del_presidente_della_repubblica/2013-04-16/74> , <https://osservatorio-eli.example.it/eli/ext/legge/1991-01-09/10> , <https://osservatorio-eli.example.it/eli/ext/decreto_del_presidente_della_repubblica/2001-06-06/380> , <https://osservatorio-eli.example.it/eli/ext/decreto_legislativo/2005-08-19/192>;
-        eli:repeals  <https://osservatorio-eli.example.it/eli/id/2020/03/09/20G00030/sg> , <https://osservatorio-eli.example.it/eli/id/2020/03/08/20G00029/sg> , <https://osservatorio-eli.example.it/eli/id/2020/03/02/20G00026/sg> .
+        eli:amends  <https://osservatorio-eli.example.it/eli/ext/decreto_legislativo/2014-07-04/102> , <https://osservatorio-eli.example.it/eli/ext/decreto_del_presidente_della_repubblica/2013-04-16/74> , <https://osservatorio-eli.example.it/eli/ext/legge/1991-01-09/10> , <https://osservatorio-eli.example.it/eli/ext/decreto_del_presidente_della_repubblica/2001-06-06/380> , <https://osservatorio-eli.example.it/eli/ext/decreto_legislativo/2005-08-19/192> .
 
 <https://osservatorio-eli.example.it/relation/26G00131/amends/23G00222>
         a                         ilg:Relation;
@@ -52985,17 +52660,6 @@ ilg:converts  a             owl:ObjectProperty;
         eli:date_document  "2011-09-06"^^xsd:date;
         eli:number         "164";
         eli:type_document  <http://www.gazzettaufficiale.it/eli/tables/resource-type#DECRETO_LEGISLATIVO> .
-
-<https://osservatorio-eli.example.it/relation/20G00119/repeals/20G00030>
-        a                         ilg:Relation;
-        ilg:confirmedByLifecycle  false;
-        ilg:exampleNote           "testo: DECRETO-LEGGE 2020-03-09 n. 14 è abrogato"@it;
-        ilg:fromAct               <https://osservatorio-eli.example.it/eli/id/2020/08/11/20G00119/sg>;
-        ilg:relationProperty      eli:repeals;
-        ilg:textualModCount       "1"^^xsd:int;
-        ilg:toAct                 <https://osservatorio-eli.example.it/eli/id/2020/03/09/20G00030/sg>;
-        ilg:trustLevel            "B";
-        dcterms:source            "corpus/DECRETO_LEGISLATIVO/2020/DECRETO_LEGISLATIVO_2020_M_AKN/DECRETO LEGISLATIVO_20200730_100/2020-08-11_20G00119_ORIGINALE_V0.xml" .
 
 <https://osservatorio-eli.example.it/relation/25G00180/amends/legge-2017-12-27-205>
         a                         ilg:Relation;
@@ -56285,17 +55949,6 @@ ilg:converts  a             owl:ObjectProperty;
         eli:amends    <https://osservatorio-eli.example.it/eli/id/2022/12/12/22G00203/sg>;
         ilg:converts  <https://osservatorio-eli.example.it/eli/id/2022/12/12/22G00203/sg> .
 
-<https://osservatorio-eli.example.it/relation/20G00135/repeals/20G00026>
-        a                         ilg:Relation;
-        ilg:confirmedByLifecycle  false;
-        ilg:exampleNote           "testo: DECRETO-LEGGE 2020-03-02 n. 9 è abrogato"@it;
-        ilg:fromAct               <https://osservatorio-eli.example.it/eli/id/2020/09/11/20G00135/sg>;
-        ilg:relationProperty      eli:repeals;
-        ilg:textualModCount       "1"^^xsd:int;
-        ilg:toAct                 <https://osservatorio-eli.example.it/eli/id/2020/03/02/20G00026/sg>;
-        ilg:trustLevel            "B";
-        dcterms:source            "corpus/DECRETO_LEGISLATIVO/2020/DECRETO_LEGISLATIVO_2020_M_AKN/DECRETO LEGISLATIVO_20200903_116/2020-09-11_20G00135_ORIGINALE_V0.xml" .
-
 <https://osservatorio-eli.example.it/relation/24G00183/amends/regio_decreto-1941-12-18-1368>
         a                         ilg:Relation;
         ilg:confirmedByLifecycle  false;
@@ -56639,17 +56292,6 @@ ilg:converts  a             owl:ObjectProperty;
         eli:number         "266";
         eli:type_document  <http://www.gazzettaufficiale.it/eli/tables/resource-type#DECRETO-LEGGE> .
 
-<https://osservatorio-eli.example.it/relation/20G00066/repeals/20G00026>
-        a                         ilg:Relation;
-        ilg:confirmedByLifecycle  false;
-        ilg:exampleNote           "testo: DECRETO-LEGGE 2020-03-02 n. 9 è abrogato"@it;
-        ilg:fromAct               <https://osservatorio-eli.example.it/eli/id/2020/06/10/20G00066/sg>;
-        ilg:relationProperty      eli:repeals;
-        ilg:textualModCount       "1"^^xsd:int;
-        ilg:toAct                 <https://osservatorio-eli.example.it/eli/id/2020/03/02/20G00026/sg>;
-        ilg:trustLevel            "B";
-        dcterms:source            "corpus/DECRETO_LEGISLATIVO/2020/DECRETO_LEGISLATIVO_2020_M_AKN/DECRETO LEGISLATIVO_20200610_48/2020-06-10_20G00066_ORIGINALE_V0.xml" .
-
 <https://osservatorio-eli.example.it/relation/23G00181/changes/22G00212>
         a                         ilg:Relation;
         ilg:confirmedByLifecycle  true;
@@ -56702,17 +56344,6 @@ ilg:converts  a             owl:ObjectProperty;
         ilg:toAct                 <https://osservatorio-eli.example.it/eli/ext/decreto-legge/2014-09-12/133>;
         ilg:trustLevel            "B";
         dcterms:source            "corpus/DECRETO_LEGGE/2020/DECRETO_LEGGE_2020_M_AKN/DECRETO-LEGGE_20200716_76/2020-07-16_20G00096_ORIGINALE_V0.xml" .
-
-<https://osservatorio-eli.example.it/relation/20G00064/repeals/20G00026>
-        a                         ilg:Relation;
-        ilg:confirmedByLifecycle  false;
-        ilg:exampleNote           "testo: DECRETO-LEGGE 2020-03-02 n. 9 è abrogato"@it;
-        ilg:fromAct               <https://osservatorio-eli.example.it/eli/id/2020/06/09/20G00064/sg>;
-        ilg:relationProperty      eli:repeals;
-        ilg:textualModCount       "1"^^xsd:int;
-        ilg:toAct                 <https://osservatorio-eli.example.it/eli/id/2020/03/02/20G00026/sg>;
-        ilg:trustLevel            "B";
-        dcterms:source            "corpus/DECRETO_LEGISLATIVO/2020/DECRETO_LEGISLATIVO_2020_M_AKN/DECRETO LEGISLATIVO_20200601_46/2020-06-09_20G00064_ORIGINALE_V0.xml" .
 
 <https://osservatorio-eli.example.it/relation/21G00019/repeals/decreto_del_presidente_della_repubblica-1997-10-29-432>
         a                         ilg:Relation;
@@ -56790,17 +56421,6 @@ ilg:converts  a             owl:ObjectProperty;
         ilg:toAct                 <https://osservatorio-eli.example.it/eli/ext/legge/1997-07-31/249>;
         ilg:trustLevel            "B";
         dcterms:source            "corpus/LEGGE/2022/LEGGE_2022_M_AKN/LEGGE_20220805_118/2022-08-12_22G00126_ORIGINALE_V0.xml" .
-
-<https://osservatorio-eli.example.it/relation/20G00062/repeals/20G00026>
-        a                         ilg:Relation;
-        ilg:confirmedByLifecycle  false;
-        ilg:exampleNote           "testo: DECRETO-LEGGE 2020-03-02 n. 9 è abrogato"@it;
-        ilg:fromAct               <https://osservatorio-eli.example.it/eli/id/2020/06/09/20G00062/sg>;
-        ilg:relationProperty      eli:repeals;
-        ilg:textualModCount       "1"^^xsd:int;
-        ilg:toAct                 <https://osservatorio-eli.example.it/eli/id/2020/03/02/20G00026/sg>;
-        ilg:trustLevel            "B";
-        dcterms:source            "corpus/DECRETO_LEGISLATIVO/2020/DECRETO_LEGISLATIVO_2020_M_AKN/DECRETO LEGISLATIVO_20200601_44/2020-06-09_20G00062_ORIGINALE_V0.xml" .
 
 <https://osservatorio-eli.example.it/relation/20G00052/amends/legge-2015-08-07-124>
         a                         ilg:Relation;
@@ -58357,17 +57977,6 @@ ilg:converts  a             owl:ObjectProperty;
         ilg:trustLevel            "B";
         dcterms:source            "corpus/DECRETO_LEGGE/2023/DECRETO_LEGGE_2023_M_AKN/DECRETO-LEGGE_20230224_13/2023-02-24_23G00022_ORIGINALE_V0.xml" .
 
-<https://osservatorio-eli.example.it/relation/20G00136/repeals/20G00030>
-        a                         ilg:Relation;
-        ilg:confirmedByLifecycle  false;
-        ilg:exampleNote           "testo: DECRETO-LEGGE 2020-03-09 n. 14 è abrogato"@it;
-        ilg:fromAct               <https://osservatorio-eli.example.it/eli/id/2020/09/12/20G00136/sg>;
-        ilg:relationProperty      eli:repeals;
-        ilg:textualModCount       "1"^^xsd:int;
-        ilg:toAct                 <https://osservatorio-eli.example.it/eli/id/2020/03/09/20G00030/sg>;
-        ilg:trustLevel            "B";
-        dcterms:source            "corpus/DECRETO_LEGISLATIVO/2020/DECRETO_LEGISLATIVO_2020_M_AKN/DECRETO LEGISLATIVO_20200903_118/2020-09-12_20G00136_ORIGINALE_V0.xml" .
-
 <https://osservatorio-eli.example.it/eli/id/2025/10/31/25G00172/sg>
         eli:amends            <https://osservatorio-eli.example.it/eli/id/2021/09/09/21G00130/sg> , <https://osservatorio-eli.example.it/eli/ext/decreto_legislativo/2010-03-15/66> , <https://osservatorio-eli.example.it/eli/id/2025/09/25/25G00143/sg> , <https://osservatorio-eli.example.it/eli/ext/decreto_legislativo/2015-09-14/149> , <https://osservatorio-eli.example.it/eli/ext/decreto-legge/2014-06-24/91> , <https://osservatorio-eli.example.it/eli/id/2023/05/04/23G00057/sg> , <https://osservatorio-eli.example.it/eli/ext/legge/2018-12-30/145> , <https://osservatorio-eli.example.it/eli/ext/decreto_del_presidente_della_repubblica/2002-05-30/115> , <https://osservatorio-eli.example.it/eli/ext/decreto_legislativo/2008-04-09/81> , <https://osservatorio-eli.example.it/eli/ext/decreto-legge/2012-10-18/179> , <https://osservatorio-eli.example.it/eli/id/2020/12/30/20G00202/sg> , <https://osservatorio-eli.example.it/eli/id/2024/03/02/24G00035/sg> , <https://osservatorio-eli.example.it/eli/ext/legge/2000-12-23/388> , <https://osservatorio-eli.example.it/eli/ext/legge/1976-05-05/248> , <https://osservatorio-eli.example.it/eli/ext/legge/2001-03-30/125>;
         ilg:conversionStatus  "CONVERTED" .
@@ -58802,17 +58411,6 @@ ilg:converts  a             owl:ObjectProperty;
         ilg:trustLevel            "B";
         dcterms:source            "corpus/DECRETO_LEGISLATIVO/2022/DECRETO_LEGISLATIVO_2022_M_AKN/DECRETO LEGISLATIVO_20221223_213/2023-06-01_23G00066_ORIGINALE_V0.xml" .
 
-<https://osservatorio-eli.example.it/relation/20G00067/repeals/20G00030>
-        a                         ilg:Relation;
-        ilg:confirmedByLifecycle  false;
-        ilg:exampleNote           "testo: DECRETO-LEGGE 2020-03-09 n. 14 è abrogato"@it;
-        ilg:fromAct               <https://osservatorio-eli.example.it/eli/id/2020/06/10/20G00067/sg>;
-        ilg:relationProperty      eli:repeals;
-        ilg:textualModCount       "1"^^xsd:int;
-        ilg:toAct                 <https://osservatorio-eli.example.it/eli/id/2020/03/09/20G00030/sg>;
-        ilg:trustLevel            "B";
-        dcterms:source            "corpus/DECRETO_LEGISLATIVO/2020/DECRETO_LEGISLATIVO_2020_M_AKN/DECRETO LEGISLATIVO_20200610_49/2020-06-10_20G00067_ORIGINALE_V0.xml" .
-
 <https://osservatorio-eli.example.it/relation/26G00109/changes/26G00057>
         a                         ilg:Relation;
         ilg:confirmedByLifecycle  true;
@@ -58951,17 +58549,6 @@ ilg:converts  a             owl:ObjectProperty;
         ilg:trustLevel            "B";
         dcterms:source            "corpus/DECRETO_LEGGE/2021/DECRETO_LEGGE_2021_M_AKN/DECRETO-LEGGE_20210114_2/2021-01-14_21G00002_VIGENZA_2022-05-24_V10.xml" .
 
-<https://osservatorio-eli.example.it/relation/20G00138/repeals/20G00026>
-        a                         ilg:Relation;
-        ilg:confirmedByLifecycle  false;
-        ilg:exampleNote           "testo: DECRETO-LEGGE 2020-03-02 n. 9 è abrogato"@it;
-        ilg:fromAct               <https://osservatorio-eli.example.it/eli/id/2020/09/14/20G00138/sg>;
-        ilg:relationProperty      eli:repeals;
-        ilg:textualModCount       "1"^^xsd:int;
-        ilg:toAct                 <https://osservatorio-eli.example.it/eli/id/2020/03/02/20G00026/sg>;
-        ilg:trustLevel            "B";
-        dcterms:source            "corpus/DECRETO_LEGISLATIVO/2020/DECRETO_LEGISLATIVO_2020_M_AKN/DECRETO LEGISLATIVO_20200903_121/2020-09-14_20G00138_ORIGINALE_V0.xml" .
-
 <https://osservatorio-eli.example.it/relation/22G00049/amends/22G00001>
         a                         ilg:Relation;
         ilg:confirmedByLifecycle  true;
@@ -58983,17 +58570,6 @@ ilg:converts  a             owl:ObjectProperty;
         ilg:toAct                 <https://osservatorio-eli.example.it/eli/ext/decreto_legislativo/2001-03-30/165>;
         ilg:trustLevel            "B";
         dcterms:source            "corpus/DECRETO_LEGGE/2024/DECRETO_LEGGE_2024_M_AKN/DECRETO-LEGGE_20240531_71/2024-05-31_24G00089_ORIGINALE_V0.xml" .
-
-<https://osservatorio-eli.example.it/relation/20G00063/repeals/20G00030>
-        a                         ilg:Relation;
-        ilg:confirmedByLifecycle  false;
-        ilg:exampleNote           "testo: DECRETO-LEGGE 2020-03-09 n. 14 è abrogato"@it;
-        ilg:fromAct               <https://osservatorio-eli.example.it/eli/id/2020/06/09/20G00063/sg>;
-        ilg:relationProperty      eli:repeals;
-        ilg:textualModCount       "1"^^xsd:int;
-        ilg:toAct                 <https://osservatorio-eli.example.it/eli/id/2020/03/09/20G00030/sg>;
-        ilg:trustLevel            "B";
-        dcterms:source            "corpus/DECRETO_LEGISLATIVO/2020/DECRETO_LEGISLATIVO_2020_M_AKN/DECRETO LEGISLATIVO_20200601_45/2020-06-09_20G00063_ORIGINALE_V0.xml" .
 
 <https://osservatorio-eli.example.it/relation/24G00022/changes/20G00065>
         a                         ilg:Relation;
@@ -60419,8 +59995,7 @@ ilg:converts  a             owl:ObjectProperty;
         dcterms:source            "corpus/DECRETO_LEGGE/2021/DECRETO_LEGGE_2021_M_AKN/DECRETO-LEGGE_20211106_152/2021-11-06_21G00166_ORIGINALE_V0.xml" .
 
 <https://osservatorio-eli.example.it/eli/id/2020/07/15/20G00091/sg>
-        eli:amends   <https://osservatorio-eli.example.it/eli/ext/legge/1986-12-23/898> , <https://osservatorio-eli.example.it/eli/ext/decreto_legislativo/2001-06-08/231> , <https://osservatorio-eli.example.it/eli/ext/decreto_legislativo/2016-01-15/8> , <https://osservatorio-eli.example.it/eli/ext/decreto_del_presidente_della_repubblica/1973-01-23/43> , <https://osservatorio-eli.example.it/eli/ext/decreto_legislativo/2000-03-10/74> , <https://osservatorio-eli.example.it/eli/ext/regio_decreto/1930-10-19/1398>;
-        eli:repeals  <https://osservatorio-eli.example.it/eli/id/2020/03/09/20G00030/sg> , <https://osservatorio-eli.example.it/eli/id/2020/03/08/20G00029/sg> , <https://osservatorio-eli.example.it/eli/id/2020/03/02/20G00026/sg> .
+        eli:amends  <https://osservatorio-eli.example.it/eli/ext/legge/1986-12-23/898> , <https://osservatorio-eli.example.it/eli/ext/decreto_legislativo/2001-06-08/231> , <https://osservatorio-eli.example.it/eli/ext/decreto_legislativo/2016-01-15/8> , <https://osservatorio-eli.example.it/eli/ext/decreto_del_presidente_della_repubblica/1973-01-23/43> , <https://osservatorio-eli.example.it/eli/ext/decreto_legislativo/2000-03-10/74> , <https://osservatorio-eli.example.it/eli/ext/regio_decreto/1930-10-19/1398> .
 
 <https://osservatorio-eli.example.it/relation/22G00206/changes/20G00171>
         a                         ilg:Relation;
@@ -61048,17 +60623,6 @@ ilg:converts  a             owl:ObjectProperty;
         eli:number         "178";
         eli:type_document  <http://www.gazzettaufficiale.it/eli/tables/resource-type#DECRETO_LEGISLATIVO> .
 
-<https://osservatorio-eli.example.it/relation/20G00137/repeals/20G00030>
-        a                         ilg:Relation;
-        ilg:confirmedByLifecycle  false;
-        ilg:exampleNote           "testo: DECRETO-LEGGE 2020-03-09 n. 14 è abrogato"@it;
-        ilg:fromAct               <https://osservatorio-eli.example.it/eli/id/2020/09/12/20G00137/sg>;
-        ilg:relationProperty      eli:repeals;
-        ilg:textualModCount       "1"^^xsd:int;
-        ilg:toAct                 <https://osservatorio-eli.example.it/eli/id/2020/03/09/20G00030/sg>;
-        ilg:trustLevel            "B";
-        dcterms:source            "corpus/DECRETO_LEGISLATIVO/2020/DECRETO_LEGISLATIVO_2020_M_AKN/DECRETO LEGISLATIVO_20200903_119/2020-09-12_20G00137_ORIGINALE_V0.xml" .
-
 <https://osservatorio-eli.example.it/relation/25G00007/changes/decreto-1995-12-15-592>
         a                         ilg:Relation;
         ilg:confirmedByLifecycle  false;
@@ -61354,17 +60918,6 @@ ilg:converts  a             owl:ObjectProperty;
         ilg:toAct                 <https://osservatorio-eli.example.it/eli/id/2020/03/13/20G00032/sg>;
         ilg:trustLevel            "A";
         dcterms:source            "corpus/DECRETO_LEGGE/2022/DECRETO_LEGGE_2022_M_AKN/DECRETO-LEGGE_20220517_50/2022-05-17_22G00059_ORIGINALE_V0.xml" .
-
-<https://osservatorio-eli.example.it/relation/20G00068/repeals/20G00030>
-        a                         ilg:Relation;
-        ilg:confirmedByLifecycle  false;
-        ilg:exampleNote           "testo: DECRETO-LEGGE 2020-03-09 n. 14 è abrogato"@it;
-        ilg:fromAct               <https://osservatorio-eli.example.it/eli/id/2020/06/10/20G00068/sg>;
-        ilg:relationProperty      eli:repeals;
-        ilg:textualModCount       "1"^^xsd:int;
-        ilg:toAct                 <https://osservatorio-eli.example.it/eli/id/2020/03/09/20G00030/sg>;
-        ilg:trustLevel            "B";
-        dcterms:source            "corpus/DECRETO_LEGISLATIVO/2020/DECRETO_LEGISLATIVO_2020_M_AKN/DECRETO LEGISLATIVO_20200610_50/2020-06-10_20G00068_ORIGINALE_V0.xml" .
 
 <https://osservatorio-eli.example.it/relation/25G00044/amends/decreto-legge-2002-09-24-209>
         a                         ilg:Relation;
@@ -62590,17 +62143,6 @@ ilg:converts  a             owl:ObjectProperty;
         ilg:trustLevel            "B";
         dcterms:source            "corpus/DECRETO_LEGGE/2022/DECRETO_LEGGE_2022_M_AKN/DECRETO-LEGGE_20220504_41/2022-05-04_22G00053_ORIGINALE_V0.xml" .
 
-<https://osservatorio-eli.example.it/relation/20G00141/repeals/20G00030>
-        a                         ilg:Relation;
-        ilg:confirmedByLifecycle  false;
-        ilg:exampleNote           "testo: DECRETO-LEGGE 2020-03-09 n. 14 è abrogato"@it;
-        ilg:fromAct               <https://osservatorio-eli.example.it/eli/id/2020/09/15/20G00141/sg>;
-        ilg:relationProperty      eli:repeals;
-        ilg:textualModCount       "1"^^xsd:int;
-        ilg:toAct                 <https://osservatorio-eli.example.it/eli/id/2020/03/09/20G00030/sg>;
-        ilg:trustLevel            "B";
-        dcterms:source            "corpus/DECRETO_LEGISLATIVO/2020/DECRETO_LEGISLATIVO_2020_M_AKN/DECRETO LEGISLATIVO_20200915_122/2020-09-15_20G00141_ORIGINALE_V0.xml" .
-
 <https://osservatorio-eli.example.it/relation/22G00154/amends/decreto-legge-2019-09-21-104>
         a                         ilg:Relation;
         ilg:confirmedByLifecycle  false;
@@ -63379,8 +62921,7 @@ ilg:converts  a             owl:ObjectProperty;
         dcterms:source            "corpus/DECRETO_LEGGE/2026/DECRETO_LEGGE_2026_M_AKN/DECRETO-LEGGE_20260224_23/2026-02-24_26G00042_ORIGINALE_V0.xml" .
 
 <https://osservatorio-eli.example.it/eli/id/2020/06/09/20G00063/sg>
-        eli:amends   <https://osservatorio-eli.example.it/eli/ext/decreto_del_presidente_della_repubblica/1972-10-26/633>;
-        eli:repeals  <https://osservatorio-eli.example.it/eli/id/2020/03/09/20G00030/sg> , <https://osservatorio-eli.example.it/eli/id/2020/03/08/20G00029/sg> , <https://osservatorio-eli.example.it/eli/id/2020/03/02/20G00026/sg> .
+        eli:amends  <https://osservatorio-eli.example.it/eli/ext/decreto_del_presidente_della_repubblica/1972-10-26/633> .
 
 <https://osservatorio-eli.example.it/relation/23G00151/amends/decreto_legislativo-2005-02-10-30>
         a                         ilg:Relation;
@@ -63758,8 +63299,7 @@ ilg:converts  a             owl:ObjectProperty;
         dcterms:source            "corpus/LEGGE/2025/LEGGE_2025-12_M_AKN/LEGGE_20251202_182/2025-12-03_25G00190_ORIGINALE_V0.xml" .
 
 <https://osservatorio-eli.example.it/eli/id/2020/08/11/20G00119/sg>
-        eli:amends   <https://osservatorio-eli.example.it/eli/ext/decreto_del_presidente_della_repubblica/1973-09-29/600>;
-        eli:repeals  <https://osservatorio-eli.example.it/eli/id/2020/03/09/20G00030/sg> , <https://osservatorio-eli.example.it/eli/id/2020/03/08/20G00029/sg> , <https://osservatorio-eli.example.it/eli/id/2020/03/02/20G00026/sg> .
+        eli:amends  <https://osservatorio-eli.example.it/eli/ext/decreto_del_presidente_della_repubblica/1973-09-29/600> .
 
 <https://osservatorio-eli.example.it/relation/22G00115/amends/decreto_del_presidente_della_repubblica-1988-07-15-305>
         a                         ilg:Relation;
@@ -64827,7 +64367,7 @@ ilg:converts  a             owl:ObjectProperty;
         ilg:exampleNote           "ha disposto (con l'art. 225, comma 2) la modifica dell'art. 21."@it , "ha disposto (con l'art. 225, comma 9) la modifica dell'art. 23."@it;
         ilg:fromAct               <https://osservatorio-eli.example.it/eli/id/2023/03/31/23G00044/sg>;
         ilg:relationProperty      eli:repeals;
-        ilg:textualModCount       "273"^^xsd:int;
+        ilg:textualModCount       "272"^^xsd:int;
         ilg:toAct                 <https://osservatorio-eli.example.it/eli/ext/decreto_legislativo/2016-04-18/50>;
         ilg:trustLevel            "B";
         dcterms:source            "corpus/DECRETO_LEGISLATIVO/2023/DECRETO_LEGISLATIVO_2023_M_AKN/DECRETO LEGISLATIVO_20230331_36/2023-03-31_23G00044_ORIGINALE_V0.xml" .
@@ -67006,17 +66546,6 @@ ilg:converts  a             owl:ObjectProperty;
         ilg:trustLevel            "A";
         dcterms:source            "corpus/DECRETO_LEGGE/2025/DECRETO_LEGGE_2025_M_AKN/DECRETO-LEGGE_20250630_95/2025-06-30_25G00107_ORIGINALE_V0.xml" .
 
-<https://osservatorio-eli.example.it/relation/20G00102/repeals/20G00029>
-        a                         ilg:Relation;
-        ilg:confirmedByLifecycle  false;
-        ilg:exampleNote           "testo: DECRETO-LEGGE 2020-03-08 n. 11 è abrogato"@it;
-        ilg:fromAct               <https://osservatorio-eli.example.it/eli/id/2020/07/30/20G00102/sg>;
-        ilg:relationProperty      eli:repeals;
-        ilg:textualModCount       "1"^^xsd:int;
-        ilg:toAct                 <https://osservatorio-eli.example.it/eli/id/2020/03/08/20G00029/sg>;
-        ilg:trustLevel            "B";
-        dcterms:source            "corpus/DECRETO_LEGISLATIVO/2020/DECRETO_LEGISLATIVO_2020_M_AKN/DECRETO LEGISLATIVO_20200714_84/2020-07-30_20G00102_ORIGINALE_V0.xml" .
-
 <https://osservatorio-eli.example.it/relation/23G00137/amends/21G00166>
         a                         ilg:Relation;
         ilg:confirmedByLifecycle  true;
@@ -68676,17 +68205,6 @@ ilg:converts  a             owl:ObjectProperty;
         ilg:trustLevel            "B";
         dcterms:source            "corpus/DECRETO_LEGGE/2022/DECRETO_LEGGE_2022_M_AKN/DECRETO-LEGGE_20221229_198/2022-12-29_22G00212_VIGENZA_2026-04-21_V27.xml" .
 
-<https://osservatorio-eli.example.it/relation/20G00093/repeals/20G00026>
-        a                         ilg:Relation;
-        ilg:confirmedByLifecycle  false;
-        ilg:exampleNote           "testo: DECRETO-LEGGE 2020-03-02 n. 9 è abrogato"@it;
-        ilg:fromAct               <https://osservatorio-eli.example.it/eli/id/2020/07/14/20G00093/sg>;
-        ilg:relationProperty      eli:repeals;
-        ilg:textualModCount       "1"^^xsd:int;
-        ilg:toAct                 <https://osservatorio-eli.example.it/eli/id/2020/03/02/20G00026/sg>;
-        ilg:trustLevel            "B";
-        dcterms:source            "corpus/DECRETO_LEGISLATIVO/2020/DECRETO_LEGISLATIVO_2020_M_AKN/DECRETO LEGISLATIVO_20200714_73/2020-07-14_20G00093_ORIGINALE_V0.xml" .
-
 <https://osservatorio-eli.example.it/relation/26G00057/amends/decreto-legge-1981-07-29-402>
         a                         ilg:Relation;
         ilg:confirmedByLifecycle  false;
@@ -68798,17 +68316,6 @@ ilg:converts  a             owl:ObjectProperty;
         ilg:toAct                 <https://osservatorio-eli.example.it/eli/ext/decreto_legislativo/1993-09-01/385>;
         ilg:trustLevel            "B";
         dcterms:source            "corpus/DECRETO_LEGISLATIVO/2025/DECRETO_LEGISLATIVO_2025_M_AKN/DECRETO LEGISLATIVO_20251231_209/2026-01-08_26G00002_ORIGINALE_V0.xml" .
-
-<https://osservatorio-eli.example.it/relation/20G00091/repeals/20G00026>
-        a                         ilg:Relation;
-        ilg:confirmedByLifecycle  false;
-        ilg:exampleNote           "testo: DECRETO-LEGGE 2020-03-02 n. 9 è abrogato"@it;
-        ilg:fromAct               <https://osservatorio-eli.example.it/eli/id/2020/07/15/20G00091/sg>;
-        ilg:relationProperty      eli:repeals;
-        ilg:textualModCount       "1"^^xsd:int;
-        ilg:toAct                 <https://osservatorio-eli.example.it/eli/id/2020/03/02/20G00026/sg>;
-        ilg:trustLevel            "B";
-        dcterms:source            "corpus/DECRETO_LEGISLATIVO/2020/DECRETO_LEGISLATIVO_2020_M_AKN/DECRETO LEGISLATIVO_20200714_75/2020-07-15_20G00091_ORIGINALE_V0.xml" .
 
 <https://osservatorio-eli.example.it/relation/25G00033/amends/21G00093>
         a                         ilg:Relation;
@@ -70289,17 +69796,6 @@ ilg:converts  a             owl:ObjectProperty;
         ilg:trustLevel            "B";
         dcterms:source            "corpus/DECRETO_LEGGE/2023/DECRETO_LEGGE_2023_M_AKN/DECRETO-LEGGE_20230422_44/2023-04-22_23G00054_ORIGINALE_V0.xml" .
 
-<https://osservatorio-eli.example.it/relation/20G00165/repeals/20G00030>
-        a                         ilg:Relation;
-        ilg:confirmedByLifecycle  false;
-        ilg:exampleNote           "testo: DECRETO-LEGGE 2020-03-09 n. 14 è abrogato"@it;
-        ilg:fromAct               <https://osservatorio-eli.example.it/eli/id/2020/10/30/20G00165/sg>;
-        ilg:relationProperty      eli:repeals;
-        ilg:textualModCount       "1"^^xsd:int;
-        ilg:toAct                 <https://osservatorio-eli.example.it/eli/id/2020/03/09/20G00030/sg>;
-        ilg:trustLevel            "B";
-        dcterms:source            "corpus/DECRETO_LEGISLATIVO/2020/DECRETO_LEGISLATIVO_2020_M_AKN/DECRETO LEGISLATIVO_20201016_142/2020-10-30_20G00165_ORIGINALE_V0.xml" .
-
 <https://osservatorio-eli.example.it/conversion/24G00171>
         a                     ilg:ConversionCheck;
         ilg:checkC1           true;
@@ -70669,17 +70165,6 @@ ilg:converts  a             owl:ObjectProperty;
         ilg:toAct                 <https://osservatorio-eli.example.it/eli/ext/decreto_legislativo/2017-02-17/42>;
         ilg:trustLevel            "B";
         dcterms:source            "corpus/DECRETO_LEGGE/2023/DECRETO_LEGGE_2023_M_AKN/DECRETO-LEGGE_20231230_215/2023-12-30_23G00227_ORIGINALE_V0.xml" .
-
-<https://osservatorio-eli.example.it/relation/20G00119/repeals/20G00029>
-        a                         ilg:Relation;
-        ilg:confirmedByLifecycle  false;
-        ilg:exampleNote           "testo: DECRETO-LEGGE 2020-03-08 n. 11 è abrogato"@it;
-        ilg:fromAct               <https://osservatorio-eli.example.it/eli/id/2020/08/11/20G00119/sg>;
-        ilg:relationProperty      eli:repeals;
-        ilg:textualModCount       "1"^^xsd:int;
-        ilg:toAct                 <https://osservatorio-eli.example.it/eli/id/2020/03/08/20G00029/sg>;
-        ilg:trustLevel            "B";
-        dcterms:source            "corpus/DECRETO_LEGISLATIVO/2020/DECRETO_LEGISLATIVO_2020_M_AKN/DECRETO LEGISLATIVO_20200730_100/2020-08-11_20G00119_ORIGINALE_V0.xml" .
 
 <https://osservatorio-eli.example.it/relation/25G00126/amends/24G00215>
         a                         ilg:Relation;
@@ -71609,17 +71094,6 @@ ilg:converts  a             owl:ObjectProperty;
         ilg:trustLevel            "A";
         dcterms:source            "corpus/DECRETO_LEGGE/2026/DECRETO_LEGGE_2026_M_AKN/DECRETO-LEGGE_20260219_19/2026-02-19_26G00039_ORIGINALE_V0.xml" .
 
-<https://osservatorio-eli.example.it/relation/24G00163/repeals/decreto_legislativo-2013-03-13-30>
-        a                         ilg:Relation;
-        ilg:confirmedByLifecycle  false;
-        ilg:exampleNote           "testo: DECRETO_LEGISLATIVO 2013-03-13 n. 30 è abrogato"@it;
-        ilg:fromAct               <https://osservatorio-eli.example.it/eli/id/2024/10/14/24G00163/sg>;
-        ilg:relationProperty      eli:repeals;
-        ilg:textualModCount       "1"^^xsd:int;
-        ilg:toAct                 <https://osservatorio-eli.example.it/eli/ext/decreto_legislativo/2013-03-13/30>;
-        ilg:trustLevel            "B";
-        dcterms:source            "corpus/DECRETO_LEGISLATIVO/2024/DECRETO_LEGISLATIVO_2024_M_AKN/DECRETO LEGISLATIVO_20240910_147/2024-10-14_24G00163_ORIGINALE_V0.xml" .
-
 <https://osservatorio-eli.example.it/relation/21G00087/amends/decreto_del_presidente_del_consiglio_dei_ministri-2020-09-30-165>
         a                         ilg:Relation;
         ilg:confirmedByLifecycle  false;
@@ -72281,17 +71755,6 @@ ilg:converts  a             owl:ObjectProperty;
         ilg:toAct                 <https://osservatorio-eli.example.it/eli/ext/decreto-legge/2005-01-31/7>;
         ilg:trustLevel            "B";
         dcterms:source            "corpus/DECRETO_LEGISLATIVO/2024/DECRETO_LEGISLATIVO_2024_M_AKN/DECRETO LEGISLATIVO_20241105_174/2024-11-28_24G00192_ORIGINALE_V0.xml" .
-
-<https://osservatorio-eli.example.it/relation/20G00173/repeals/20G00026>
-        a                         ilg:Relation;
-        ilg:confirmedByLifecycle  false;
-        ilg:exampleNote           "testo: DECRETO-LEGGE 2020-03-02 n. 9 è abrogato"@it;
-        ilg:fromAct               <https://osservatorio-eli.example.it/eli/id/2020/11/16/20G00173/sg>;
-        ilg:relationProperty      eli:repeals;
-        ilg:textualModCount       "1"^^xsd:int;
-        ilg:toAct                 <https://osservatorio-eli.example.it/eli/id/2020/03/02/20G00026/sg>;
-        ilg:trustLevel            "B";
-        dcterms:source            "corpus/DECRETO_LEGISLATIVO/2020/DECRETO_LEGISLATIVO_2020_M_AKN/DECRETO LEGISLATIVO_20201026_152/2020-11-16_20G00173_ORIGINALE_V0.xml" .
 
 <https://osservatorio-eli.example.it/relation/22G00211/amends/21G00084>
         a                         ilg:Relation;
@@ -75958,6 +75421,11 @@ ilg:converts  a             owl:ObjectProperty;
         ilg:trustLevel            "A";
         dcterms:source            "corpus/DECRETO_LEGGE/2024/DECRETO_LEGGE_2024_M_AKN/DECRETO-LEGGE_20240329_39/2024-03-29_24G00059_ORIGINALE_V0.xml" .
 
+<https://osservatorio-eli.example.it/conversion/20G00205>
+        a                     ilg:ConversionCheck;
+        ilg:conversionStatus  "REPEALED";
+        ilg:decree            <https://osservatorio-eli.example.it/eli/id/2020/12/31/20G00205/sg> .
+
 <https://osservatorio-eli.example.it/relation/22G00212/amends/22G00053>
         a                         ilg:Relation;
         ilg:confirmedByLifecycle  true;
@@ -75968,11 +75436,6 @@ ilg:converts  a             owl:ObjectProperty;
         ilg:toAct                 <https://osservatorio-eli.example.it/eli/id/2022/05/04/22G00053/sg>;
         ilg:trustLevel            "A";
         dcterms:source            "corpus/DECRETO_LEGGE/2022/DECRETO_LEGGE_2022_M_AKN/DECRETO-LEGGE_20221229_198/2022-12-29_22G00212_ORIGINALE_V0.xml" .
-
-<https://osservatorio-eli.example.it/conversion/20G00205>
-        a                     ilg:ConversionCheck;
-        ilg:conversionStatus  "REPEALED";
-        ilg:decree            <https://osservatorio-eli.example.it/eli/id/2020/12/31/20G00205/sg> .
 
 <https://osservatorio-eli.example.it/relation/26G00050/changes/20G00052>
         a                         ilg:Relation;
@@ -76328,17 +75791,6 @@ ilg:converts  a             owl:ObjectProperty;
 
 <https://osservatorio-eli.example.it/eli/id/2024/08/22/24G00139/sg>
         eli:amends  <https://osservatorio-eli.example.it/eli/id/2022/09/23/22G00154/sg> .
-
-<https://osservatorio-eli.example.it/relation/20G00136/repeals/20G00029>
-        a                         ilg:Relation;
-        ilg:confirmedByLifecycle  false;
-        ilg:exampleNote           "testo: DECRETO-LEGGE 2020-03-08 n. 11 è abrogato"@it;
-        ilg:fromAct               <https://osservatorio-eli.example.it/eli/id/2020/09/12/20G00136/sg>;
-        ilg:relationProperty      eli:repeals;
-        ilg:textualModCount       "1"^^xsd:int;
-        ilg:toAct                 <https://osservatorio-eli.example.it/eli/id/2020/03/08/20G00029/sg>;
-        ilg:trustLevel            "B";
-        dcterms:source            "corpus/DECRETO_LEGISLATIVO/2020/DECRETO_LEGISLATIVO_2020_M_AKN/DECRETO LEGISLATIVO_20200903_118/2020-09-12_20G00136_ORIGINALE_V0.xml" .
 
 <https://osservatorio-eli.example.it/eli/ext/decreto_legislativo/2014-03-04/46>
         a                  ilg:ExternalAct;
@@ -76737,17 +76189,6 @@ ilg:converts  a             owl:ObjectProperty;
         ilg:trustLevel            "B";
         dcterms:source            "corpus/DECRETO_LEGGE/2020/DECRETO_LEGGE_2020_M_AKN/DECRETO-LEGGE_20200317_18/2020-03-17_20G00034_VIGENZA_2026-05-23_V87.xml" .
 
-<https://osservatorio-eli.example.it/relation/20G00067/repeals/20G00029>
-        a                         ilg:Relation;
-        ilg:confirmedByLifecycle  false;
-        ilg:exampleNote           "testo: DECRETO-LEGGE 2020-03-08 n. 11 è abrogato"@it;
-        ilg:fromAct               <https://osservatorio-eli.example.it/eli/id/2020/06/10/20G00067/sg>;
-        ilg:relationProperty      eli:repeals;
-        ilg:textualModCount       "1"^^xsd:int;
-        ilg:toAct                 <https://osservatorio-eli.example.it/eli/id/2020/03/08/20G00029/sg>;
-        ilg:trustLevel            "B";
-        dcterms:source            "corpus/DECRETO_LEGISLATIVO/2020/DECRETO_LEGISLATIVO_2020_M_AKN/DECRETO LEGISLATIVO_20200610_49/2020-06-10_20G00067_ORIGINALE_V0.xml" .
-
 <https://osservatorio-eli.example.it/relation/26G00057/amends/legge-1999-05-13-133>
         a                         ilg:Relation;
         ilg:confirmedByLifecycle  false;
@@ -76876,17 +76317,6 @@ ilg:converts  a             owl:ObjectProperty;
 
 <https://osservatorio-eli.example.it/eli/id/2026/08/11/26G00168/sg>
         eli:changes  <https://osservatorio-eli.example.it/eli/id/2021/03/22/21G00049/sg> , <https://osservatorio-eli.example.it/eli/id/2020/05/19/20G00052/sg> .
-
-<https://osservatorio-eli.example.it/relation/20G00063/repeals/20G00029>
-        a                         ilg:Relation;
-        ilg:confirmedByLifecycle  false;
-        ilg:exampleNote           "testo: DECRETO-LEGGE 2020-03-08 n. 11 è abrogato"@it;
-        ilg:fromAct               <https://osservatorio-eli.example.it/eli/id/2020/06/09/20G00063/sg>;
-        ilg:relationProperty      eli:repeals;
-        ilg:textualModCount       "1"^^xsd:int;
-        ilg:toAct                 <https://osservatorio-eli.example.it/eli/id/2020/03/08/20G00029/sg>;
-        ilg:trustLevel            "B";
-        dcterms:source            "corpus/DECRETO_LEGISLATIVO/2020/DECRETO_LEGISLATIVO_2020_M_AKN/DECRETO LEGISLATIVO_20200601_45/2020-06-09_20G00063_ORIGINALE_V0.xml" .
 
 <https://osservatorio-eli.example.it/eli/ext/decreto-legge/2019-12-02/137>
         a                  ilg:ExternalAct;
@@ -77436,10 +76866,10 @@ ilg:converts  a             owl:ObjectProperty;
 <https://osservatorio-eli.example.it/relation/24G00145/repeals/decreto_legislativo-2016-12-30-254>
         a                         ilg:Relation;
         ilg:confirmedByLifecycle  false;
-        ilg:exampleNote           "testo: DECRETO_LEGISLATIVO 2016-12-30 n. 254 è abrogato"@it , "ha disposto (con l'art. 17, comma 3) l'abrogazione dell'intero provvedimento."@it;
+        ilg:exampleNote           "ha disposto (con l'art. 17, comma 3) l'abrogazione dell'intero provvedimento."@it;
         ilg:fromAct               <https://osservatorio-eli.example.it/eli/id/2024/09/10/24G00145/sg>;
         ilg:relationProperty      eli:repeals;
-        ilg:textualModCount       "14"^^xsd:int;
+        ilg:textualModCount       "13"^^xsd:int;
         ilg:toAct                 <https://osservatorio-eli.example.it/eli/ext/decreto_legislativo/2016-12-30/254>;
         ilg:trustLevel            "B";
         dcterms:source            "corpus/DECRETO_LEGISLATIVO/2024/DECRETO_LEGISLATIVO_2024_M_AKN/DECRETO LEGISLATIVO_20240906_125/2024-09-10_24G00145_ORIGINALE_V0.xml" .
@@ -77527,7 +76957,7 @@ ilg:converts  a             owl:ObjectProperty;
         ilg:exampleNote           "ha disposto (con l'art. 1, comma 2) che \"Il decreto-legge 2 luglio 2024, n. 91, recante misure urgenti di prevenzione del rischio sismico connesso al fenomeno bradisismico nell'area dei Campi Flegrei e per interventi di protezione civile e di coesione, e' abrogato. Restano validi gli atti e i provve…"@it , "ha disposto (con l'art. 1, comma 2) l'abrogazione dell'intero provvedimento e la modifica dell'art. 1."@it;
         ilg:fromAct               <https://osservatorio-eli.example.it/eli/id/2024/08/09/24G00130/sg>;
         ilg:relationProperty      eli:repeals;
-        ilg:textualModCount       "16"^^xsd:int;
+        ilg:textualModCount       "15"^^xsd:int;
         ilg:toAct                 <https://osservatorio-eli.example.it/eli/id/2024/07/02/24G00109/sg>;
         ilg:trustLevel            "A";
         dcterms:source            "corpus/LEGGE/2024/LEGGE_2024_M_AKN/LEGGE_20240808_111/2024-08-09_24G00130_ORIGINALE_V0.xml" .
@@ -78428,17 +77858,6 @@ ilg:converts  a             owl:ObjectProperty;
         eli:number         "62";
         eli:type_document  <http://www.gazzettaufficiale.it/eli/tables/resource-type#LEGGE> .
 
-<https://osservatorio-eli.example.it/relation/22G00018/repeals/decreto-legge-2022-01-22-2>
-        a                         ilg:Relation;
-        ilg:confirmedByLifecycle  false;
-        ilg:exampleNote           "testo: DECRETO-LEGGE 2022-01-22 n. 2 è abrogato"@it;
-        ilg:fromAct               <https://osservatorio-eli.example.it/eli/id/2022/02/18/22G00018/sg>;
-        ilg:relationProperty      eli:repeals;
-        ilg:textualModCount       "1"^^xsd:int;
-        ilg:toAct                 <https://osservatorio-eli.example.it/eli/ext/decreto-legge/2022-01-22/2>;
-        ilg:trustLevel            "B";
-        dcterms:source            "corpus/LEGGE/2022/LEGGE_2022_M_AKN/LEGGE_20220218_11/2022-02-18_22G00018_ORIGINALE_V0.xml" .
-
 <https://osservatorio-eli.example.it/relation/20G00145/changes/20G00112>
         a                         ilg:Relation;
         ilg:confirmedByLifecycle  true;
@@ -79070,17 +78489,6 @@ ilg:converts  a             owl:ObjectProperty;
         ilg:trustLevel            "B";
         dcterms:source            "corpus/DECRETO_LEGGE/2022/DECRETO_LEGGE_2022_M_AKN/DECRETO-LEGGE_20220517_50/2022-05-17_22G00059_VIGENZA_2027-01-01_V50.xml" .
 
-<https://osservatorio-eli.example.it/relation/20G00137/repeals/20G00029>
-        a                         ilg:Relation;
-        ilg:confirmedByLifecycle  false;
-        ilg:exampleNote           "testo: DECRETO-LEGGE 2020-03-08 n. 11 è abrogato"@it;
-        ilg:fromAct               <https://osservatorio-eli.example.it/eli/id/2020/09/12/20G00137/sg>;
-        ilg:relationProperty      eli:repeals;
-        ilg:textualModCount       "1"^^xsd:int;
-        ilg:toAct                 <https://osservatorio-eli.example.it/eli/id/2020/03/08/20G00029/sg>;
-        ilg:trustLevel            "B";
-        dcterms:source            "corpus/DECRETO_LEGISLATIVO/2020/DECRETO_LEGISLATIVO_2020_M_AKN/DECRETO LEGISLATIVO_20200903_119/2020-09-12_20G00137_ORIGINALE_V0.xml" .
-
 <https://osservatorio-eli.example.it/eli/ext/decreto-legge/1988-03-13/69>
         a                  ilg:ExternalAct;
         rdfs:label         "DECRETO-LEGGE 1988-03-13 n. 69";
@@ -79332,17 +78740,6 @@ ilg:converts  a             owl:ObjectProperty;
         eli:date_document  "1999-07-30"^^xsd:date;
         eli:number         "282";
         eli:type_document  <http://www.gazzettaufficiale.it/eli/tables/resource-type#DECRETO_LEGISLATIVO> .
-
-<https://osservatorio-eli.example.it/relation/20G00068/repeals/20G00029>
-        a                         ilg:Relation;
-        ilg:confirmedByLifecycle  false;
-        ilg:exampleNote           "testo: DECRETO-LEGGE 2020-03-08 n. 11 è abrogato"@it;
-        ilg:fromAct               <https://osservatorio-eli.example.it/eli/id/2020/06/10/20G00068/sg>;
-        ilg:relationProperty      eli:repeals;
-        ilg:textualModCount       "1"^^xsd:int;
-        ilg:toAct                 <https://osservatorio-eli.example.it/eli/id/2020/03/08/20G00029/sg>;
-        ilg:trustLevel            "B";
-        dcterms:source            "corpus/DECRETO_LEGISLATIVO/2020/DECRETO_LEGISLATIVO_2020_M_AKN/DECRETO LEGISLATIVO_20200610_50/2020-06-10_20G00068_ORIGINALE_V0.xml" .
 
 <https://osservatorio-eli.example.it/eli/ext/decreto/2017-06-07/122>
         a                  ilg:ExternalAct;
@@ -80088,8 +79485,7 @@ ilg:converts  a             owl:ObjectProperty;
         dcterms:source            "corpus/DECRETO_LEGGE/2025/DECRETO_LEGGE_2025_M_AKN/DECRETO-LEGGE_20251231_200/2025-12-31_25G00213_ORIGINALE_V0.xml" .
 
 <https://osservatorio-eli.example.it/eli/id/2024/10/14/24G00163/sg>
-        eli:amends   <https://osservatorio-eli.example.it/eli/id/2020/06/10/20G00065/sg>;
-        eli:repeals  <https://osservatorio-eli.example.it/eli/ext/decreto_legislativo/2013-03-13/30> .
+        eli:amends  <https://osservatorio-eli.example.it/eli/id/2020/06/10/20G00065/sg> .
 
 <https://osservatorio-eli.example.it/relation/26G00082/amends/decreto_legislativo-2015-06-15-81>
         a                         ilg:Relation;
@@ -80608,17 +80004,6 @@ ilg:converts  a             owl:ObjectProperty;
         ilg:toAct                 <https://osservatorio-eli.example.it/eli/id/2022/03/21/22G00032/sg>;
         ilg:trustLevel            "A";
         dcterms:source            "corpus/DECRETO_LEGGE/2022/DECRETO_LEGGE_2022_M_AKN/DECRETO-LEGGE_20221118_176/2022-11-18_22G00189_ORIGINALE_V0.xml" .
-
-<https://osservatorio-eli.example.it/relation/20G00141/repeals/20G00029>
-        a                         ilg:Relation;
-        ilg:confirmedByLifecycle  false;
-        ilg:exampleNote           "testo: DECRETO-LEGGE 2020-03-08 n. 11 è abrogato"@it;
-        ilg:fromAct               <https://osservatorio-eli.example.it/eli/id/2020/09/15/20G00141/sg>;
-        ilg:relationProperty      eli:repeals;
-        ilg:textualModCount       "1"^^xsd:int;
-        ilg:toAct                 <https://osservatorio-eli.example.it/eli/id/2020/03/08/20G00029/sg>;
-        ilg:trustLevel            "B";
-        dcterms:source            "corpus/DECRETO_LEGISLATIVO/2020/DECRETO_LEGISLATIVO_2020_M_AKN/DECRETO LEGISLATIVO_20200915_122/2020-09-15_20G00141_ORIGINALE_V0.xml" .
 
 <https://osservatorio-eli.example.it/eli/ext/decreto_legislativo/1999-08-17/298>
         a                  ilg:ExternalAct;
@@ -81676,7 +81061,7 @@ ilg:converts  a             owl:ObjectProperty;
         ilg:exampleNote           "ha disposto (con l'art. 1, comma 2) che \"Il decreto-legge 11 gennaio 2023, n. 4, e' abrogato. Restano validi gli atti e i provvedimenti adottati e sono fatti salvi gli effetti prodottisi e i rapporti giuridici sorti sulla base del medesimo decreto-legge n. 4 del 2023\"."@it , "ha disposto (con l'art. 1, comma 2) l'abrogazione dell'intero provvedimento e la modifica dell'art. 1."@it;
         ilg:fromAct               <https://osservatorio-eli.example.it/eli/id/2023/02/27/23G00021/sg>;
         ilg:relationProperty      eli:repeals;
-        ilg:textualModCount       "5"^^xsd:int;
+        ilg:textualModCount       "4"^^xsd:int;
         ilg:toAct                 <https://osservatorio-eli.example.it/eli/id/2023/01/11/23G00006/sg>;
         ilg:trustLevel            "A";
         dcterms:source            "corpus/LEGGE/2023/LEGGE_2023_M_AKN/LEGGE_20230224_14/2023-02-27_23G00021_ORIGINALE_V0.xml" .
@@ -84233,8 +83618,7 @@ ilg:converts  a             owl:ObjectProperty;
         dcterms:source            "corpus/DECRETO_LEGISLATIVO/2024/DECRETO_LEGISLATIVO_2024_M_AKN/DECRETO LEGISLATIVO_20241105_173/2024-11-28_24G00191_ORIGINALE_V0.xml" .
 
 <https://osservatorio-eli.example.it/eli/id/2020/06/10/20G00067/sg>
-        eli:amends   <https://osservatorio-eli.example.it/eli/ext/decreto_legislativo/1992-12-31/546> , <https://osservatorio-eli.example.it/eli/ext/decreto_del_presidente_della_repubblica/1973-09-29/602> , <https://osservatorio-eli.example.it/eli/ext/decreto_del_presidente_della_repubblica/1973-09-29/600>;
-        eli:repeals  <https://osservatorio-eli.example.it/eli/id/2020/03/09/20G00030/sg> , <https://osservatorio-eli.example.it/eli/id/2020/03/08/20G00029/sg> , <https://osservatorio-eli.example.it/eli/id/2020/03/02/20G00026/sg> .
+        eli:amends  <https://osservatorio-eli.example.it/eli/ext/decreto_legislativo/1992-12-31/546> , <https://osservatorio-eli.example.it/eli/ext/decreto_del_presidente_della_repubblica/1973-09-29/602> , <https://osservatorio-eli.example.it/eli/ext/decreto_del_presidente_della_repubblica/1973-09-29/600> .
 
 <https://osservatorio-eli.example.it/relation/22G00158/amends/regio_decreto-1942-03-16-262>
         a                         ilg:Relation;
@@ -84420,9 +83804,6 @@ ilg:converts  a             owl:ObjectProperty;
         ilg:toAct                 <https://osservatorio-eli.example.it/eli/ext/decreto_legislativo/2008-01-28/25>;
         ilg:trustLevel            "B";
         dcterms:source            "corpus/DECRETO_LEGGE/2024/DECRETO_LEGGE_2024_M_AKN/DECRETO-LEGGE_20241023_158/2024-10-23_24G00177_ORIGINALE_V0.xml" .
-
-<https://osservatorio-eli.example.it/eli/id/2020/10/30/20G00165/sg>
-        eli:repeals  <https://osservatorio-eli.example.it/eli/id/2020/03/09/20G00030/sg> , <https://osservatorio-eli.example.it/eli/id/2020/03/08/20G00029/sg> , <https://osservatorio-eli.example.it/eli/id/2020/03/02/20G00026/sg> .
 
 <https://osservatorio-eli.example.it/relation/24G00229/amends/decreto_del_presidente_della_repubblica-2001-03-14-144>
         a                         ilg:Relation;
@@ -86895,17 +86276,6 @@ ilg:converts  a             owl:ObjectProperty;
         ilg:trustLevel            "B";
         dcterms:source            "corpus/DECRETO_LEGGE/2021/DECRETO_LEGGE_2021_M_AKN/DECRETO-LEGGE_20210927_130/2021-09-27_21G00141_ORIGINALE_V0.xml" .
 
-<https://osservatorio-eli.example.it/relation/22G00008/amends/20G00202>
-        a                         ilg:Relation;
-        ilg:confirmedByLifecycle  true;
-        ilg:exampleNote           "ha disposto (con l'art. 13, comma 2) la modifica dell'art. 1, comma 823."@it , "ha disposto (con l'art. 10, comma 1) la modifica dell'art. 1, comma 1057-bis."@it;
-        ilg:fromAct               <https://osservatorio-eli.example.it/eli/id/2022/01/27/22G00008/sg>;
-        ilg:relationProperty      eli:amends;
-        ilg:textualModCount       "4"^^xsd:int;
-        ilg:toAct                 <https://osservatorio-eli.example.it/eli/id/2020/12/30/20G00202/sg>;
-        ilg:trustLevel            "A";
-        dcterms:source            "corpus/DECRETO_LEGGE/2022/DECRETO_LEGGE_2022_M_AKN/DECRETO-LEGGE_20220127_4/2022-01-27_22G00008_ORIGINALE_V0.xml" .
-
 <https://osservatorio-eli.example.it/conversion/21G00087>
         a                     ilg:ConversionCheck;
         ilg:checkC1           true;
@@ -86919,6 +86289,17 @@ ilg:converts  a             owl:ObjectProperty;
         ilg:decree            <https://osservatorio-eli.example.it/eli/id/2021/05/31/21G00087/sg>;
         ilg:law               <https://osservatorio-eli.example.it/eli/id/2021/07/30/21G00118/sg>;
         ilg:trustLevel        "A" .
+
+<https://osservatorio-eli.example.it/relation/22G00008/amends/20G00202>
+        a                         ilg:Relation;
+        ilg:confirmedByLifecycle  true;
+        ilg:exampleNote           "ha disposto (con l'art. 13, comma 2) la modifica dell'art. 1, comma 823."@it , "ha disposto (con l'art. 10, comma 1) la modifica dell'art. 1, comma 1057-bis."@it;
+        ilg:fromAct               <https://osservatorio-eli.example.it/eli/id/2022/01/27/22G00008/sg>;
+        ilg:relationProperty      eli:amends;
+        ilg:textualModCount       "4"^^xsd:int;
+        ilg:toAct                 <https://osservatorio-eli.example.it/eli/id/2020/12/30/20G00202/sg>;
+        ilg:trustLevel            "A";
+        dcterms:source            "corpus/DECRETO_LEGGE/2022/DECRETO_LEGGE_2022_M_AKN/DECRETO-LEGGE_20220127_4/2022-01-27_22G00008_ORIGINALE_V0.xml" .
 
 <https://osservatorio-eli.example.it/relation/26G00042/amends/20G00056>
         a                         ilg:Relation;
@@ -87284,7 +86665,7 @@ ilg:converts  a             owl:ObjectProperty;
         ilg:exampleNote           "ha disposto (con l'art. 1, comma 2) che \"Il decreto-legge 28 febbraio 2022, n. 16, e' abrogato. Restano validi gli atti e i provvedimenti adottati e sono fatti salvi gli effetti prodottisi e i rapporti giuridici sorti sulla base del medesimo decreto-legge n. 16 del 2022\"."@it , "ha disposto (con l'art. 1, comma 2) l'abrogazione dell'intero provvedimento e la modifica dell'art. 1."@it;
         ilg:fromAct               <https://osservatorio-eli.example.it/eli/id/2022/04/13/22G00037/sg>;
         ilg:relationProperty      eli:repeals;
-        ilg:textualModCount       "8"^^xsd:int;
+        ilg:textualModCount       "7"^^xsd:int;
         ilg:toAct                 <https://osservatorio-eli.example.it/eli/id/2022/02/28/22G00025/sg>;
         ilg:trustLevel            "A";
         dcterms:source            "corpus/LEGGE/2022/LEGGE_2022_M_AKN/LEGGE_20220405_28/2022-04-13_22G00037_ORIGINALE_V0.xml" .
@@ -88004,17 +87385,6 @@ ilg:converts  a             owl:ObjectProperty;
         eli:date_document  "1987-12-14"^^xsd:date;
         eli:number         "601";
         eli:type_document  <http://www.gazzettaufficiale.it/eli/tables/resource-type#DECRETO> .
-
-<https://osservatorio-eli.example.it/relation/20G00165/repeals/20G00029>
-        a                         ilg:Relation;
-        ilg:confirmedByLifecycle  false;
-        ilg:exampleNote           "testo: DECRETO-LEGGE 2020-03-08 n. 11 è abrogato"@it;
-        ilg:fromAct               <https://osservatorio-eli.example.it/eli/id/2020/10/30/20G00165/sg>;
-        ilg:relationProperty      eli:repeals;
-        ilg:textualModCount       "1"^^xsd:int;
-        ilg:toAct                 <https://osservatorio-eli.example.it/eli/id/2020/03/08/20G00029/sg>;
-        ilg:trustLevel            "B";
-        dcterms:source            "corpus/DECRETO_LEGISLATIVO/2020/DECRETO_LEGISLATIVO_2020_M_AKN/DECRETO LEGISLATIVO_20201016_142/2020-10-30_20G00165_ORIGINALE_V0.xml" .
 
 <https://osservatorio-eli.example.it/relation/22G00026/amends/decreto_legislativo-2001-03-30-165>
         a                         ilg:Relation;
@@ -90571,7 +89941,7 @@ ilg:converts  a             owl:ObjectProperty;
 <https://osservatorio-eli.example.it/eli/id/2022/02/18/22G00018/sg>
         eli:amends    <https://osservatorio-eli.example.it/eli/id/2021/12/24/21G00244/sg>;
         eli:changes   <https://osservatorio-eli.example.it/eli/id/2020/10/28/20G00166/sg> , <https://osservatorio-eli.example.it/eli/id/2020/04/30/20G00046/sg> , <https://osservatorio-eli.example.it/eli/id/2021/05/31/21G00087/sg> , <https://osservatorio-eli.example.it/eli/id/2021/01/14/21G00002/sg> , <https://osservatorio-eli.example.it/eli/id/2021/04/01/21G00056/sg> , <https://osservatorio-eli.example.it/eli/id/2020/05/16/20G00051/sg> , <https://osservatorio-eli.example.it/eli/id/2021/04/22/21G00064/sg> , <https://osservatorio-eli.example.it/eli/id/2020/03/17/20G00034/sg> , <https://osservatorio-eli.example.it/eli/id/2020/12/30/20G00202/sg> , <https://osservatorio-eli.example.it/eli/id/2021/11/26/21G00211/sg> , <https://osservatorio-eli.example.it/eli/id/2021/05/25/21G00084/sg>;
-        eli:repeals   <https://osservatorio-eli.example.it/eli/id/2021/12/30/21G00258/sg> , <https://osservatorio-eli.example.it/eli/ext/decreto-legge/2022-01-22/2> , <https://osservatorio-eli.example.it/eli/id/2022/01/21/22G00007/sg>;
+        eli:repeals   <https://osservatorio-eli.example.it/eli/id/2021/12/30/21G00258/sg> , <https://osservatorio-eli.example.it/eli/id/2022/01/21/22G00007/sg>;
         ilg:converts  <https://osservatorio-eli.example.it/eli/id/2021/12/24/21G00244/sg> .
 
 <https://osservatorio-eli.example.it/relation/26G00131/amends/decreto-legge-2017-10-16-148>
@@ -92658,7 +92028,7 @@ ilg:converts  a             owl:ObjectProperty;
         ilg:exampleNote           "ha disposto (con l'art. 1, comma 2) che \"Il decreto-legge 30 gennaio 2025, n. 5, recante misure urgenti per il riesame dell'autorizzazione integrata ambientale per gli impianti di interesse strategico, è abrogato. Restano validi gli atti e i provvedimenti adottati e sono fatti salvi gli effetti prod…"@it , "ha disposto (con l'art. 1, comma 2) l'abrogazione dell'intero provvedimento e la modifica dell'art. 1."@it;
         ilg:fromAct               <https://osservatorio-eli.example.it/eli/id/2025/03/24/25G00041/sg>;
         ilg:relationProperty      eli:repeals;
-        ilg:textualModCount       "8"^^xsd:int;
+        ilg:textualModCount       "7"^^xsd:int;
         ilg:toAct                 <https://osservatorio-eli.example.it/eli/id/2025/01/30/25G00013/sg>;
         ilg:trustLevel            "A";
         dcterms:source            "corpus/LEGGE/2025/LEGGE_2025-03_M_AKN/LEGGE_20250320_31/2025-03-24_25G00041_ORIGINALE_V0.xml" .
@@ -92831,7 +92201,7 @@ ilg:converts  a             owl:ObjectProperty;
         ilg:exampleNote           "ha disposto (con l'art. 1, comma 2) che \"Il decreto-legge 30 dicembre 2021, n. 229, e' abrogato. Restano validi gli atti e i provvedimenti adottati e sono fatti salvi gli effetti prodottisi e i rapporti giuridici sorti sulla base del medesimo decreto-legge n. 229 del 2021\"."@it , "ha disposto (con l'art. 1, comma 2) l'abrogazione dell'intero provvedimento e la modifica dell'art. 1."@it;
         ilg:fromAct               <https://osservatorio-eli.example.it/eli/id/2022/02/18/22G00018/sg>;
         ilg:relationProperty      eli:repeals;
-        ilg:textualModCount       "9"^^xsd:int;
+        ilg:textualModCount       "8"^^xsd:int;
         ilg:toAct                 <https://osservatorio-eli.example.it/eli/id/2021/12/30/21G00258/sg>;
         ilg:trustLevel            "A";
         dcterms:source            "corpus/LEGGE/2022/LEGGE_2022_M_AKN/LEGGE_20220218_11/2022-02-18_22G00018_ORIGINALE_V0.xml" .
@@ -93248,8 +92618,7 @@ ilg:converts  a             owl:ObjectProperty;
         dcterms:source            "corpus/LEGGE/2025/LEGGE_2025-04_M_AKN/LEGGE_20250404_42/2025-04-04_25G00053_ORIGINALE_V0.xml" .
 
 <https://osservatorio-eli.example.it/eli/id/2020/09/11/20G00135/sg>
-        eli:amends   <https://osservatorio-eli.example.it/eli/ext/decreto-legge/2018-12-14/135> , <https://osservatorio-eli.example.it/eli/ext/decreto-legge/2017-06-20/91> , <https://osservatorio-eli.example.it/eli/ext/decreto_legislativo/2014-03-14/49> , <https://osservatorio-eli.example.it/eli/ext/decreto_legislativo/2006-04-03/152>;
-        eli:repeals  <https://osservatorio-eli.example.it/eli/id/2020/03/09/20G00030/sg> , <https://osservatorio-eli.example.it/eli/id/2020/03/08/20G00029/sg> , <https://osservatorio-eli.example.it/eli/id/2020/03/02/20G00026/sg> .
+        eli:amends  <https://osservatorio-eli.example.it/eli/ext/decreto-legge/2018-12-14/135> , <https://osservatorio-eli.example.it/eli/ext/decreto-legge/2017-06-20/91> , <https://osservatorio-eli.example.it/eli/ext/decreto_legislativo/2014-03-14/49> , <https://osservatorio-eli.example.it/eli/ext/decreto_legislativo/2006-04-03/152> .
 
 <https://osservatorio-eli.example.it/relation/22G00120/changes/21G00157>
         a                         ilg:Relation;
@@ -93459,8 +92828,7 @@ ilg:converts  a             owl:ObjectProperty;
         dcterms:source            "corpus/DECRETO_LEGGE/2021/DECRETO_LEGGE_2021_M_AKN/DECRETO-LEGGE_20211230_228/2021-12-30_21G00255_ORIGINALE_V0.xml" .
 
 <https://osservatorio-eli.example.it/eli/id/2020/07/30/20G00102/sg>
-        eli:amends   <https://osservatorio-eli.example.it/eli/ext/decreto_legislativo/2005-09-07/209> , <https://osservatorio-eli.example.it/eli/ext/decreto_legislativo/1998-02-24/58>;
-        eli:repeals  <https://osservatorio-eli.example.it/eli/id/2020/03/09/20G00030/sg> , <https://osservatorio-eli.example.it/eli/id/2020/03/08/20G00029/sg> , <https://osservatorio-eli.example.it/eli/id/2020/03/02/20G00026/sg> .
+        eli:amends  <https://osservatorio-eli.example.it/eli/ext/decreto_legislativo/2005-09-07/209> , <https://osservatorio-eli.example.it/eli/ext/decreto_legislativo/1998-02-24/58> .
 
 <https://osservatorio-eli.example.it/eli/ext/decreto_legislativo/1992-12-30/544>
         a                  ilg:ExternalAct;
@@ -94967,7 +94335,7 @@ ilg:converts  a             owl:ObjectProperty;
         ilg:exampleNote           "ha disposto (con l'art. 1, comma 2) l'abrogazione dell'intero provvedimento e la modifica dell'art. 1."@it , "ha disposto (con l'art. 1, comma 2) che \"Il decreto-legge 23 ottobre 2024, n. 158, recante disposizioni urgenti in materia di procedure per il riconoscimento della protezione internazionale, è abrogato. Restano validi gli atti e i provvedimenti adottati e sono fatti salvi gli effetti prodottisi e i …"@it;
         ilg:fromAct               <https://osservatorio-eli.example.it/eli/id/2024/12/10/24G00206/sg>;
         ilg:relationProperty      eli:repeals;
-        ilg:textualModCount       "6"^^xsd:int;
+        ilg:textualModCount       "5"^^xsd:int;
         ilg:toAct                 <https://osservatorio-eli.example.it/eli/id/2024/10/23/24G00177/sg>;
         ilg:trustLevel            "A";
         dcterms:source            "corpus/LEGGE/2024/LEGGE_2024_M_AKN/LEGGE_20241209_187/2024-12-10_24G00206_ORIGINALE_V0.xml" .
@@ -96232,8 +95600,7 @@ ilg:converts  a             owl:ObjectProperty;
         dcterms:source            "dlgs-2003-196-privacy-code/DECRETO_LEGISLATIVO_2003-06-30_196_M_AKN/DECRETO LEGISLATIVO_20030630_196/2003-07-29_003G0218_VIGENZA_2026-02-20_V58.xml" .
 
 <https://osservatorio-eli.example.it/eli/id/2020/06/09/20G00064/sg>
-        eli:amends   <https://osservatorio-eli.example.it/eli/ext/legge/2004-08-23/239> , <https://osservatorio-eli.example.it/eli/ext/decreto_legislativo/2011-06-01/93> , <https://osservatorio-eli.example.it/eli/ext/decreto_legislativo/2000-05-23/164>;
-        eli:repeals  <https://osservatorio-eli.example.it/eli/id/2020/03/09/20G00030/sg> , <https://osservatorio-eli.example.it/eli/id/2020/03/08/20G00029/sg> , <https://osservatorio-eli.example.it/eli/id/2020/03/02/20G00026/sg> .
+        eli:amends  <https://osservatorio-eli.example.it/eli/ext/legge/2004-08-23/239> , <https://osservatorio-eli.example.it/eli/ext/decreto_legislativo/2011-06-01/93> , <https://osservatorio-eli.example.it/eli/ext/decreto_legislativo/2000-05-23/164> .
 
 <https://osservatorio-eli.example.it/relation/25G00090/amends/decreto-legge-2018-10-23-119>
         a                         ilg:Relation;
@@ -96524,17 +95891,6 @@ ilg:converts  a             owl:ObjectProperty;
         eli:date_document  "1946-09-13"^^xsd:date;
         eli:number         "233";
         eli:type_document  <http://www.gazzettaufficiale.it/eli/tables/resource-type#DECRETO_LEGISLATIVO_DEL_CAPO_PROVVISORIO_DELLO_STATO> .
-
-<https://osservatorio-eli.example.it/relation/20G00102/repeals/20G00026>
-        a                         ilg:Relation;
-        ilg:confirmedByLifecycle  false;
-        ilg:exampleNote           "testo: DECRETO-LEGGE 2020-03-02 n. 9 è abrogato"@it;
-        ilg:fromAct               <https://osservatorio-eli.example.it/eli/id/2020/07/30/20G00102/sg>;
-        ilg:relationProperty      eli:repeals;
-        ilg:textualModCount       "1"^^xsd:int;
-        ilg:toAct                 <https://osservatorio-eli.example.it/eli/id/2020/03/02/20G00026/sg>;
-        ilg:trustLevel            "B";
-        dcterms:source            "corpus/DECRETO_LEGISLATIVO/2020/DECRETO_LEGISLATIVO_2020_M_AKN/DECRETO LEGISLATIVO_20200714_84/2020-07-30_20G00102_ORIGINALE_V0.xml" .
 
 <https://osservatorio-eli.example.it/relation/21G00116/amends/20G00042>
         a                         ilg:Relation;
