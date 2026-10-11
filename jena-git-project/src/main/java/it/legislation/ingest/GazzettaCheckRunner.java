@@ -212,7 +212,7 @@ public class GazzettaCheckRunner {
         }
         checks.forEach(c -> counts.merge(c.status(), 1, Integer::sum));
 
-        boolean written = writeIfChanged(out, turtle(toRdf(checks, AssessmentHistory.read(out), today)));
+        boolean written = writeModelIfChanged(out, toRdf(checks, AssessmentHistory.read(out), today));
         written |= writeIfChanged(report, tsv(checks).getBytes(StandardCharsets.UTF_8));
         return new Summary(checks, counts, fetched, cached, written);
     }
@@ -374,6 +374,23 @@ public class GazzettaCheckRunner {
         ByteArrayOutputStream bytes = new ByteArrayOutputStream();
         RDFDataMgr.write(bytes, model, RDFFormat.TURTLE_PRETTY);
         return bytes.toByteArray();
+    }
+
+    /**
+     * Writes the model unless the file already holds the same graph. Compared as RDF, not as bytes:
+     * a graph read back from a file can be serialised in a different order than the one it was built in.
+     */
+    static boolean writeModelIfChanged(Path file, Model model) throws IOException {
+        if (Files.exists(file)) {
+            Model existing = ModelFactory.createDefaultModel();
+            try (java.io.InputStream in = Files.newInputStream(file)) {
+                RDFDataMgr.read(existing, in, org.apache.jena.riot.Lang.TURTLE);
+            }
+            if (existing.isIsomorphicWith(model)) {
+                return false;
+            }
+        }
+        return writeIfChanged(file, turtle(model));
     }
 
     private static boolean writeIfChanged(Path file, byte[] content) throws IOException {
