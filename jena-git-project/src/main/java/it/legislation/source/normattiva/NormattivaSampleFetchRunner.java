@@ -192,7 +192,7 @@ public class NormattivaSampleFetchRunner {
     }
 
     /** Unpacks a ZIP into {@code target}, refusing entries that would escape it. */
-    static int unzip(byte[] zip, Path target) throws IOException {
+    public static int unzip(byte[] zip, Path target) throws IOException {
         int count = 0;
         Path base = target.toAbsolutePath().normalize();
         try (ZipInputStream in = new ZipInputStream(new ByteArrayInputStream(zip))) {

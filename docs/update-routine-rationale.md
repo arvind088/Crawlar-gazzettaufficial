@@ -151,21 +151,28 @@ what makes partial failure visible instead of averaging away.
 
 Append-only is the point: an audit log that rewrites itself is not an audit log.
 
-## 7. Open: durable scheduling
+## 7. Decision: the daily update runs where the corpus lives
 
-The schedule is correct and the persistence is now correct, but the deployment
-undermines both. On the current free-tier host the instance sleeps when idle —
-so a 06:15 job may simply not fire — and the container filesystem resets on
-deploy, discarding the store.
+`DailyUpdateRunner` (R7b) keeps the store current:
 
-Two options, neither requiring application changes:
+1. window from the watermark (section 4);
+2. `ricerca/aggiornati`: acts changed in the window, kept when they are in the
+   corpus scope (LEGGE, DECRETO-LEGGE, DECRETO LEGISLATIVO, from 2020);
+3. the act lists of the current year, to add acts that Normattiva lists but had
+   not exported yet (14 acts of late September - October 2026 were in that state
+   when the corpus was built);
+4. download of those acts, all versions, into `data/raw/normattiva/updates/<day>/`;
+5. the pipeline: import, Gazzetta check, relations; facts are added and changed
+   results get dated assessments (section 6b), so the run is additive;
+6. run log, and the watermark advances only when nothing failed.
 
-- a host with a persistent disk mounted at the store path; or
-- invert the arrangement: run ingestion in scheduled CI, commit the outputs, and
-  deploy from them. This is free, and the commit history becomes the evidence
-  for the no-gap claim — an auditable per-day record rather than an assertion.
-
-The second is implemented in `.github/workflows/scheduled-ingestion.yml`.
+Recomputing relations needs the raw corpus (2.6 GB of XML, not in Git) and the
+store, so the update runs **on the application's server**, next to them, as a
+scheduled job; during development it is run by hand. The GitHub workflow no
+longer fetches Normattiva: GitHub's machines have neither the corpus nor the
+store, and downloading the corpus every day would load Normattiva for nothing.
+The free host used for the first demo resets its disk on deploy; the
+deployment (R8) therefore needs a host with a persistent disk.
 
 ## 8. What is deliberately *not* automated
 

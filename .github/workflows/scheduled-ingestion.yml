@@ -57,17 +57,9 @@ jobs:
           GAZZETTA_RSS_OUTPUT: "data/clean/gazzetta_rss_updates.tsv"
           GAZZETTA_RSS_MAX_ENTRIES: ${{ inputs.rss_entries || '50' }}
 
-      - name: Fetch Normattiva updates
-        # Resumes from the committed watermark, so a skipped or failed day is
-        # picked up by the next run rather than lost.
-        continue-on-error: true
-        run: mvn -B "-Dexec.mainClass=it.legislation.source.normattiva.NormattivaUpdateRunner" exec:java
-        env:
-          NORMATTIVA_SOURCE_URL: "https://api.normattiva.it/t/normattiva.api"
-          NORMATTIVA_UPDATES_OUTPUT: "data/clean/normattiva_updates.tsv"
-          NORMATTIVA_RELATIONS_OUTPUT: "data/clean/normattiva_modifications_auto.tsv"
-          NORMATTIVA_RDF_OUTPUT: "data/rdf/normattiva_modifications_auto.ttl"
-
+      # Normattiva is no longer fetched here. The daily update (DailyUpdateRunner)
+      # needs the raw corpus and the store, which live on the application's
+      # server, not on GitHub's machines: see docs/update-routine-rationale.md, 7.
       - name: Derive in-force status
         run: mvn -B "-Dexec.mainClass=it.legislation.ingest.InForceEnrichmentRunner" exec:java
 
