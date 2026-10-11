@@ -69,4 +69,21 @@ class ReferenceSetRunnerTest {
     private static ReferenceSetRunner.Score find(List<ReferenceSetRunner.Score> scores, String stratum) {
         return scores.stream().filter(s -> s.stratum().equals(stratum)).findFirst().orElseThrow();
     }
+
+    @Test
+    void readsFilesSavedByExcel() throws IOException {
+        String text = ReferenceSetRunner.HEADER + "\r\nR01\tamends A\tL\tamends\tD\tA\tx\t\t\tno\tgià abrogato\r\n";
+        Path ansi = temp.resolve("ansi.tsv");
+        Files.write(ansi, text.getBytes(java.nio.charset.Charset.forName("windows-1252")));
+        Path unicode = temp.resolve("unicode.tsv");
+        byte[] body = text.getBytes(java.nio.charset.StandardCharsets.UTF_16LE);
+        byte[] withBom = new byte[body.length + 2];
+        withBom[0] = (byte) 0xFF;
+        withBom[1] = (byte) 0xFE;
+        System.arraycopy(body, 0, withBom, 2, body.length);
+        Files.write(unicode, withBom);
+
+        assertEquals(1, find(ReferenceSetRunner.evaluate(ansi), "amends A").no());
+        assertEquals(1, find(ReferenceSetRunner.evaluate(unicode), "amends A").no());
+    }
 }
