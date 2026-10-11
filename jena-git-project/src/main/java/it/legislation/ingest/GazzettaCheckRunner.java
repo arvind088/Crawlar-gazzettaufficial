@@ -27,6 +27,7 @@ import org.apache.jena.riot.RDFFormat;
 import org.apache.jena.vocabulary.OWL;
 import org.apache.jena.vocabulary.RDF;
 
+import it.legislation.mapping.AssessmentHistory;
 import it.legislation.source.gazzetta.GazzettaActPage;
 import it.legislation.source.gazzetta.HttpPageFetcher;
 import it.legislation.source.gazzetta.PageFetcher;
@@ -52,6 +53,7 @@ import it.legislation.source.gazzetta.PageFetcher;
  *
  * Options: {@code --in}, {@code --out}, {@code --report}, {@code --cache}
  * (default {@code data/raw/gazzetta}), {@code --pause-ms} (default 1000),
+ * {@code --today yyyy-mm-dd} (date of the assessments, default today),
  * {@code --limit N} (check only the first N acts), {@code --offline} (use
  * cached pages only).
  */
@@ -104,11 +106,18 @@ public class GazzettaCheckRunner {
     private final PageFetcher fetcher;
     private final Path cache;
     private final boolean offline;
+    private final java.time.LocalDate today;
 
     public GazzettaCheckRunner(PageFetcher fetcher, Path cache, boolean offline) {
+        this(fetcher, cache, offline, java.time.LocalDate.now());
+    }
+
+    /** @param today date written on the assessments of this run */
+    public GazzettaCheckRunner(PageFetcher fetcher, Path cache, boolean offline, java.time.LocalDate today) {
         this.fetcher = fetcher;
         this.cache = cache;
         this.offline = offline;
+        this.today = today;
     }
 
     public static void main(String[] args) throws IOException {
@@ -128,7 +137,9 @@ public class GazzettaCheckRunner {
         long pause = Long.parseLong(options.getOrDefault("--pause-ms", "1000"));
         int limit = Integer.parseInt(options.getOrDefault("--limit", String.valueOf(Integer.MAX_VALUE)));
 
-        GazzettaCheckRunner runner = new GazzettaCheckRunner(new HttpPageFetcher(pause, 2), cache, offline);
+        java.time.LocalDate today = java.time.LocalDate.parse(
+                options.getOrDefault("--today", java.time.LocalDate.now().toString()));
+        GazzettaCheckRunner runner = new GazzettaCheckRunner(new HttpPageFetcher(pause, 2), cache, offline, today);
         Summary summary = runner.run(in, out, report, limit, GazzettaCheckRunner::log);
 
         System.out.println();
@@ -201,7 +212,7 @@ public class GazzettaCheckRunner {
         }
         checks.forEach(c -> counts.merge(c.status(), 1, Integer::sum));
 
-        boolean written = writeIfChanged(out, turtle(toRdf(checks)));
+        boolean written = writeModelIfChanged(out, toRdf(checks, AssessmentHistory.read(out), today));
         written |= writeIfChanged(report, tsv(checks).getBytes(StandardCharsets.UTF_8));
         return new Summary(checks, counts, fetched, cached, written);
     }
@@ -287,14 +298,20 @@ public class GazzettaCheckRunner {
         return node != null && node.isURIResource() ? node.asResource().getURI() : null;
     }
 
-    /** The check as RDF: result on every act; Gazzetta-only facts only on confirmed acts. */
-    static Model toRdf(List<Check> checks) {
+    /**
+     * The check as RDF. The result of each act is a dated assessment ({@link AssessmentHistory}): a new one is
+     * written only when the result changed since the latest earlier one, and nothing is removed. Facts that
+     * only Gazzetta gives (GU issue, date of entry into force) are added to confirmed acts. Network errors
+     * are not recorded: they say nothing about the act.
+     */
+    static Model toRdf(List<Check> checks, AssessmentHistory history, java.time.LocalDate day) {
         Model model = ModelFactory.createDefaultModel();
+        model.add(history.previous());
         model.setNsPrefix("eli", ELI);
         model.setNsPrefix("ilg", ILG);
         model.setNsPrefix("owl", OWL.NS);
         model.setNsPrefix("xsd", XSDDatatype.XSD + "#");
-        Property checkProperty = model.createProperty(ILG, "gazzettaCheck");
+        Property result = model.createProperty(ILG, "gazzettaCheck");
         Property difference = model.createProperty(ILG, "gazzettaDifference");
         Property confirmedBy = model.createProperty(ILG, "identityConfirmedBy");
         Property guNumber = model.createProperty(ILG, "guNumber");
@@ -306,8 +323,13 @@ public class GazzettaCheckRunner {
                 continue;
             }
             Resource work = model.createResource(check.act().workUri());
-            work.addProperty(checkProperty, check.status().name());
-            check.differences().forEach(d -> work.addProperty(difference, d));
+            AssessmentHistory.Values values = new AssessmentHistory.Values()
+                    .put(result, model.createLiteral(check.status().name()));
+            check.differences().forEach(d -> values.put(difference, model.createLiteral(d)));
+            String uri = check.act().workUri();
+            String base = uri.contains("/eli/id/") ? uri.substring(0, uri.indexOf("/eli/id/")) : uri;
+            history.record(model, work, "GazzettaCheck", base + "/check/gazzetta/" + check.act().codice(), day,
+                    values.build());
             if (check.status() != Status.MATCH) {
                 continue;
             }
@@ -352,6 +374,23 @@ public class GazzettaCheckRunner {
         ByteArrayOutputStream bytes = new ByteArrayOutputStream();
         RDFDataMgr.write(bytes, model, RDFFormat.TURTLE_PRETTY);
         return bytes.toByteArray();
+    }
+
+    /**
+     * Writes the model unless the file already holds the same graph. Compared as RDF, not as bytes:
+     * a graph read back from a file can be serialised in a different order than the one it was built in.
+     */
+    static boolean writeModelIfChanged(Path file, Model model) throws IOException {
+        if (Files.exists(file)) {
+            Model existing = ModelFactory.createDefaultModel();
+            try (java.io.InputStream in = Files.newInputStream(file)) {
+                RDFDataMgr.read(existing, in, org.apache.jena.riot.Lang.TURTLE);
+            }
+            if (existing.isIsomorphicWith(model)) {
+                return false;
+            }
+        }
+        return writeIfChanged(file, turtle(model));
     }
 
     private static boolean writeIfChanged(Path file, byte[] content) throws IOException {

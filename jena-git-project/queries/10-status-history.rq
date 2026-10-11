@@ -1,0 +1,15 @@
+# How the conversion status of decree-laws changed over time: every assessment,
+# oldest first. A decree published recently shows PENDING, then CONVERTED.
+PREFIX eli: <http://data.europa.eu/eli/ontology#>
+PREFIX ilg: <http://example.org/italian-legislation/ontology#>
+
+SELECT ?decree ?date ?status
+WHERE {
+  ?check a ilg:ConversionCheck ;
+         ilg:assesses ?decree ;
+         ilg:assessedOn ?date ;
+         ilg:conversionStatus ?status .
+  { SELECT ?decree WHERE { ?c a ilg:ConversionCheck ; ilg:assesses ?decree . }
+    GROUP BY ?decree HAVING (COUNT(?c) > 1) }
+}
+ORDER BY ?decree ?date

@@ -99,6 +99,44 @@ outdated version is a deliberate, separate operation.
 about: ingest, shut down, **delete the source file**, restart, and the act is
 still queryable.
 
+## 6b. Decision: results that change are dated assessments
+
+Additive ingestion is right for facts: an act, a version, "L converts D". It is
+wrong for results that legitimately change. A decree-law is PENDING on the day it
+is published and CONVERTED seven weeks later; a Gazzetta page that failed today
+matches tomorrow; a relation rises from trust level B to A when the amended act's
+history is updated. Stored as plain statements, an additive store would end up
+saying both PENDING and CONVERTED, with no way to tell which is current.
+
+Replacing statements would fix that but break section 5. Instead, every result
+that can change is written as a dated **assessment** node
+(`it.legislation.mapping.AssessmentHistory`):
+
+```
+<…/conversion/26G00186/2026-10-11> a ilg:ConversionCheck ;
+    ilg:assesses <decree> ; ilg:assessedOn "2026-10-11"^^xsd:date ;
+    ilg:conversionStatus "PENDING" .
+```
+
+- A run writes a new assessment only when the result differs from the latest
+  earlier one, so the files grow only when something changed.
+- Earlier assessments are never removed: the store holds the full history, and
+  query 10 shows how statuses evolved.
+- The current result is the assessment with the latest `ilg:assessedOn`
+  (queries 07, 08 and 09).
+- A relation found earlier and not found any more is not deleted: it gets an
+  assessment with status `WITHDRAWN`.
+
+Kinds of assessment: `ilg:GazzettaCheck` (per act), `ilg:ConversionCheck` (per
+decree-law), `ilg:RelationAssessment` (per relation: trust level, count of
+textual modifications, confirmation by the lifecycle).
+
+One-time migration (October 2026): the first outputs of R5 and R6 put these
+results directly on the acts. Because the store is additive, those statements
+cannot be superseded in place; `gazzetta_check.ttl`, `relations.ttl` and
+`data/tdb2` were deleted once and rebuilt in the new form. This is the only
+deliberate removal, and it is a schema change, not an update strategy.
+
 ## 6. Decision: an append-only run log
 
 Run outcomes used to live in `volatile` fields, so the entire history vanished on
