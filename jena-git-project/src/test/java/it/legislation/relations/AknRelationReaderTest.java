@@ -70,4 +70,14 @@ class AknRelationReaderTest {
                 new ActKey("DECRETO-LEGGE", LocalDate.of(2020, 3, 9), "14")), e.textRepeals(),
                 "an article of a decree is not a repeal of the decree");
     }
+
+    @Test
+    void repealsQuotedInNotesOrGuillemetsAreNotThisActs() throws IOException {
+        AknRelationReader.Evidence e = read("", """
+                <article><paragraph><content><p>Testo.<authorialNote><p>I decreti-legge 2 marzo 2020, n. 9, e 9 marzo
+                2020, n. 14, sono abrogati.</p></authorialNote></p></content></paragraph>
+                <paragraph><content><p>La legge 24 aprile 2020, n. 27, cosi' recita: «Art. 1. - 2. I decreti-legge 2 marzo
+                2020, n. 9, 8 marzo 2020, n. 11, sono abrogati.»</p></content></paragraph></article>""");
+        assertEquals(Set.of(), e.textRepeals(), "D.Lgs. 44/2020 quotes L. 27/2020 in its notes");
+    }
 }
