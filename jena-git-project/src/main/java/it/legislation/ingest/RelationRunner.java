@@ -137,7 +137,7 @@ public class RelationRunner {
         RelationDetector.Result result = new RelationDetector(corpus)
                 .detect(original, latest, today, listedConversionLaws(in, corpus));
         Model model = toRdf(corpus, result, AssessmentHistory.read(out), today);
-        boolean written = writeIfChanged(out, turtle(model));
+        boolean written = writeModelIfChanged(out, model);
         written |= writeIfChanged(conversionsReport, conversionsTsv(result).getBytes(StandardCharsets.UTF_8));
         written |= writeIfChanged(relationsReport, relationsTsv(result).getBytes(StandardCharsets.UTF_8));
         return new Summary(corpus.acts().size(), files, unreadable, result, written);
@@ -349,6 +349,23 @@ public class RelationRunner {
         ByteArrayOutputStream bytes = new ByteArrayOutputStream();
         RDFDataMgr.write(bytes, model, RDFFormat.TURTLE_PRETTY);
         return bytes.toByteArray();
+    }
+
+    /**
+     * Writes the model unless the file already holds the same graph. Compared as RDF, not as bytes:
+     * a graph read back from a file can be serialised in a different order than the one it was built in.
+     */
+    static boolean writeModelIfChanged(Path file, Model model) throws IOException {
+        if (Files.exists(file)) {
+            Model existing = ModelFactory.createDefaultModel();
+            try (java.io.InputStream in = Files.newInputStream(file)) {
+                RDFDataMgr.read(existing, in, org.apache.jena.riot.Lang.TURTLE);
+            }
+            if (existing.isIsomorphicWith(model)) {
+                return false;
+            }
+        }
+        return writeIfChanged(file, turtle(model));
     }
 
     private static boolean writeIfChanged(Path file, byte[] content) throws IOException {
