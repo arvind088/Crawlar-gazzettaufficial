@@ -111,7 +111,7 @@ public class AknRelationReader {
         Element body = first(root, "body");
         Element article = body == null ? null : first(body, "article");
         Element paragraph = article == null ? null : first(article, "paragraph");
-        if (paragraph == null || !CONVERTED.matcher(paragraph.getTextContent()).find()) {
+        if (paragraph == null || !CONVERTED.matcher(ownText(paragraph)).find()) {
             return decrees;
         }
         NodeList refs = paragraph.getElementsByTagNameNS(AKN, "ref");
@@ -121,7 +121,7 @@ public class AknRelationReader {
                     .ifPresent(decrees::add);
         }
         // Many files have no <ref>: read "decreto-legge 3l luglio 2020, n. 86" from the text.
-        String text = clean(paragraph.getTextContent());
+        String text = ownText(paragraph);
         if (text.toLowerCase(java.util.Locale.ROOT).matches("(?s).*decret[oi][- ]legge.*")) {
             decrees.addAll(names(text, "DECRETO-LEGGE"));
         }
@@ -137,7 +137,10 @@ public class AknRelationReader {
         }
         NodeList paragraphs = body.getElementsByTagNameNS(AKN, "p");
         for (int i = 0; i < paragraphs.getLength(); i++) {
-            String text = clean(paragraphs.item(i).getTextContent());
+            if (insideQuoteOrNote(paragraphs.item(i))) {
+                continue;
+            }
+            String text = ownText(paragraphs.item(i));
             if (!text.contains("abrogat")) {
                 continue;
             }
@@ -151,6 +154,41 @@ public class AknRelationReader {
             }
         }
         return acts;
+    }
+
+    /** Elements whose text is not this act speaking: editorial notes and quotations of other acts. */
+    private static final java.util.Set<String> NOT_OWN_TEXT = java.util.Set.of(
+            "authorialNote", "quotedStructure", "quotedText", "mod", "embeddedStructure", "embeddedText");
+
+    private static boolean insideQuoteOrNote(org.w3c.dom.Node node) {
+        for (org.w3c.dom.Node n = node.getParentNode(); n != null; n = n.getParentNode()) {
+            if (n instanceof Element e && NOT_OWN_TEXT.contains(e.getLocalName())) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * The text the act itself states: without editorial notes and quoted text, and without passages
+     * in «guillemets» (the notes of D.Lgs. 44/2020 quote L. 27/2020: «… I decreti-legge … sono abrogati»).
+     */
+    static String ownText(org.w3c.dom.Node node) {
+        StringBuilder sb = new StringBuilder();
+        collect(node, sb);
+        return clean(sb.toString().replaceAll("«[^»]*»", " "));
+    }
+
+    private static void collect(org.w3c.dom.Node node, StringBuilder sb) {
+        for (org.w3c.dom.Node child = node.getFirstChild(); child != null; child = child.getNextSibling()) {
+            if (child instanceof Element e) {
+                if (!NOT_OWN_TEXT.contains(e.getLocalName())) {
+                    collect(e, sb);
+                }
+            } else if (child.getNodeType() == org.w3c.dom.Node.TEXT_NODE) {
+                sb.append(child.getNodeValue());
+            }
+        }
     }
 
     /** "17 marzo 2020, n. 18" (also the typo "3l luglio") as keys of the given type. */
