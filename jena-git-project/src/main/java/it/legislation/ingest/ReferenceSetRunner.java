@@ -252,7 +252,7 @@ public class ReferenceSetRunner {
 
     /** Reads a TSV with a header line. Accepts files saved by Excel (BOM, CRLF, quoted cells). */
     static List<Row> read(Path file) throws IOException {
-        List<String> lines = Files.readAllLines(file, StandardCharsets.UTF_8);
+        List<String> lines = decode(Files.readAllBytes(file)).lines().toList();
         List<Row> rows = new ArrayList<>();
         if (lines.isEmpty()) {
             return rows;
@@ -270,6 +270,24 @@ public class ReferenceSetRunner {
             rows.add(new Row(values));
         }
         return rows;
+    }
+
+    /**
+     * Text as Excel may save it: "Text (Tab delimited)" is Windows-1252, "Unicode Text" is UTF-16 with a BOM,
+     * and other editors write UTF-8.
+     */
+    static String decode(byte[] bytes) {
+        if (bytes.length >= 2 && (bytes[0] & 0xFF) == 0xFF && (bytes[1] & 0xFF) == 0xFE) {
+            return new String(bytes, 2, bytes.length - 2, StandardCharsets.UTF_16LE);
+        }
+        if (bytes.length >= 2 && (bytes[0] & 0xFF) == 0xFE && (bytes[1] & 0xFF) == 0xFF) {
+            return new String(bytes, 2, bytes.length - 2, StandardCharsets.UTF_16BE);
+        }
+        try {
+            return StandardCharsets.UTF_8.newDecoder().decode(java.nio.ByteBuffer.wrap(bytes)).toString();
+        } catch (java.nio.charset.CharacterCodingException e) {
+            return new String(bytes, java.nio.charset.Charset.forName("windows-1252"));
+        }
     }
 
     private static String[] unquote(String[] cells) {
