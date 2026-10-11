@@ -1,14 +1,14 @@
 stratum	yes	no	unchecked	precision	wilson_low	wilson_high
-conversion A	0	0	12			
-conversion B	0	0	4			
-decree repealed	0	0	6			
-decree pending	0	0	3			
-amends A	0	0	8			
-amends B (target outside corpus)	0	0	6			
-repeals A	0	0	5			
-repeals B	0	0	1			
-repeals B (target outside corpus)	0	0	3			
-changes B	0	0	6			
-ALL decree-law statuses	0	0	25			
-ALL	0	0	54			
-ALL relations	0	0	29			
+conversion A	12	0	0	1.0000	0.7575	1.0000
+conversion B	4	0	0	1.0000	0.5101	1.0000
+decree repealed	6	0	0	1.0000	0.6097	1.0000
+decree pending	3	0	0	1.0000	0.4385	1.0000
+amends A	8	0	0	1.0000	0.6756	1.0000
+amends B (target outside corpus)	6	0	0	1.0000	0.6097	1.0000
+repeals A	5	0	0	1.0000	0.5655	1.0000
+repeals B	1	0	0	1.0000	0.2065	1.0000
+repeals B (target outside corpus)	3	0	0	1.0000	0.4385	1.0000
+changes B	6	0	0	1.0000	0.6097	1.0000
+ALL decree-law statuses	25	0	0	1.0000	0.8668	1.0000
+ALL	54	0	0	1.0000	0.9336	1.0000
+ALL relations	29	0	0	1.0000	0.8830	1.0000

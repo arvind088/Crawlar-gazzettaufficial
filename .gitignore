@@ -57,3 +57,5 @@ jena-git-project/data/raw/normattiva/*/
 docs/akn-analysis.md
 *.patch
 jena-git-project/--only/
+jena-git-project/data/eval/*.xlsx
+jena-git-project/data/eval/~$*
