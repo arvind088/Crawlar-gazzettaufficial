@@ -80,4 +80,38 @@ class RelationRunnerTest {
                 .filter(r -> r.from() != null && r.from().codice().equals(fromCodice) && r.toKey().toString().equals(to))
                 .findFirst().orElseThrow(() -> new AssertionError("no relation " + fromCodice + " -> " + to));
     }
+
+    @Test
+    void laterRunAddsDatedAssessmentsAndNeverRemoves() throws IOException {
+        // Day 1: the conversion law is not imported yet; day 2: it is.
+        Path rawDay1 = Files.createDirectories(temp.resolve("raw1"));
+        Path rawDay2 = Path.of("src/test/resources/akn-relations");
+        try (var files = Files.list(rawDay2)) {
+            for (Path f : files.filter(p -> !p.getFileName().toString().startsWith("legge")).toList()) {
+                Files.copy(f, rawDay1.resolve(f.getFileName()));
+            }
+        }
+        Path acts1 = temp.resolve("acts1.ttl");
+        Path acts2 = temp.resolve("acts2.ttl");
+        new AknImportRunner(new EliUriService("https://example.test")).run(rawDay1, acts1);
+        new AknImportRunner(new EliUriService("https://example.test")).run(rawDay2, acts2);
+        Path out = temp.resolve("relations.ttl");
+
+        new RelationRunner().run(acts1, rawDay1, out, temp.resolve("c.tsv"), temp.resolve("r.tsv"), LocalDate.of(2020, 4, 1));
+        String day1 = Files.readString(out);
+        new RelationRunner().run(acts2, rawDay2, out, temp.resolve("c.tsv"), temp.resolve("r.tsv"), LocalDate.of(2020, 5, 1));
+        String day2 = Files.readString(out);
+
+        assertTrue(day1.contains("conversion/20G00034/2020-04-01"), day1);
+        assertTrue(day1.contains("\"PENDING\""), "17 March + 15 days: still within 60 days");
+        assertTrue(day2.contains("conversion/20G00034/2020-04-01"), "the earlier assessment is kept");
+        assertTrue(day2.contains("conversion/20G00034/2020-05-01"), "a new one records the change");
+        assertTrue(day2.contains("\"CONVERTED\""));
+        assertTrue(day2.contains("\"PENDING\""), "nothing removed");
+        for (String line : day1.split("\\R")) {
+            if (line.contains("eli:amends") || line.contains("eli:repeals")) {
+                assertTrue(day2.contains(line.trim()), "fact kept: " + line);
+            }
+        }
+    }
 }

@@ -26,6 +26,7 @@ import org.apache.jena.vocabulary.OWL;
 import org.apache.jena.vocabulary.RDF;
 import org.apache.jena.vocabulary.RDFS;
 
+import it.legislation.mapping.AssessmentHistory;
 import it.legislation.relations.ActKey;
 import it.legislation.relations.AknRelationReader;
 import it.legislation.relations.AknRelationReader.Evidence;
@@ -135,8 +136,8 @@ public class RelationRunner {
 
         RelationDetector.Result result = new RelationDetector(corpus)
                 .detect(original, latest, today, listedConversionLaws(in, corpus));
-        Model model = toRdf(corpus, result);
-        boolean written = writeIfChanged(out, turtle(model));
+        Model model = toRdf(corpus, result, AssessmentHistory.read(out), today);
+        boolean written = writeModelIfChanged(out, model);
         written |= writeIfChanged(conversionsReport, conversionsTsv(result).getBytes(StandardCharsets.UTF_8));
         written |= writeIfChanged(relationsReport, relationsTsv(result).getBytes(StandardCharsets.UTF_8));
         return new Summary(corpus.acts().size(), files, unreadable, result, written);
@@ -185,8 +186,15 @@ public class RelationRunner {
         }
     }
 
-    static Model toRdf(CorpusIndex corpus, RelationDetector.Result result) {
+    /**
+     * The relations as RDF. Facts (the relation triple, the relation node with its evidence) are only
+     * added; trust level, counts and decree-law statuses are dated assessments (see
+     * {@link AssessmentHistory}): a new one is written only when it differs from the latest earlier one.
+     * Everything in the previous output is kept.
+     */
+    static Model toRdf(CorpusIndex corpus, RelationDetector.Result result, AssessmentHistory history, LocalDate day) {
         Model model = ModelFactory.createDefaultModel();
+        model.add(history.previous());
         model.setNsPrefix("eli", ELI);
         model.setNsPrefix("ilg", ILG);
         model.setNsPrefix("rdfs", RDFS.uri);
@@ -209,7 +217,9 @@ public class RelationRunner {
         Property modCount = model.createProperty(ILG, "textualModCount");
         Property lifecycle = model.createProperty(ILG, "confirmedByLifecycle");
         Property example = model.createProperty(ILG, "exampleNote");
+        Property status = model.createProperty(ILG, "status");
 
+        java.util.Set<String> found = new java.util.HashSet<>();
         for (Relation r : result.relations()) {
             Resource source = r.from() != null ? model.createResource(r.from().workUri()) : external(model, base, r.fromKey());
             Resource target = r.to() != null ? model.createResource(r.to().workUri()) : external(model, base, r.toKey());
@@ -217,44 +227,56 @@ public class RelationRunner {
             source.addProperty(p, target);
             Resource node = model.createResource(base + "/relation/" + id(r.from(), r.fromKey()) + "/"
                     + r.property().eliName + "/" + id(r.to(), r.toKey()));
+            found.add(node.getURI());
             node.addProperty(RDF.type, model.createResource(ILG + "Relation"));
             node.addProperty(from, source);
             node.addProperty(to, target);
             node.addProperty(property, p);
-            node.addProperty(trust, r.trust());
-            node.addLiteral(modCount, model.createTypedLiteral(r.textualMods()));
-            node.addLiteral(lifecycle, model.createTypedLiteral(r.confirmedByLifecycle()));
             r.exampleNotes().forEach(n -> node.addProperty(example, n, "it"));
             if (r.sourceFile() != null) {
                 node.addProperty(DCTerms.source, r.sourceFile());
             }
+            history.record(model, node, "RelationAssessment", node.getURI(), day, new AssessmentHistory.Values()
+                    .put(status, model.createLiteral("FOUND"))
+                    .put(trust, model.createLiteral(r.trust()))
+                    .put(modCount, model.createTypedLiteral(r.textualMods()))
+                    .put(lifecycle, model.createTypedLiteral(r.confirmedByLifecycle()))
+                    .build());
+        }
+        // A relation found by an earlier run and not by this one is not deleted: it is marked WITHDRAWN.
+        for (String earlier : history.assessedSubjects("RelationAssessment")) {
+            if (!found.contains(earlier)) {
+                history.record(model, model.createResource(earlier), "RelationAssessment", earlier, day,
+                        new AssessmentHistory.Values().put(status, model.createLiteral("WITHDRAWN")).build());
+            }
         }
 
-        Property status = model.createProperty(ILG, "conversionStatus");
-        Property decree = model.createProperty(ILG, "decree");
+        Property conversionStatus = model.createProperty(ILG, "conversionStatus");
         Property law = model.createProperty(ILG, "law");
         Property days = model.createProperty(ILG, "daysToConversion");
+        Property repealedBy = model.createProperty(ILG, "repealedBy");
         for (Conversion c : result.conversions()) {
             Resource d = model.createResource(c.decree().workUri());
-            d.addProperty(status, c.status().name());
-            Resource node = model.createResource(base + "/conversion/" + c.decree().codice());
-            node.addProperty(RDF.type, model.createResource(ILG + "ConversionCheck"));
-            node.addProperty(decree, d);
-            node.addProperty(status, c.status().name());
+            AssessmentHistory.Values values = new AssessmentHistory.Values()
+                    .put(conversionStatus, model.createLiteral(c.status().name()));
             if (c.law() != null) {
                 Resource l = model.createResource(c.law().workUri());
-                node.addProperty(law, l);
-                node.addLiteral(days, model.createTypedLiteral(c.checks().days()));
-                boolean[] values = {c.checks().c1(), c.checks().c2(), c.checks().c3(),
+                values.put(law, l).put(days, model.createTypedLiteral(c.checks().days()));
+                boolean[] checks = {c.checks().c1(), c.checks().c2(), c.checks().c3(),
                         c.checks().c4(), c.checks().c5(), c.checks().c6()};
-                for (int i = 0; i < values.length; i++) {
-                    node.addLiteral(model.createProperty(ILG, "checkC" + (i + 1)), model.createTypedLiteral(values[i]));
+                for (int i = 0; i < checks.length; i++) {
+                    values.put(model.createProperty(ILG, "checkC" + (i + 1)), model.createTypedLiteral(checks[i]));
                 }
                 if (c.status() == ConversionStatus.CONVERTED || c.status() == ConversionStatus.CONVERTED_ONE_SOURCE) {
                     l.addProperty(converts, d);
-                    node.addProperty(trust, c.status() == ConversionStatus.CONVERTED ? "A" : "B");
+                    values.put(trust, model.createLiteral(c.status() == ConversionStatus.CONVERTED ? "A" : "B"));
                 }
             }
+            for (String repealer : c.repealedBy()) {
+                corpus.acts().stream().filter(a -> a.codice().equals(repealer)).findFirst()
+                        .ifPresent(a -> values.put(repealedBy, model.createResource(a.workUri())));
+            }
+            history.record(model, d, "ConversionCheck", base + "/conversion/" + c.decree().codice(), day, values.build());
         }
         return model;
     }
@@ -327,6 +349,23 @@ public class RelationRunner {
         ByteArrayOutputStream bytes = new ByteArrayOutputStream();
         RDFDataMgr.write(bytes, model, RDFFormat.TURTLE_PRETTY);
         return bytes.toByteArray();
+    }
+
+    /**
+     * Writes the model unless the file already holds the same graph. Compared as RDF, not as bytes:
+     * a graph read back from a file can be serialised in a different order than the one it was built in.
+     */
+    static boolean writeModelIfChanged(Path file, Model model) throws IOException {
+        if (Files.exists(file)) {
+            Model existing = ModelFactory.createDefaultModel();
+            try (java.io.InputStream in = Files.newInputStream(file)) {
+                RDFDataMgr.read(existing, in, org.apache.jena.riot.Lang.TURTLE);
+            }
+            if (existing.isIsomorphicWith(model)) {
+                return false;
+            }
+        }
+        return writeIfChanged(file, turtle(model));
     }
 
     private static boolean writeIfChanged(Path file, byte[] content) throws IOException {
