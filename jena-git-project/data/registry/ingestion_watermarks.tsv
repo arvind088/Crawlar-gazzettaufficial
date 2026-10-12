@@ -1,6 +1,3 @@
 source	lastSuccessfulEnd	lastRunStartedAt	lastRunFinishedAt	lastRunState	note
-refactor/r7b-daily-update
-normattiva		2026-10-03T10:38:44.833423012Z	2026-10-10T10:38:47.418728614Z	FAILED	Normattiva OpenData request failed with HTTP 409: { "status": "KO", "supportId": "15737307785187790107", "message": "La pagina richiesta è stata bloccata dai sistemi di protezione del Poligrafico e Zecca dello Stato Italiano" }
 normattiva-daily		2026-10-04T02:15:34.128773500Z	2026-10-11T02:57:08.716801Z	FAILED	26G00167 DECRETO-LEGGE 7 agosto 2026, n. 144: Export DECRETO_LEGGE_2026-08-07_144_M_AKN not ready after 900s (token 4e88b76d-beeb-45ec-876d-bbbb1a245145)
 normattiva		2026-10-04T10:51:34.498008893Z	2026-10-11T10:51:39.583220303Z	FAILED	Normattiva OpenData request failed with HTTP 409: { "status": "KO", "supportId": "14577036689743525559", "message": "La pagina richiesta è stata bloccata dai sistemi di protezione del Poligrafico e Zecca dello Stato Italiano" }
-develop
