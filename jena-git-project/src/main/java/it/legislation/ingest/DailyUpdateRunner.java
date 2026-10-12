@@ -321,8 +321,12 @@ public class DailyUpdateRunner {
 
     /** Import → Gazzetta check → relations, with the default files. */
     public static Pipeline defaultPipeline(Path root) {
+        return defaultPipeline(root, System.getenv().getOrDefault("LEGAL_ELI_BASE_URI", new EliUriService().baseUri()));
+    }
+
+    /** The same pipeline, minting identifiers on {@code base}. */
+    public static Pipeline defaultPipeline(Path root, String base) {
         return today -> {
-            String base = System.getenv().getOrDefault("LEGAL_ELI_BASE_URI", new EliUriService().baseUri());
             AknImportRunner.Summary imported = new AknImportRunner(new EliUriService(base))
                     .run(root, AknImportRunner.DEFAULT_OUT);
             GazzettaCheckRunner.Summary checked = new GazzettaCheckRunner(new HttpPageFetcher(1000, 2),
