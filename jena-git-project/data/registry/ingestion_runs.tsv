@@ -1,0 +1,2 @@
+runId	source	trigger	startedAt	finishedAt	state	itemsFetched	itemsTransformed	itemsLoaded	itemsFailed	windowStart	windowEnd	message
+40fc1c54	normattiva-daily	daily	2026-10-11T02:15:34.128773500Z	2026-10-11T02:57:08.716801Z	COMPLETED_WITH_ERRORS	16	1	1	1	2026-10-04T02:15:34.128773500Z	2026-10-11T02:15:34.128773500Z	1 downloaded, 14 without text, 1 failed
