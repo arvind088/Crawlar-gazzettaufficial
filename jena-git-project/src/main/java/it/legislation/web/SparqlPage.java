@@ -140,7 +140,7 @@ public class SparqlPage {
                     Model model = query.isConstructType() ? execution.execConstruct() : execution.execDescribe();
                     StringWriter turtle = new StringWriter();
                     RDFDataMgr.write(turtle, model, RDFFormat.TURTLE_PRETTY);
-                    return "<p class=\"muted\">" + model.size() + " triples. <a href=\"/sparql?output=turtle&query="
+                    return "<p class=\"muted\">" + model.size() + " triples. <a href=\"/sparql?output=turtle&amp;query="
                             + escape(encoded) + "\">Download Turtle</a></p><pre>" + escape(turtle.toString()) + "</pre>\n";
                 }
             });
@@ -162,8 +162,8 @@ public class SparqlPage {
         }
         StringBuilder html = new StringBuilder("<p class=\"muted\">").append(rows.size()).append(more ? "+" : "")
                 .append(rows.size() == 1 ? " row" : " rows").append(more ? " (first " + MAX_ROWS + " shown)" : "")
-                .append(". Download: <a href=\"/sparql?output=csv&query=").append(escape(encoded))
-                .append("\">CSV</a> &middot; <a href=\"/sparql?output=json&query=").append(escape(encoded))
+                .append(". Download: <a href=\"/sparql?output=csv&amp;query=").append(escape(encoded))
+                .append("\">CSV</a> &middot; <a href=\"/sparql?output=json&amp;query=").append(escape(encoded))
                 .append("\">JSON</a></p>\n<div class=\"table-wrap\"><table><thead><tr>");
         vars.forEach(v -> html.append("<th>").append(escape(v)).append("</th>"));
         html.append("</tr></thead><tbody>");
