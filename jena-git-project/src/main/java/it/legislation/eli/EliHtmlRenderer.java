@@ -5,6 +5,8 @@ import java.util.Map;
 
 import org.springframework.stereotype.Component;
 
+import it.legislation.web.Html;
+
 import it.legislation.eli.EliResolutionService.RelatedValue;
 import it.legislation.eli.EliResolutionService.RelationGroup;
 import it.legislation.eli.EliResolutionService.ResolvedResource;
@@ -43,6 +45,10 @@ public class EliHtmlRenderer {
             Map.entry("http://www.w3.org/1999/02/22-rdf-syntax-ns#type", "RDF class"),
             Map.entry("http://purl.org/dc/terms/source", "Source record"),
             Map.entry("http://www.w3.org/2002/07/owl#sameAs", "Same as"),
+            Map.entry("http://example.org/italian-legislation/ontology#converts", "Converts into law"),
+            Map.entry("http://data.europa.eu/eli/ontology#amends", "Amends"),
+            Map.entry("http://data.europa.eu/eli/ontology#repeals", "Repeals"),
+            Map.entry("http://data.europa.eu/eli/ontology#changes", "Changes"),
             Map.entry("http://example.org/italian-legislation/ontology#modifies", "Modifies"),
             Map.entry("http://example.org/italian-legislation/ontology#modifiedBy", "Modified by")
     );
@@ -54,49 +60,38 @@ public class EliHtmlRenderer {
     }
 
     public String render(ResolvedResource resource) {
-        StringBuilder html = new StringBuilder();
-        html.append("<!doctype html>\n<html lang=\"en\">\n<head>\n")
-                .append("<meta charset=\"utf-8\">\n")
-                .append("<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">\n")
-                .append("<title>").append(escape(resource.label())).append(" &middot; Legal RDF Explorer</title>\n")
-                .append("<link rel=\"alternate\" type=\"text/turtle\" href=\"")
-                .append(escape(resource.path())).append("?format=ttl\">\n")
-                .append("<style>").append(styles()).append("</style>\n")
-                .append("</head>\n<body>\n");
-
-        html.append("<header class=\"page-head\">\n")
-                .append("<a class=\"back\" href=\"/\">&larr; Legal RDF Explorer</a>\n")
-                .append("<h1>").append(escape(resource.label())).append("</h1>\n")
-                .append("<p class=\"uri\">").append(escape(resource.publishedUri())).append("</p>\n")
-                .append("<p class=\"actions\">")
-                .append("<a href=\"").append(escape(resource.path())).append("?format=ttl\">View as Turtle</a>");
-        if (!resource.storedUri().equals(resource.publishedUri())) {
-            html.append(" <a href=\"").append(escape(resource.storedUri()))
-                    .append("\" rel=\"noreferrer\">View source record</a>");
+        StringBuilder body = new StringBuilder();
+        body.append("<h1>").append(escape(resource.label())).append("</h1>\n")
+                .append("<p class=\"mono muted\">").append(escape(resource.publishedUri())).append("</p>\n")
+                .append("<p><a href=\"").append(escape(resource.path())).append("?format=ttl\">View as RDF (Turtle)</a>");
+        String act = actPath(resource.path());
+        if (act != null) {
+            body.append(" &middot; <a href=\"").append(escape(act)).append("\">The act</a>");
         }
-        html.append("</p>\n</header>\n<main>\n");
-
-        html.append(section("Properties and links", resource.outgoing(), false));
-        html.append(section("Referred to by", resource.incoming(), true));
-
-        html.append("</main>\n<footer><p>Rendered live from a SPARQL query against the triple store.</p></footer>\n")
-                .append("</body>\n</html>\n");
-        return html.toString();
+        body.append("</p>\n");
+        body.append(section("Properties and links", resource.outgoing(), false));
+        body.append(section("Referred to by", resource.incoming(), true));
+        return Html.page(resource.label(), "acts",
+                "<link rel=\"alternate\" type=\"text/turtle\" href=\"" + escape(resource.path()) + "?format=ttl\">\n"
+                        + "<style>" + styles() + "</style>\n",
+                body.toString());
     }
 
     public String renderNotFound(String path) {
-        return "<!doctype html>\n<html lang=\"en\">\n<head>\n<meta charset=\"utf-8\">\n"
-                + "<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">\n"
-                + "<title>Act not found &middot; Legal RDF Explorer</title>\n"
-                + "<style>" + styles() + "</style>\n</head>\n<body>\n"
-                + "<header class=\"page-head\">\n"
-                + "<a class=\"back\" href=\"/\">&larr; Legal RDF Explorer</a>\n"
-                + "<h1>No act at this address</h1>\n"
-                + "<p class=\"uri\">" + escape(uriService.uriForPath(path)) + "</p>\n"
-                + "<p>The triple store holds no resource with this ELI identifier. It may not have "
-                + "been crawled yet, or the identifier may be mistyped.</p>\n"
-                + "<p class=\"actions\"><a href=\"/\">Search the acts that are loaded</a></p>\n"
-                + "</header>\n</body>\n</html>\n";
+        return Html.page("Not found", "acts", null,
+                "<h1>Nothing at this address</h1>\n<p class=\"mono muted\">" + escape(uriService.uriForPath(path))
+                        + "</p>\n<p>The triple store holds no resource with this ELI identifier. The act may be "
+                        + "outside the imported corpus (laws, decree-laws and legislative decrees from 2020), or the "
+                        + "identifier may be mistyped.</p>\n<p><a href=\"/\">Search the legal acts</a></p>\n");
+    }
+
+    /** The act a version or format belongs to: the first seven segments of its ELI path. */
+    private static String actPath(String path) {
+        String[] segments = path.split("/");
+        if (segments.length <= 8) {
+            return null;
+        }
+        return String.join("/", java.util.Arrays.copyOf(segments, 8));
     }
 
     private String section(String heading, List<RelationGroup> groups, boolean inbound) {
@@ -199,51 +194,22 @@ public class EliHtmlRenderer {
     }
 
     private static String escape(String value) {
-        if (value == null) {
-            return "";
-        }
-        return value.replace("&", "&amp;")
-                .replace("<", "&lt;")
-                .replace(">", "&gt;")
-                .replace("\"", "&quot;")
-                .replace("'", "&#39;");
+        return Html.escape(value);
     }
 
     private String styles() {
         return """
-                :root{--bg:#eef4f3;--surface:#fff;--text:#102033;--muted:#667586;
-                --line:#dfe9e8;--accent:#008778;--accent-dark:#006c61}
-                *{box-sizing:border-box}
-                body{margin:0;background:var(--bg);color:var(--text);
-                font-family:Arial,Helvetica,sans-serif;line-height:1.6}
-                .page-head,main,footer{max-width:860px;margin:0 auto;padding:0 24px}
-                .page-head{padding-top:40px}
-                .back{color:var(--accent-dark);font-size:14px;text-decoration:none}
-                .back:hover{text-decoration:underline}
-                h1{font-size:28px;line-height:1.25;margin:14px 0 8px}
-                .uri{color:var(--muted);font-family:ui-monospace,Menlo,monospace;
-                font-size:13px;margin:0 0 14px;word-break:break-all}
-                .actions a{color:var(--accent-dark);font-size:14px;margin-right:16px}
-                section{background:var(--surface);border:1px solid var(--line);
-                border-radius:14px;margin:24px 0;padding:8px 24px 20px}
-                h2{font-size:17px;margin:20px 0 4px}
-                dl{display:grid;grid-template-columns:230px minmax(0,1fr);gap:0;margin:0}
-                dt,dd{border-top:1px solid var(--line);margin:0;padding:12px 0}
-                dt{padding-right:16px}
-                .label{display:block;font-size:14px;font-weight:700}
-                .predicate{color:var(--muted);font-family:ui-monospace,Menlo,monospace;font-size:12px}
-                dd ul{list-style:none;margin:0;padding:0;display:flex;
-                flex-direction:column;gap:10px}
-                a.resource{color:var(--accent-dark);font-weight:700;text-decoration:none}
-                a.resource:hover{text-decoration:underline}
-                .full-uri{color:var(--muted);display:block;
-                font-family:ui-monospace,Menlo,monospace;font-size:11.5px;word-break:break-all}
-                .literal{word-break:break-word}
-                footer{color:var(--muted);font-size:13px;padding-bottom:48px}
-                a:focus-visible,.resource:focus-visible{outline:2px solid var(--accent-dark);
-                outline-offset:2px}
-                @media(max-width:620px){dl{grid-template-columns:1fr}
-                dd{border-top:0;padding-top:0}h1{font-size:23px}}
+                section{background:#fff;border:1px solid var(--line);border-radius:10px;margin:16px 0;padding:6px 20px 16px}
+                section h2{margin:14px 0 4px}
+                section dl{display:grid;grid-template-columns:230px minmax(0,1fr);margin:0}
+                section dt,section dd{border-top:1px solid var(--line);margin:0;padding:10px 0}
+                section dt{padding-right:16px}
+                .label{display:block;font-weight:700}
+                .predicate,.full-uri{color:var(--muted);font-family:ui-monospace,Consolas,Menlo,monospace;font-size:12px}
+                .full-uri{display:block;word-break:break-all}
+                section dd ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px}
+                a.resource{font-weight:700;text-decoration:none}
+                @media(max-width:640px){section dl{grid-template-columns:1fr}section dd{border-top:0;padding-top:0}}
                 """;
     }
 }

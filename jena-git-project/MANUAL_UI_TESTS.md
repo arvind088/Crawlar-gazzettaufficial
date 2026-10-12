@@ -1,195 +1,46 @@
 # Manual UI Test Cases
 
-Use these checks before committing or before showing the demo.
+Run before showing the demo. Start the app with `mvn spring-boot:run` in
+`jena-git-project` and open <http://localhost:8080>.
 
-Local app:
+## 1. Health
 
-```text
-http://localhost:8082
-```
+Open `/api/health`. Expected: `"status": "UP"`, `triples` above 190 000,
+`missingFiles` empty, `dailyUpdate.enabled` false (unless switched on).
 
-## 1. Basic Health
+## 2. Legal acts
 
-Steps:
+1. Open `/`. Expected: about 1 116 acts, 4 212 versions, 7 854 relations; newest acts first.
+2. Type `cura` or `20G00034` in the search box and press Filter. Expected: D.L. 17 marzo 2020, n. 18.
+3. Choose Type = Decreto-legge and Conversion status = PENDING. Expected: only recent decree-laws, all PENDING.
+4. Press Clear. Expected: the full list again; Next/Previous move between pages.
 
-1. Open `http://localhost:8082`.
-2. Confirm the app loads without a browser error.
-3. Open `http://localhost:8082/api/health`.
+## 3. Act details: a decree-law
 
-Expected:
+Open D.L. 17 marzo 2020, n. 18 (`/eli/id/2020/03/17/20G00034/sg`). Expected:
 
-```text
-triples > 0
-loadedFiles includes 4 RDF files
-missingFiles is empty
-```
+- Check against Gazzetta Ufficiale: MATCH.
+- Conversion into law: CONVERTED, trust A, converted by L. 24 aprile 2020, n. 27 in 43 of 60 days, checks listed.
+- Versions: 88, the original text first; "Show the other … versions" opens the rest.
+- What other acts did to this act: amendments with trust level, textual modifications and the editor's note.
+- Every link to another act opens its page on the same host.
 
-## 2. Linked Data Resource Navigation
+## 4. Act details: the conversion law
 
-Steps:
+Open L. 24 aprile 2020, n. 27 (`/eli/id/2020/04/29/20G00045/sg`). Expected: the
+section "Decree-laws this law converts" lists D.L. 18/2020 as CONVERTED; the
+relations show the decree-laws it repeals (D.L. 9, 11, 14/2020).
 
-1. Search `005G0104`.
-2. Open the result.
-3. Confirm the selected resource panel shows Expression Level and Manifestation Level.
-4. Click an expression or manifestation link.
+## 5. Linked data
 
-Expected:
+1. On an act page click "View as RDF (Turtle)". Expected: Turtle with `eli:` properties.
+2. `curl -H "Accept: text/turtle" http://localhost:8080/eli/id/2020/03/17/20G00034/sg` returns the same Turtle.
+3. Open a version link (e.g. "Original text"). Expected: the generic resource page with "The act" link back.
+4. Open `/eli/id/1999/01/01/XXXX/sg`. Expected: "Nothing at this address" with a link to the list.
 
-```text
-Expression Level has 2 rows
-Manifestation Level has 2 rows
-Clicked resources resolve inside the UI
-```
+## 6. SPARQL
 
-## 3. Existing Reviewed RDF Relations
-
-Steps:
-
-1. Search `25G00041`.
-2. Open the result.
-3. Inspect outgoing and incoming linked-data relations.
-4. Click one related resource.
-
-Expected:
-
-```text
-Important relation labels appear first
-Commences / converts is visible
-Modifies is visible
-Navigation stays inside the UI
-```
-
-## 4. Normattiva Import Fallback: Missing File
-
-Steps:
-
-1. Open the technical/status tab.
-2. Click `Import Updates` without placing a file in `data/import`.
-
-Expected:
-
-```text
-The import result shows FAILED
-The message names the missing import path
-The app does not crash
-```
-
-## 5. Normattiva Import Fallback: Saved Updates
-
-Setup:
-
-Place one saved official update response at:
-
-```text
-data/import/normattiva_updates.json
-```
-
-Accepted fallback:
-
-```text
-data/import/normattiva_updates.tsv
-```
-
-Steps:
-
-1. Open the technical/status tab.
-2. Click `Import Updates`.
-3. Open the Normattiva tab.
-
-Expected:
-
-```text
-Import result shows COMPLETED
-rows > 0
-Update candidates table shows imported rows
-Rows include code and GU date when the source file contains codiceRedazionale and dataGU
-```
-
-## 6. Normattiva Detail Import
-
-Setup:
-
-Place saved detail data at:
-
-```text
-data/import/normattiva_details.json
-```
-
-Accepted fallback:
-
-```text
-data/import/normattiva_details.tsv
-```
-
-Steps:
-
-1. Open the technical/status tab.
-2. Click `Import Details`.
-3. Open the Normattiva tab.
-
-Expected:
-
-```text
-Import result shows COMPLETED
-Detail evidence table shows imported rows
-No RDF relationship is created by this import
-```
-
-## 7. Evidence Scan
-
-Steps:
-
-1. Open the technical/status tab.
-2. Click `Scan Evidence`.
-3. Open the Normattiva tab.
-
-Expected:
-
-```text
-Evidence scan shows COMPLETED
-Relation evidence table refreshes
-Evidence rows appear only when detail text contains relation terms
-Legal relationships table is unchanged
-```
-
-## 8. Relation Candidate Extraction
-
-Precondition:
-
-Relation evidence rows must contain at least two ELI HTTP resource URLs such as:
-
-```text
-https://www.gazzettaufficiale.it/eli/id/2025/03/01/25G00028/sg
-https://www.gazzettaufficiale.it/eli/id/2025/03/24/25G00041/sg
-```
-
-Steps:
-
-1. Open the technical/status tab.
-2. Click `Extract Candidates`.
-3. Open the Normattiva tab.
-
-Expected:
-
-```text
-Candidate extraction shows COMPLETED
-Relation candidates table shows source, relation, target, and needs_review
-Rows are review candidates only
-No RDF is generated
-URN-only evidence does not create candidates
-```
-
-## 9. SPARQL Validation
-
-Steps:
-
-1. Open the SPARQL tab.
-2. Run the validation queries from `VALIDATION_QUERIES.md`.
-
-Expected:
-
-```text
-005G0104 returns two expressions
-25G00041 returns existing reviewed RDF relations
-No new RDF appears from imported evidence unless a later reviewed RDF generation step is explicitly added
-```
+1. Open `/query` (or `/sparql` in a browser, which redirects there).
+2. Choose example `08-conversions` and press Run example. Expected: 249 rows; act links open act pages.
+3. Click CSV. Expected: a CSV download from `/sparql`.
+4. Run `SELEC x`. Expected: a red "not valid SPARQL" message, no error page.
