@@ -221,7 +221,7 @@ public class ActPages {
     public String details(ActDetails act, String path) {
         String title = act.fact(ELI + "title");
         StringBuilder body = new StringBuilder();
-        body.append("<p class=\"muted\">").append(escape(Html.typeName(act.typeCode()))).append("</p>\n")
+        body.append("<p class=\"eyebrow\">").append(escape(Html.typeName(act.typeCode()))).append("</p>\n")
                 .append("<h1>").append(escape(act.citation())).append("</h1>\n")
                 .append("<p>").append(escape(title)).append("</p>\n")
                 .append("<p class=\"mono muted\">").append(escape(uris.uriForPath(path))).append("</p>\n")
