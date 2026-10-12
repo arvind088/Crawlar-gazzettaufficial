@@ -52,7 +52,20 @@ mvn -B test
 mvn spring-boot:run
 ```
 
-Use the single port configured by the application. Check `/api/health` before starting another process.
+Then open <http://localhost:8080>. The three views:
+
+| View | Address | What it shows |
+|---|---|---|
+| Legal acts | `/` | Every imported act, with search and filters (type, year, conversion status) |
+| Act details | `/eli/id/{yyyy}/{mm}/{dd}/{code}/sg` | Versions, Gazzetta check, conversion checks C1-C6, relations with evidence and trust level |
+| SPARQL | `/query` | Query form, example queries from `queries/`, results table |
+
+Every act page is its ELI identifier: a browser gets HTML, and `Accept: text/turtle`
+(or `?format=ttl`) gets RDF. Programs use the SPARQL 1.1 endpoint `/sparql`.
+`/api/health` reports the store size and the daily update.
+
+The first start reads `data/rdf/*.ttl` into the TDB2 store under `data/tdb2`
+(a few minutes); later starts reuse the store and read only files that changed.
 
 ## Repository Guide
 
@@ -67,7 +80,7 @@ jena-git-project/          The Spring Boot application
   data/                    Reviewed source, intermediate, and RDF data
   queries/                 Demonstration SPARQL queries
   scripts/                 Local validation helpers
-  src/main/                Application code and static UI
+  src/main/                Application code (server-rendered pages)
   src/test/                Automated tests
 render.yaml                Deployment definition
 ```
