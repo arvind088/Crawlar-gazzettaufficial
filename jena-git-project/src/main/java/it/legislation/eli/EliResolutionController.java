@@ -14,13 +14,15 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import it.legislation.eli.EliResolutionService.ResolvedResource;
+import it.legislation.web.ActCatalog;
+import it.legislation.web.ActPages;
 
 /**
  * Makes every act dereferenceable at its own address.
  *
  * <pre>
  * GET /eli/id/2005/05/16/005G0104/sg
- *     Accept: text/html    -&gt; a page rendered from a live SPARQL query
+ *     Accept: text/html    -&gt; the Act details page, rendered from live SPARQL queries
  *     Accept: text/turtle  -&gt; the same description as RDF
  * </pre>
  *
@@ -36,15 +38,21 @@ public class EliResolutionController {
     private final EliResolutionService resolutionService;
     private final EliHtmlRenderer renderer;
     private final EliUriService uriService;
+    private final ActCatalog catalog;
+    private final ActPages actPages;
 
     public EliResolutionController(
             EliResolutionService resolutionService,
             EliHtmlRenderer renderer,
-            EliUriService uriService
+            EliUriService uriService,
+            ActCatalog catalog,
+            ActPages actPages
     ) {
         this.resolutionService = resolutionService;
         this.renderer = renderer;
         this.uriService = uriService;
+        this.catalog = catalog;
+        this.actPages = actPages;
     }
 
     @GetMapping("/eli/id/**")
@@ -82,10 +90,16 @@ public class EliResolutionController {
                     .body(resolutionService.toTurtle(resource));
         }
 
+        // An act gets the Act details page; its versions, formats and anything
+        // else with an ELI address get the generic page.
+        String page = catalog.isAct(resource.storedUri())
+                ? catalog.details(resource.storedUri()).map(act -> actPages.details(act, path))
+                        .orElseGet(() -> renderer.render(resource))
+                : renderer.render(resource);
         return ResponseEntity.ok()
                 .contentType(HTML)
                 .header(HttpHeaders.VARY, HttpHeaders.ACCEPT)
-                .body(renderer.render(resource));
+                .body(page);
     }
 
     /**
