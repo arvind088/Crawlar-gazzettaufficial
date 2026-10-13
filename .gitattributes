@@ -1,0 +1,15 @@
+# Store text files with Unix line endings in Git, whatever the editor uses.
+# This keeps diffs clean when the project is edited on Windows.
+* text=auto eol=lf
+
+# Windows scripts keep Windows line endings.
+*.cmd text eol=crlf
+*.bat text eol=crlf
+*.ps1 text eol=crlf
+
+# Binary files
+*.png binary
+*.jpg binary
+*.zip binary
+*.xlsx binary
+*.jar binary

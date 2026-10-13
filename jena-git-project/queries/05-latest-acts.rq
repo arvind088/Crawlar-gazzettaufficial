@@ -1,0 +1,15 @@
+# The 20 most recent acts.
+PREFIX eli: <http://data.europa.eu/eli/ontology#>
+PREFIX dcterms: <http://purl.org/dc/terms/>
+
+SELECT ?act ?type ?date ?number ?title
+WHERE {
+  ?act a eli:LegalResource ;
+       dcterms:source <https://dati.normattiva.it/> ;
+       eli:type_document ?type ;
+       eli:date_document ?date ;
+       eli:number ?number ;
+       eli:title ?title .
+}
+ORDER BY DESC(?date)
+LIMIT 20

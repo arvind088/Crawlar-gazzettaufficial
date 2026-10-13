@@ -1,0 +1,11 @@
+# Everything the store says about one act.
+# Example: D.L. 17 marzo 2020, n. 18 (codice redazionale 20G00034).
+PREFIX eli: <http://data.europa.eu/eli/ontology#>
+PREFIX dcterms: <http://purl.org/dc/terms/>
+
+SELECT ?predicate ?object
+WHERE {
+  ?act eli:id_local "20G00034" ;
+       ?predicate ?object .
+}
+ORDER BY ?predicate ?object

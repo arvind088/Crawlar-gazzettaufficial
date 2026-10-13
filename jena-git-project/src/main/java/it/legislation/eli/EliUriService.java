@@ -9,7 +9,7 @@ import java.util.regex.Pattern;
  * Translates between the ELI identifiers this platform publishes on its own
  * domain and the source identifiers that are stored in the triple store.
  *
- * <p>CONTEXT.md constraint 3 requires resources to carry ELI-pattern URIs on our
+ * <p>The design (ARCHITECTURE.md) requires resources to carry ELI-pattern URIs on our
  * own domain rather than only on the source's domain:
  *
  * <pre>
