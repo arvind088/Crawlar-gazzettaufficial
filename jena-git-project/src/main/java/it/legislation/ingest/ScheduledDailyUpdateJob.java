@@ -17,7 +17,7 @@ import it.legislation.source.normattiva.NormattivaClient;
  *
  * <p>Off by default ({@code legal.daily-update.enabled=false}): it needs the raw
  * corpus next to the application and a network that Normattiva accepts (it
- * blocks GitHub's machines, see docs/update-routine-rationale.md section 7).
+ * blocks GitHub's machines, see ARCHITECTURE.md).
  * On the server that has both, set {@code LEGAL_DAILY_UPDATE_ENABLED=true}.
  *
  * <p>The run rewrites the RDF files under {@code data/rdf}; the store notices

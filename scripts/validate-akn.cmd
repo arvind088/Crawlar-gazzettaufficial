@@ -1,5 +1,6 @@
 @echo off
 setlocal
+cd /d "%~dp0..\jena-git-project" || exit /b 1
 if "%~1"=="" (
   echo Usage: validate-akn.cmd "XML file or folder" [report.json]
   exit /b 2

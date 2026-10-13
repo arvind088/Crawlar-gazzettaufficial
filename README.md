@@ -1,106 +1,108 @@
 # Italian Legislation Linked Data
 
-A lightweight thesis application for validating official Italian legislation data, representing it with ELI RDF, storing it in Apache Jena TDB2, and exploring it through SPARQL-backed web pages.
+Master's thesis project. It turns Italian national legislation into **linked open data**:
+every act gets a permanent [ELI](https://op.europa.eu/en/web/eu-vocabularies/eli) address,
+all its versions, the relations to other acts (amends, repeals, converts) with their evidence,
+and a public SPARQL endpoint.
 
-## Thesis Flow
+**Corpus:** every *Legge*, *Decreto-legge* and *Decreto legislativo* from 2020 to today.
 
-```text
-Official Normattiva AKN XML
-        -> validation
-        -> ELI Work / Expression / Manifestation RDF
-        -> persistent Jena TDB2
-        -> read-only SPARQL
-        -> navigable web interface
+| | |
+|---|---|
+| Acts | 1,116 |
+| Versions (original and consolidated texts) | 4,212 |
+| Acts confirmed against Gazzetta Ufficiale | 1,114 (2 server errors, retried by the next update) |
+| Relations between acts | 7,854 (amends 6,079 · changes 1,551 · repeals 224) |
+| Decree-laws with a conversion status | 249 |
+| Precision, hand-checked random sample | 54 / 54 correct (≥ 93.4 %, 95 % Wilson interval) |
+
+*Figures of 11 October 2026; they grow with each daily update.*
+
+## How it works
+
+```mermaid
+flowchart LR
+    N[Normattiva<br/>OpenData API] -->|Akoma Ntoso XML,<br/>all versions| I[Import<br/>XML → ELI RDF]
+    I --> G[Check each act on<br/>Gazzetta Ufficiale]
+    I --> R[Find relations<br/>amends · repeals · converts]
+    G --> S[(Jena TDB2<br/>triple store)]
+    R --> S
+    I --> S
+    S --> W[Web pages<br/>Legal acts · Act details]
+    S --> Q[SPARQL<br/>/query · /sparql]
 ```
 
-The first thesis release is intentionally narrow. It prioritizes trusted data, clear provenance, real version navigation, and repeatable validation over broad crawling or automatic legal interpretation.
+Details: [ARCHITECTURE.md](ARCHITECTURE.md). External sources and the app's own endpoints:
+[docs/API.md](docs/API.md).
 
-## Current Capabilities
+## Quick start
 
-- Persistent, transaction-backed Jena TDB2 storage.
-- SPARQL-based legal-act search and resource pages.
-- Read-only SPARQL protocol endpoint.
-- ELI resource resolution and content negotiation.
-- Work, Expression, and Manifestation representation.
-- Clickable navigation for RDF resource links.
-- Scheduled ingestion components, watermarks, and run logs.
-- Automated query and data-model tests.
+Requirements: **Java 17** and **Maven 3.9+**.
 
-## Current Priority
-
-Complete a defensible import path for real Normattiva OpenData AKN files:
-
-1. Inspect and validate the XML securely.
-2. Preview validation errors and warnings.
-3. Map accepted data to application-owned ELI URIs.
-4. Commit RDF transactionally to TDB2.
-5. Demonstrate a real act with multiple Expressions.
-6. Verify the result with golden SPARQL queries and the UI.
-
-Automatic relation extraction from ambiguous text is outside the trusted graph. A possible relation remains a review candidate until its source, target, predicate, and evidence are explicit.
-
-## Run Locally
-
-Requirements:
-
-- Java 17
-- Maven 3.9 or later
-
-```powershell
+```bash
 cd jena-git-project
-mvn -B test
-mvn spring-boot:run
+mvn -B test            # build and run the tests
+mvn spring-boot:run    # start the app
 ```
 
-Then open <http://localhost:8080>. The three views:
+Open <http://localhost:8080>. The first start reads `data/rdf/*.ttl` into the store
+(`data/tdb2`), which takes a few minutes; later starts are fast.
 
-| View | Address | What it shows |
-|---|---|---|
-| Legal acts | `/` | Every imported act, with search and filters (type, year, conversion status) |
-| Act details | `/eli/id/{yyyy}/{mm}/{dd}/{code}/sg` | Versions, Gazzetta check, conversion checks C1-C6, relations with evidence and trust level |
-| SPARQL | `/query` | Query form, example queries from `queries/`, results table |
+| View | Address |
+|---|---|
+| Legal acts (search, filters) | `/` |
+| Act details (versions, Gazzetta check, conversion, relations) | `/eli/id/{yyyy}/{mm}/{dd}/{code}/sg`, e.g. `/eli/id/2020/03/17/20G00034/sg` |
+| SPARQL form and example queries | `/query` |
+| SPARQL 1.1 endpoint for programs | `/sparql` |
+| Health | `/api/health` |
 
-Every act page is its ELI identifier: a browser gets HTML, and `Accept: text/turtle`
-(or `?format=ttl`) gets RDF. Programs use the SPARQL 1.1 endpoint `/sparql`.
-`/api/health` reports the store size and the daily update.
+Each act page is also RDF: `curl -H "Accept: text/turtle" http://localhost:8080/eli/id/2020/03/17/20G00034/sg`.
 
-The first start reads `data/rdf/*.ttl` into the TDB2 store under `data/tdb2`
-(a few minutes); later starts reuse the store and read only files that changed.
+## Keeping the data up to date
 
-## Repository Guide
+The committed RDF files are enough to run the app. To fetch new and changed acts:
+
+```bash
+scripts/daily-update.sh --dry-run true   # what changed, nothing downloaded
+scripts/daily-update.sh                  # download, import, check, relations (about 15–40 min)
+```
+
+On Windows use the `.cmd` scripts (`scripts\daily-update.cmd`). The update needs the raw
+Normattiva corpus on disk (`scripts/build-corpus.sh` builds it once; 2.6 GB, not in Git) and a
+network Normattiva accepts: it blocks GitHub's servers, so it runs on your own machine or server.
+
+All helper scripts are in [`scripts/`](scripts):
+
+| Script | Does |
+|---|---|
+| `run-app` | Start the web app |
+| `build-corpus` | First full download and processing (hours) |
+| `daily-update` | Fetch changed and missing acts, re-run the pipeline |
+| `evaluate` | Draw a sample to check by hand (`sample`), then compute precision (`evaluate`) |
+| `validate-akn` | Check Akoma Ntoso files before import |
+
+## Repository layout
 
 ```text
-CONTEXT.md                 Stable project decisions and professor feedback
-PLAN.md                    Milestones and acceptance criteria
-SKILL.md                   Rules for future implementation sessions
-docs/                      Architecture, data model, rationale, and diagrams
-docs/screenshots/          Historical UI verification images
-docs/archive/              Superseded drafts retained for reference
-jena-git-project/          The Spring Boot application
-  data/                    Reviewed source, intermediate, and RDF data
-  queries/                 Demonstration SPARQL queries
-  scripts/                 Local validation helpers
-  src/main/                Application code (server-rendered pages)
-  src/test/                Automated tests
-render.yaml                Deployment definition
+README.md, ARCHITECTURE.md, CONTRIBUTING.md, LICENSE
+docs/API.md                 External APIs (Normattiva, Gazzetta) and the app's endpoints
+scripts/                    Helper scripts (.sh for Linux/Git Bash, .cmd for Windows)
+.github/workflows/          CI (tests on pull requests) and the scheduled Gazzetta RSS harvest
+render.yaml                 Deployment definition (Render)
+jena-git-project/           The application (Java 17, Spring Boot, Apache Jena)
+  src/main/java/it/legislation/
+    source/                 Clients for Normattiva and Gazzetta Ufficiale
+    mapping/                Akoma Ntoso → ELI RDF
+    relations/              Relation and conversion detection
+    ingest/                 Runnable steps (import, check, relations, daily update, evaluation)
+    store/                  TDB2 triple store
+    eli/, web/              ELI addresses, pages, SPARQL
+  data/                     Outputs in Git: RDF, readable TSV reports, registry, evaluation
+  queries/                  Example SPARQL queries (shown on /query)
 ```
 
-## Documentation
+## Data sources and licence
 
-- [Implementation plan](PLAN.md)
-- [Project context](CONTEXT.md)
-- [Data model](docs/data-model.md)
-- [Linked Data design](docs/linked-data-design-notes.md)
-- [Update routine rationale](docs/update-routine-rationale.md)
-- [SPARQL validation queries](jena-git-project/VALIDATION_QUERIES.md)
-- [Manual UI tests](jena-git-project/MANUAL_UI_TESTS.md)
-
-## Known Limits
-
-- Real multi-version coverage is not yet demonstrated at useful scale.
-- The public ELI base URI is still a placeholder until deployment is finalized.
-- Render persistence is not configured; TDB2 data would not survive a redeploy on ephemeral storage.
-- Gazzetta RSS alone cannot guarantee recovery after a long outage.
-- Normattiva update discovery does not itself prove legal relationships.
-
-These limits are part of the plan, not hidden assumptions.
+- Legislation: [Normattiva](https://www.normattiva.it) OpenData (Istituto Poligrafico e Zecca dello
+  Stato), used under its terms of use. Publication data: [Gazzetta Ufficiale](https://www.gazzettaufficiale.it).
+- Code: [MIT licence](LICENSE).
