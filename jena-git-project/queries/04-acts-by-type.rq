@@ -1,0 +1,13 @@
+# How many acts and versions per type.
+PREFIX eli: <http://data.europa.eu/eli/ontology#>
+PREFIX dcterms: <http://purl.org/dc/terms/>
+
+SELECT ?type (COUNT(DISTINCT ?act) AS ?acts) (COUNT(DISTINCT ?version) AS ?versions)
+WHERE {
+  ?act a eli:LegalResource ;
+       dcterms:source <https://dati.normattiva.it/> ;
+       eli:type_document ?type .
+  OPTIONAL { ?act eli:is_realized_by ?version . }
+}
+GROUP BY ?type
+ORDER BY ?type

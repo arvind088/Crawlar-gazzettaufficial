@@ -32,7 +32,7 @@ import it.legislation.relations.ModificationNote.Kind;
  * level A when Y is imported and Y's own lifecycle names X as one of the acts
  * that changed it (two independent statements); otherwise level B.
  *
- * <p><b>Conversion</b> of decree-law D by law L, rules C1–C6 (docs/akn-analysis.md):
+ * <p><b>Conversion</b> of decree-law D by law L, rules C1–C6 (ARCHITECTURE.md):
  * C1 types, C2 a note of L says "la conversione … del D.L. ⟨D⟩", C3 Article 1 of
  * L says D "è convertito in legge" (or L's title says so), C4 D resolves to
  * exactly one imported act, C5 L published within 60 days of D (Constitution,

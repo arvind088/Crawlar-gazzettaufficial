@@ -40,7 +40,7 @@ public final class AknOpenDataValidator {
                     : new String[] {System.getProperty("akn.input"), configuredOutput};
         }
         if (args.length < 1 || args.length > 2) {
-            System.err.println("Usage: validate-akn.cmd <xml-file-or-folder> [report.json]");
+            System.err.println("Usage: scripts/validate-akn.cmd <xml-file-or-folder> [report.json]");
             System.exit(2);
         }
 

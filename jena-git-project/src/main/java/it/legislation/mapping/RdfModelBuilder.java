@@ -57,7 +57,7 @@ public class RdfModelBuilder {
     }
 
     /**
-     * Mints resource identifiers on our own domain (CONTEXT.md constraint 3)
+     * Mints resource identifiers on our own domain (ARCHITECTURE.md)
      * and records an {@code owl:sameAs} link back to the source identifier, so
      * no provenance is lost.
      */

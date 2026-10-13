@@ -25,7 +25,7 @@ import it.legislation.store.Tdb2DatasetService;
  * Resolves an ELI path to the resource it identifies, by running SPARQL against
  * the triple store at request time.
  *
- * <p>Nothing here is cached or pre-rendered: CONTEXT.md constraint 4 requires
+ * <p>Nothing here is cached or pre-rendered: the design (ARCHITECTURE.md) requires
  * every page to be produced from a live query.
  */
 @Service
