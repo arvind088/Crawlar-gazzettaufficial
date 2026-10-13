@@ -1,0 +1,88 @@
+@prefix dcterms: <http://purl.org/dc/terms/> .
+@prefix eli:     <http://data.europa.eu/eli/ontology#> .
+@prefix ilg:     <http://example.org/italian-legislation/ontology#> .
+@prefix rdfs:    <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd:     <http://www.w3.org/2001/XMLSchema#> .
+
+# A trimmed copy of real data: D.L. 18/2020 (Cura Italia), the law that
+# converted it (L. 27/2020) and one act outside the corpus.
+
+<https://example.it/eli/id/2020/03/17/20G00034/sg>
+        a eli:LegalResource ;
+        dcterms:source <https://dati.normattiva.it/> ;
+        eli:id_local "20G00034" ;
+        eli:type_document <http://www.gazzettaufficiale.it/eli/tables/resource-type#DECRETO-LEGGE> ;
+        eli:date_document "2020-03-17"^^xsd:date ;
+        eli:date_publication "2020-03-17"^^xsd:date ;
+        eli:number "18" ;
+        eli:title "Misure di potenziamento del Servizio sanitario nazionale."@it ;
+        eli:is_realized_by <https://example.it/eli/id/2020/03/17/20G00034/sg/ita/original> ,
+                           <https://example.it/eli/id/2020/03/17/20G00034/sg/ita/vigente/2020-04-30> ;
+        ilg:guNumber "70" .
+
+<https://example.it/eli/id/2020/03/17/20G00034/sg/ita/original>
+        a eli:LegalExpression ; eli:version_date "2020-03-17"^^xsd:date ;
+        eli:is_embodied_by <https://example.it/eli/id/2020/03/17/20G00034/sg/ita/original/akn> .
+<https://example.it/eli/id/2020/03/17/20G00034/sg/ita/original/akn>
+        a eli:Format ; dcterms:source "corpus/2020-03-17_20G00034_ORIGINALE_V0.xml" .
+<https://example.it/eli/id/2020/03/17/20G00034/sg/ita/vigente/2020-04-30>
+        a eli:LegalExpression ; eli:version_date "2020-04-30"^^xsd:date .
+
+<https://example.it/eli/id/2020/04/29/20G00045/sg>
+        a eli:LegalResource ;
+        dcterms:source <https://dati.normattiva.it/> ;
+        eli:id_local "20G00045" ;
+        eli:type_document <http://www.gazzettaufficiale.it/eli/tables/resource-type#LEGGE> ;
+        eli:date_document "2020-04-24"^^xsd:date ;
+        eli:number "27" ;
+        eli:title "Conversione in legge, con modificazioni, del decreto-legge 17 marzo 2020, n. 18."@it ;
+        eli:is_realized_by <https://example.it/eli/id/2020/04/29/20G00045/sg/ita/original> ;
+        ilg:converts <https://example.it/eli/id/2020/03/17/20G00034/sg> .
+
+<https://example.it/eli/ext/decreto_legislativo/2001-03-30/165>
+        a ilg:ExternalAct ;
+        rdfs:label "DECRETO_LEGISLATIVO 2001-03-30 n. 165" ;
+        eli:type_document <http://www.gazzettaufficiale.it/eli/tables/resource-type#DECRETO_LEGISLATIVO> ;
+        eli:date_document "2001-03-30"^^xsd:date ;
+        eli:number "165" .
+
+# Gazzetta check: ERROR first, MATCH on a later run.
+<https://example.it/check/gazzetta/20G00034/2026-10-01>
+        a ilg:GazzettaCheck ; ilg:assesses <https://example.it/eli/id/2020/03/17/20G00034/sg> ;
+        ilg:assessedOn "2026-10-01"^^xsd:date ; ilg:gazzettaCheck "ERROR" .
+<https://example.it/check/gazzetta/20G00034/2026-10-11>
+        a ilg:GazzettaCheck ; ilg:assesses <https://example.it/eli/id/2020/03/17/20G00034/sg> ;
+        ilg:assessedOn "2026-10-11"^^xsd:date ; ilg:gazzettaCheck "MATCH" .
+
+<https://example.it/conversion/20G00034/2026-10-11>
+        a ilg:ConversionCheck ; ilg:assesses <https://example.it/eli/id/2020/03/17/20G00034/sg> ;
+        ilg:assessedOn "2026-10-11"^^xsd:date ; ilg:conversionStatus "CONVERTED" ;
+        ilg:law <https://example.it/eli/id/2020/04/29/20G00045/sg> ; ilg:daysToConversion 43 ;
+        ilg:trustLevel "A" ; ilg:checkC1 true ; ilg:checkC5 true .
+
+# L. 27/2020 amends D.L. 18/2020: trust B first, A later.
+<https://example.it/relation/20G00045/amends/20G00034>
+        a ilg:Relation ; ilg:relationProperty eli:amends ;
+        ilg:fromAct <https://example.it/eli/id/2020/04/29/20G00045/sg> ;
+        ilg:toAct <https://example.it/eli/id/2020/03/17/20G00034/sg> ;
+        ilg:exampleNote "ha disposto (con l'art. 1, comma 1) la modifica dell'art. 2." ;
+        dcterms:source "corpus/2020-04-29_20G00045_ORIGINALE_V0.xml" .
+<https://example.it/relation/20G00045/amends/20G00034/2026-10-01>
+        a ilg:RelationAssessment ; ilg:assesses <https://example.it/relation/20G00045/amends/20G00034> ;
+        ilg:assessedOn "2026-10-01"^^xsd:date ; ilg:status "FOUND" ; ilg:trustLevel "B" ;
+        ilg:textualModCount 155 ; ilg:confirmedByLifecycle false .
+<https://example.it/relation/20G00045/amends/20G00034/2026-10-11>
+        a ilg:RelationAssessment ; ilg:assesses <https://example.it/relation/20G00045/amends/20G00034> ;
+        ilg:assessedOn "2026-10-11"^^xsd:date ; ilg:status "FOUND" ; ilg:trustLevel "A" ;
+        ilg:textualModCount 155 ; ilg:confirmedByLifecycle true .
+
+# D.L. 18/2020 changes an act outside the corpus.
+<https://example.it/relation/20G00034/changes/165>
+        a ilg:Relation ; ilg:relationProperty eli:changes ;
+        ilg:fromAct <https://example.it/eli/id/2020/03/17/20G00034/sg> ;
+        ilg:toAct <https://example.it/eli/ext/decreto_legislativo/2001-03-30/165> ;
+        dcterms:source "corpus/2020-03-17_20G00034_ORIGINALE_V0.xml" .
+<https://example.it/relation/20G00034/changes/165/2026-10-11>
+        a ilg:RelationAssessment ; ilg:assesses <https://example.it/relation/20G00034/changes/165> ;
+        ilg:assessedOn "2026-10-11"^^xsd:date ; ilg:status "FOUND" ; ilg:trustLevel "B" ;
+        ilg:textualModCount 1 ; ilg:confirmedByLifecycle false .

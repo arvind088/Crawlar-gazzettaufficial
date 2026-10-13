@@ -108,7 +108,13 @@ public class SparqlEndpointController {
      * opening the endpoint in a browser explains itself instead of erroring.
      */
     @GetMapping(value = "/sparql")
-    public ResponseEntity<byte[]> serviceDescription() {
+    public ResponseEntity<byte[]> serviceDescription(
+            @RequestHeader(name = HttpHeaders.ACCEPT, required = false) String accept
+    ) {
+        if (accept != null && accept.contains("text/html")) {
+            // A person in a browser: the SPARQL page with its form.
+            return ResponseEntity.status(HttpStatus.SEE_OTHER).header(HttpHeaders.LOCATION, "/query").build();
+        }
         String body = """
                 Italian Legislation Linked Data Platform - SPARQL endpoint (read-only)
 
