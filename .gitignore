@@ -10,9 +10,7 @@ target/
 *.iml
 bin/
 
-# Working context for AI assistants — not part of the project.
-# Note: the previous rule was "context/", which did not match the folder
-# "context for claude/" and so never took effect.
+# Local working notes and personal documents — not part of the project.
 context/
 context for claude/
 IMPLEMENTATION_PLAN.md
@@ -20,6 +18,9 @@ PROJECT_MANUAL.md
 docs/NEW_APP_IMPLEMENTATION_PLAN.md
 docs/PROGRESS_LOG.md
 thesis-documents/
+
+# Patch files applied locally
+/*.patch
 
 # Accidental command/output artifacts
 h origin master

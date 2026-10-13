@@ -23,14 +23,14 @@ import org.junit.jupiter.api.Test;
  * Runs the validation queries the specification requires, and asserts their
  * expected results (FR-5.1, FR-5.2, FR-5.3, US-D1, TC-07).
  *
- * <p>These queries already existed, documented in {@code VALIDATION_QUERIES.md}
+ * <p>These queries were first documented by hand
  * with hand-verified answers. Their weakness was that nothing executed them: the
  * expected results lived in prose, CI ran only {@code mvn test}, and a change to
  * the data model could silently invalidate every one of them. Encoding them here
  * turns the strongest documentation artifact in the project into a regression
  * gate.
  *
- * <p>The fixture is the seed data from CONTEXT.md section 3.1, so these
+ * <p>The fixture is the hand-made seed data in {@code data/rdf/seed_acts.ttl}, so these
  * assertions describe acts whose correct answers can be checked against the
  * Gazzetta Ufficiale record by hand.
  */
@@ -232,7 +232,7 @@ class ValidationQueriesTest {
     private Tdb2DatasetService store() {
         Path seed = Path.of("data", "rdf", "seed_acts.ttl");
         assertTrue(Files.exists(seed),
-                "seed data required by CONTEXT.md 3.1 is missing at " + seed.toAbsolutePath());
+                "seed data is missing at " + seed.toAbsolutePath());
         return Tdb2DatasetService.inMemoryForRdfPaths(List.of(seed));
     }
 

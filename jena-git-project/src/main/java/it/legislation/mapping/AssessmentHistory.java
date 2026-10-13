@@ -26,7 +26,7 @@ import org.apache.jena.vocabulary.RDF;
 
 /**
  * Dated assessments: how the store keeps results that change over time while
- * ingestion stays additive (CONTEXT.md, docs/update-routine-rationale.md).
+ * ingestion stays additive (ARCHITECTURE.md).
  *
  * <p>Facts (an act, a version, "L amends D") are only ever added. Results that
  * can change between runs (a decree-law PENDING today and CONVERTED next month,

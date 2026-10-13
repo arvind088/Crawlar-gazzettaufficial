@@ -1,0 +1,20 @@
+# Relations between acts by kind (amends, repeals, changes) and current trust level.
+# Trust A: the modifying act and the modified act both record the change; B: only one does.
+PREFIX ilg: <http://example.org/italian-legislation/ontology#>
+
+SELECT ?property ?trust (COUNT(?relation) AS ?relations)
+WHERE {
+  ?relation a ilg:Relation ;
+            ilg:relationProperty ?property .
+  ?assessment a ilg:RelationAssessment ;
+              ilg:assesses ?relation ;
+              ilg:assessedOn ?date ;
+              ilg:status "FOUND" ;
+              ilg:trustLevel ?trust .
+  FILTER NOT EXISTS {
+    ?newer a ilg:RelationAssessment ; ilg:assesses ?relation ; ilg:assessedOn ?later .
+    FILTER (?later > ?date)
+  }
+}
+GROUP BY ?property ?trust
+ORDER BY ?property ?trust

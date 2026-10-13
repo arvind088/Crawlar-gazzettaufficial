@@ -59,7 +59,7 @@ jobs:
 
       # Normattiva is no longer fetched here. The daily update (DailyUpdateRunner)
       # needs the raw corpus and the store, which live on the application's
-      # server, not on GitHub's machines: see docs/update-routine-rationale.md, 7.
+      # server, not on GitHub's machines: see ARCHITECTURE.md.
       - name: Derive in-force status
         run: mvn -B "-Dexec.mainClass=it.legislation.ingest.InForceEnrichmentRunner" exec:java
 
