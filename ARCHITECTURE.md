@@ -229,6 +229,17 @@ sequenceDiagram
 Ufficiale, then precision is computed with a 95 % Wilson interval. Result: 54 / 54 correct
 (≥ 93.4 % overall).
 
+Precision says that what we found is right, not what we missed. `RecallSetRunner` measures
+**recall** on a second random sample (`data/eval/recall_set.tsv`, 24 acts):
+
+- **outgoing**: 12 acts whose own text is read on the Gazzetta Ufficiale, listing every act they
+  amend or repeal. This ground truth does not use Normattiva's metadata. Omnibus acts changing more
+  than 12 acts are left out, as reading them by hand is not practical.
+- **incoming**: 12 acts with consolidated versions, checked against the list of modifying acts on
+  normattiva.it ("Aggiornamenti all'atto"), within the corpus scope.
+
+Recall = found / actual per group, with a 95 % Wilson interval (`data/eval/recall_results.tsv`).
+
 ## 8. Design decisions
 
 | Decision | Reason |
