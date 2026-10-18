@@ -1,5 +1,5 @@
-# Relations between acts by kind (amends, repeals, changes) and current trust level.
-# Trust A: the modifying act and the modified act both record the change; B: only one does.
+# Relations by kind and trust level
+# How many relations of each kind (amends, repeals, changes) are trust A (both acts record them) or B (only one does).
 PREFIX ilg: <http://example.org/italian-legislation/ontology#>
 
 SELECT ?property ?trust (COUNT(?relation) AS ?relations)

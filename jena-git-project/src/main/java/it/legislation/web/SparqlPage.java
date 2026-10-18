@@ -9,12 +9,18 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
+import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
+import org.apache.jena.query.Dataset;
 import org.apache.jena.query.Query;
 import org.apache.jena.query.QueryExecution;
 import org.apache.jena.query.QueryExecutionFactory;
@@ -35,9 +41,15 @@ import it.legislation.eli.EliUriService;
 import it.legislation.store.Tdb2DatasetService;
 
 /**
- * The SPARQL view ({@code /query}): a form, the example queries from
- * {@code queries/*.rq}, and the results as a table. Machines use the protocol
- * endpoint {@code /sparql}; this page links to its JSON and CSV output.
+ * The SPARQL view ({@code /query}): the example questions from
+ * {@code queries/*.rq} as a list, a form, and the results as a table. Machines
+ * use the protocol endpoint {@code /sparql}; this page links to its JSON and
+ * CSV output.
+ *
+ * <p>Result cells are made readable: an act shows its citation ("D.L. 17 marzo
+ * 2020, n. 18") and links to its page, a document type shows its name
+ * ("Decreto-legge"), and vocabulary terms show their short name
+ * ({@code eli:amends}). The full IRI stays in the tooltip and in the downloads.
  */
 @RestController
 public class SparqlPage {
@@ -45,14 +57,19 @@ public class SparqlPage {
     static final int MAX_ROWS = 1000;
     static final String DEFAULT_QUERY = ActCatalog.PREFIXES + """
 
-            # Decree-laws and their current conversion status
-            SELECT ?decree ?status ?on WHERE {
-              ?check a ilg:ConversionCheck ; ilg:assesses ?decree ;
-                     ilg:conversionStatus ?status ; ilg:assessedOn ?on .
+            # The 20 most recent acts
+            SELECT ?act ?type ?date ?title WHERE {
+              ?act a eli:LegalResource ; dcterms:source <https://dati.normattiva.it/> ;
+                   eli:type_document ?type ; eli:date_document ?date ; eli:title ?title .
             }
-            ORDER BY DESC(?on) ?status
+            ORDER BY DESC(?date)
             LIMIT 20
             """;
+
+    /** One example: file name, the title and description from its leading comments, and the query. */
+    record Example(String name, String title, String description, String query) {}
+
+    private static final Pattern SAFE_IRI = Pattern.compile("[^<>\"\\s{}|\\\\^`]+");
 
     private final Tdb2DatasetService store;
     private final EliUriService uris;
@@ -71,44 +88,79 @@ public class SparqlPage {
     @GetMapping("/query")
     public ResponseEntity<String> page(@RequestParam(name = "query", required = false) String query,
                                        @RequestParam(name = "example", required = false) String example) {
-        Map<String, String> exampleQueries = examples();
+        Map<String, Example> exampleQueries = examples();
+        Example chosen = example == null ? null : exampleQueries.get(example);
         String text = query;
-        if ((text == null || text.isBlank()) && example != null) {
-            text = exampleQueries.get(example);
+        if ((text == null || text.isBlank()) && chosen != null) {
+            text = chosen.query();
         }
         boolean run = text != null && !text.isBlank();
         if (!run) {
-            text = DEFAULT_QUERY;
+            chosen = exampleQueries.values().stream().findFirst().orElse(null);
+            text = chosen == null ? DEFAULT_QUERY : chosen.query();
+        } else if (chosen == null) {
+            String typed = text;
+            chosen = exampleQueries.values().stream().filter(e -> e.query().strip().equals(typed.strip()))
+                    .findFirst().orElse(null);
         }
 
-        StringBuilder body = new StringBuilder("<h1>SPARQL</h1>\n<p class=\"muted\">Ask the triple store directly. "
-                + "Read-only; queries stop after " + timeoutSeconds + " seconds. Programs can use the endpoint "
-                + "<span class=\"mono\">/sparql</span> (SPARQL 1.1 Protocol).</p>\n");
+        StringBuilder body = new StringBuilder("<div><h1>Ask the data</h1><p class=\"muted\">Pick a question, run it, "
+                + "download the answer. Every number on this site comes from a query you can rerun here. "
+                + "Read-only; queries stop after " + timeoutSeconds + " seconds. Programs use the endpoint "
+                + "<span class=\"mono\">/sparql</span> (SPARQL 1.1 Protocol).</p></div>\n<div class=\"split\">\n");
         if (!exampleQueries.isEmpty()) {
-            body.append("<form class=\"filters card\" method=\"get\" action=\"/query\"><label>Example queries<select name=\"example\">");
-            exampleQueries.keySet().forEach(name -> body.append("<option value=\"").append(escape(name)).append("\"")
-                    .append(name.equals(example) ? " selected" : "").append(">").append(escape(name)).append("</option>"));
-            body.append("</select></label><button type=\"submit\">Run example</button></form>\n");
+            String current = chosen == null ? null : chosen.name();
+            body.append("<aside class=\"side\"><section class=\"card\"><h2>Questions</h2><nav class=\"examples\" "
+                    + "aria-label=\"Example questions\">");
+            int n = 1;
+            for (Example e : exampleQueries.values()) {
+                body.append("<a href=\"/query?example=").append(escape(URLEncoder.encode(e.name(), StandardCharsets.UTF_8)))
+                        .append("\"").append(e.name().equals(current) ? " aria-current=\"page\"" : "").append(">")
+                        .append(n++).append(" &middot; ").append(escape(e.title())).append("</a>");
+            }
+            body.append("</nav></section></aside>\n");
         }
-        body.append("<form class=\"card\" method=\"get\" action=\"/query\"><textarea name=\"query\" spellcheck=\"false\" "
-                + "aria-label=\"SPARQL query\">").append(escape(text))
-                .append("</textarea><p><button type=\"submit\">Run query</button></p></form>\n");
+        body.append("<div class=\"mainc\"><form class=\"card\" method=\"get\" action=\"/query\">")
+                .append("<h2><label for=\"query\">").append(escape(chosen == null ? "Your query" : chosen.title()))
+                .append("</label></h2>")
+                .append(chosen == null || chosen.description().isEmpty() ? ""
+                        : "<p class=\"muted\">" + escape(chosen.description()) + "</p>")
+                .append("<textarea id=\"query\" name=\"query\" spellcheck=\"false\">").append(escape(text))
+                .append("</textarea><div class=\"actions\"><button type=\"submit\">Run query</button>")
+                .append("<a class=\"button secondary\" href=\"/query\">Reset</a>")
+                .append("<span class=\"muted\">Read-only &middot; ").append(timeoutSeconds).append(" s limit</span>")
+                .append("</div></form>\n");
         if (run) {
             body.append(results(text));
         }
+        body.append("</div>\n</div>\n");
         return ResponseEntity.ok().contentType(ActPages.HTML).body(Html.page("SPARQL", "sparql", null, body.toString()));
     }
 
-    /** {@code queries/*.rq}, by file name. */
-    Map<String, String> examples() {
-        Map<String, String> found = new LinkedHashMap<>();
+    /**
+     * {@code queries/*.rq}, by file name. The first comment line is the title,
+     * the following comment lines the description.
+     */
+    Map<String, Example> examples() {
+        Map<String, Example> found = new LinkedHashMap<>();
         if (!Files.isDirectory(examples)) {
             return found;
         }
         try (Stream<Path> files = Files.list(examples)) {
             files.filter(f -> f.getFileName().toString().endsWith(".rq")).sorted().forEach(f -> {
                 try {
-                    found.put(f.getFileName().toString().replaceFirst("\\.rq$", ""), Files.readString(f));
+                    String name = f.getFileName().toString().replaceFirst("\\.rq$", "");
+                    String query = Files.readString(f);
+                    List<String> comments = new ArrayList<>();
+                    for (String line : query.split("\\R")) {
+                        if (!line.startsWith("#")) {
+                            break;
+                        }
+                        comments.add(line.replaceFirst("^#+\\s?", "").trim());
+                    }
+                    String title = comments.isEmpty() ? name : comments.get(0).replaceFirst("\\.$", "");
+                    String description = comments.size() < 2 ? "" : String.join(" ", comments.subList(1, comments.size()));
+                    found.put(name, new Example(name, title, description, query));
                 } catch (IOException ignored) {
                     // an unreadable example is left out
                 }
@@ -132,7 +184,7 @@ public class SparqlPage {
                 try (QueryExecution execution = QueryExecutionFactory.create(query, dataset)) {
                     execution.setTimeout(timeoutSeconds, TimeUnit.SECONDS);
                     if (query.isSelectType()) {
-                        return table(execution.execSelect(), encoded);
+                        return table(dataset, execution.execSelect(), encoded);
                     }
                     if (query.isAskType()) {
                         return "<div class=\"card\"><b>" + (execution.execAsk() ? "true" : "false") + "</b></div>\n";
@@ -140,8 +192,9 @@ public class SparqlPage {
                     Model model = query.isConstructType() ? execution.execConstruct() : execution.execDescribe();
                     StringWriter turtle = new StringWriter();
                     RDFDataMgr.write(turtle, model, RDFFormat.TURTLE_PRETTY);
-                    return "<p class=\"muted\">" + model.size() + " triples. <a href=\"/sparql?output=turtle&amp;query="
-                            + escape(encoded) + "\">Download Turtle</a></p><pre>" + escape(turtle.toString()) + "</pre>\n";
+                    return "<section class=\"card\"><p class=\"muted\">" + model.size()
+                            + " triples. <a href=\"/sparql?output=turtle&amp;query=" + escape(encoded)
+                            + "\">Download Turtle</a></p><pre>" + escape(turtle.toString()) + "</pre></section>\n";
                 }
             });
         } catch (IOException | RuntimeException e) {
@@ -149,7 +202,7 @@ public class SparqlPage {
         }
     }
 
-    private String table(ResultSet results, String encoded) {
+    private String table(Dataset dataset, ResultSet results, String encoded) {
         List<String> vars = results.getResultVars();
         List<QuerySolution> rows = new ArrayList<>();
         boolean more = false;
@@ -160,38 +213,105 @@ public class SparqlPage {
             }
             rows.add(results.next());
         }
-        StringBuilder html = new StringBuilder("<p class=\"muted\">").append(rows.size()).append(more ? "+" : "")
+        Set<String> iris = new LinkedHashSet<>();
+        for (QuerySolution row : rows) {
+            for (String v : vars) {
+                RDFNode node = row.get(v);
+                if (node != null && node.isURIResource()) {
+                    iris.add(node.asResource().getURI());
+                }
+            }
+        }
+        Map<String, String> citations = citations(dataset, iris);
+
+        StringBuilder html = new StringBuilder("<section class=\"card\"><div class=\"results-head\"><h2>Result <span "
+                + "class=\"muted\">&middot; ").append(rows.size()).append(more ? "+" : "")
                 .append(rows.size() == 1 ? " row" : " rows").append(more ? " (first " + MAX_ROWS + " shown)" : "")
-                .append(". Download: <a href=\"/sparql?output=csv&amp;query=").append(escape(encoded))
-                .append("\">CSV</a> &middot; <a href=\"/sparql?output=json&amp;query=").append(escape(encoded))
-                .append("\">JSON</a></p>\n<div class=\"table-wrap\"><table><thead><tr>");
+                .append("</span></h2><span class=\"muted\">Download: <a href=\"/sparql?output=csv&amp;query=")
+                .append(escape(encoded)).append("\">CSV</a> &middot; <a href=\"/sparql?output=json&amp;query=")
+                .append(escape(encoded)).append("\">JSON</a></span></div>\n<div class=\"table-wrap\"><table><thead><tr>");
         vars.forEach(v -> html.append("<th>").append(escape(v)).append("</th>"));
         html.append("</tr></thead><tbody>");
         for (QuerySolution row : rows) {
             html.append("<tr>");
             for (String v : vars) {
-                html.append("<td>").append(cell(row.get(v))).append("</td>");
+                html.append("<td>").append(cell(row.get(v), citations)).append("</td>");
             }
             html.append("</tr>");
         }
-        return html.append("</tbody></table></div>\n").toString();
+        return html.append("</tbody></table></div></section>\n").toString();
     }
 
-    /** IRIs we host link to their page; other IRIs link out; literals are text. */
-    private String cell(RDFNode node) {
+    /** Citations ("D.L. 17 marzo 2020, n. 18") for the acts among the result IRIs. */
+    private static Map<String, String> citations(Dataset dataset, Set<String> iris) {
+        Map<String, String> found = new HashMap<>();
+        List<String> safe = iris.stream().filter(i -> SAFE_IRI.matcher(i).matches()).limit(5000).toList();
+        if (safe.isEmpty()) {
+            return found;
+        }
+        StringBuilder query = new StringBuilder(ActCatalog.PREFIXES)
+                .append("SELECT ?s (SAMPLE(?t) AS ?type) (SAMPLE(?d) AS ?date) (SAMPLE(?n) AS ?number) WHERE { VALUES ?s {");
+        safe.forEach(i -> query.append(" <").append(i).append('>'));
+        query.append(" } ?s eli:type_document ?t . OPTIONAL { ?s eli:date_document ?d } OPTIONAL { ?s eli:number ?n } } "
+                + "GROUP BY ?s");
+        try (QueryExecution execution = QueryExecutionFactory.create(query.toString(), dataset)) {
+            ResultSet rs = execution.execSelect();
+            while (rs.hasNext()) {
+                QuerySolution s = rs.next();
+                String type = Html.typeCode(s.getResource("type").getURI());
+                String date = lexical(s.get("date"));
+                String number = lexical(s.get("number"));
+                found.put(s.getResource("s").getURI(), Html.citation(type, date, number));
+            }
+        } catch (RuntimeException ignored) {
+            // labels are a convenience: without them the cells show paths
+        }
+        return found;
+    }
+
+    private static String lexical(RDFNode node) {
+        if (node == null) {
+            return null;
+        }
+        return node.isLiteral() ? node.asLiteral().getLexicalForm() : node.toString();
+    }
+
+    /**
+     * Acts show their citation and link to their page; document types show their
+     * name; vocabulary terms their short name; other IRIs we host their path;
+     * literals their text. The full IRI is in the tooltip.
+     */
+    private String cell(RDFNode node, Map<String, String> citations) {
         if (node == null) {
             return "";
-        }
-        if (node.isURIResource()) {
-            String uri = node.asResource().getURI();
-            // Our own resources show their path, which is short and works on any host.
-            String href = uris.pathOf(uri).orElse(uri);
-            return "<a class=\"mono nowrap\" title=\"" + escape(uri) + "\" href=\"" + escape(href) + "\">"
-                    + escape(href) + "</a>";
         }
         if (node.isLiteral()) {
             return escape(node.asLiteral().getLexicalForm());
         }
-        return "<span class=\"mono\">" + escape(node.toString()) + "</span>";
+        if (!node.isURIResource()) {
+            return "<span class=\"mono\">" + escape(node.toString()) + "</span>";
+        }
+        String uri = node.asResource().getURI();
+        Optional<String> path = uris.pathOf(uri);
+        String citation = citations.get(uri);
+        if (citation != null) {
+            return path.map(p -> "<a class=\"nowrap\" title=\"" + escape(uri) + "\" href=\"" + escape(p) + "\"><b>"
+                    + escape(citation) + "</b></a>")
+                    .orElse("<span class=\"nowrap\" title=\"" + escape(uri) + "\">" + escape(citation) + "</span>");
+        }
+        if (uri.contains("/resource-type#")) {
+            return "<span title=\"" + escape(uri) + "\">" + escape(Html.typeName(Html.typeCode(uri))) + "</span>";
+        }
+        if (uri.startsWith(ActCatalog.ELI)) {
+            return "<span class=\"mono\" title=\"" + escape(uri) + "\">eli:" + escape(uri.substring(ActCatalog.ELI.length()))
+                    + "</span>";
+        }
+        if (uri.startsWith(ActCatalog.ILG)) {
+            return "<span class=\"mono\" title=\"" + escape(uri) + "\">ilg:" + escape(uri.substring(ActCatalog.ILG.length()))
+                    + "</span>";
+        }
+        String href = path.orElse(uri);
+        return "<a class=\"mono\" title=\"" + escape(uri) + "\" href=\"" + escape(href) + "\""
+                + (path.isPresent() ? "" : " rel=\"noreferrer\"") + ">" + escape(href) + "</a>";
     }
 }

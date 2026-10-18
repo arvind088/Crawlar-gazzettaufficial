@@ -1,0 +1,11 @@
+# Acts that repeal other acts
+# Which act repeals which act as a whole, newest first.
+PREFIX eli: <http://data.europa.eu/eli/ontology#>
+
+SELECT ?act ?repeals ?date
+WHERE {
+  ?act eli:repeals ?repeals ;
+       eli:date_document ?date .
+}
+ORDER BY DESC(?date)
+LIMIT 50

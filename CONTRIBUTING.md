@@ -35,5 +35,7 @@ After a daily update, commit `manifest.tsv`, `data/registry/` and any changed `d
 
 ## Example queries
 
-SPARQL examples live in `jena-git-project/queries/*.rq`, one query per file, starting with a
-`#` comment that says what it answers. They appear automatically on the `/query` page.
+The example questions on the `/query` page are `jena-git-project/queries/*.rq`, one query per
+file. The first `#` line is the title shown on the page, the next `#` lines its description.
+Keep them short, readable (acts in the first columns, `LIMIT` on lists) and few; queries for
+checking or the thesis go in `queries/more/`, which the page does not list.
