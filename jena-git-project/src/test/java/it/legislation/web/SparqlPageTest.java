@@ -6,8 +6,10 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.nio.file.Path;
 import java.util.List;
+import java.util.Locale;
 
 import org.junit.jupiter.api.Test;
+import org.springframework.context.i18n.LocaleContextHolder;
 
 import it.legislation.eli.EliUriService;
 import it.legislation.store.Tdb2DatasetService;
@@ -71,9 +73,25 @@ class SparqlPageTest {
     }
 
     @Test
+    void examplesInItalian() {
+        LocaleContextHolder.setLocale(Locale.ITALIAN);
+        try {
+            String html = page.page(null, "08-decree-law-status").getBody();
+            assertTrue(html.contains("Decreti-legge per stato della conversione"), "the it: comment line is the title");
+            assertTrue(html.contains(">Esegui la query<"));
+            assertTrue(html.contains(">Risultato <span"));
+        } finally {
+            LocaleContextHolder.resetLocaleContext();
+        }
+    }
+
+    @Test
     void examplesHaveATitleAndOnlyTheNumberedFilesAreListed() {
         var examples = page.examples();
         assertEquals(8, examples.size(), "queries/more is not listed");
-        examples.values().forEach(e -> assertFalse(e.title().startsWith("PREFIX"), e.name() + " has no title comment"));
+        examples.values().forEach(e -> {
+            assertFalse(e.titleEn().startsWith("PREFIX"), e.name() + " has no title comment");
+            assertFalse(e.titleIt().isEmpty(), e.name() + " has no Italian title (# it: …)");
+        });
     }
 }

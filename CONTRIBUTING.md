@@ -21,6 +21,11 @@ Commit messages: one short line saying what changed and why, e.g.
   (`AssessmentHistory`), never by deleting earlier statements.
 - Read XML with the secure parser settings already used (`disallow-doctype-decl`, no external entities).
 
+## Interface texts
+
+Every text the pages show is in `src/main/resources/i18n/messages_en.properties` and
+`messages_it.properties`, with the same keys (a test checks it). Add a new text to both.
+
 ## Data
 
 | In Git | Not in Git |
@@ -37,5 +42,5 @@ After a daily update, commit `manifest.tsv`, `data/registry/` and any changed `d
 
 The example questions on the `/query` page are `jena-git-project/queries/*.rq`, one query per
 file. The first `#` line is the title shown on the page, the next `#` lines its description.
-Keep them short, readable (acts in the first columns, `LIMIT` on lists) and few; queries for
+Add the Italian title and description as `# it: …` lines. Keep them short, readable (acts in the first columns, `LIMIT` on lists) and few; queries for
 checking or the thesis go in `queries/more/`, which the page does not list.

@@ -1,5 +1,7 @@
 # Decree-laws by conversion status
 # How many decree-laws are converted, repealed, pending, awaiting the law's text or not converted (latest check of each).
+# it: Decreti-legge per stato della conversione
+# it: Quanti decreti-legge sono convertiti, abrogati, in attesa, in attesa del testo della legge o non convertiti (ultima verifica di ciascuno).
 PREFIX ilg: <http://example.org/italian-legislation/ontology#>
 
 SELECT ?status (COUNT(?decree) AS ?decreeLaws)

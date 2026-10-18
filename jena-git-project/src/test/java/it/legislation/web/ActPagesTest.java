@@ -7,8 +7,10 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.List;
+import java.util.Locale;
 
 import org.junit.jupiter.api.Test;
+import org.springframework.context.i18n.LocaleContextHolder;
 
 import it.legislation.eli.EliUriService;
 import it.legislation.store.Tdb2DatasetService;
@@ -126,6 +128,49 @@ class ActPagesTest {
         assertTrue(catalog.details("https://example.it/eli/id/1999/01/01/X/sg").isEmpty());
         assertFalse(catalog.isAct("https://example.it/eli/ext/decreto_legislativo/2001-03-30/165"));
         assertTrue(catalog.isAct(DL_18));
+    }
+
+    @Test
+    void pagesInItalian() throws IOException {
+        LocaleContextHolder.setLocale(Locale.ITALIAN);
+        try {
+            String list = pages.list(null, null, null, null, 1).getBody();
+            assertTrue(list.contains("<html lang=\"it\">"));
+            assertTrue(list.contains(">Cerca un atto<"));
+            assertTrue(list.contains(">Atti normativi<"), "the menu");
+            assertTrue(list.contains("2 atti"));
+            assertTrue(list.contains(">Convertito<"), "statuses are translated");
+            assertTrue(list.contains("aria-current=\"true\">Italiano"), "the language switch shows the current language");
+
+            String details = pages.details(catalog.details(DL_18).orElseThrow(), "/eli/id/2020/03/17/20G00034/sg");
+            assertTrue(details.contains("Convertito da <a href=\"/eli/id/2020/04/29/20G00045/sg\">"));
+            assertTrue(details.contains("43 giorni"));
+            assertTrue(details.contains("Come è stato verificato?"));
+            assertTrue(details.contains(">modificato da</span>"));
+            assertTrue(details.contains("D.L. 17 marzo 2020, n. 18"), "citations are the same in both languages");
+        } finally {
+            LocaleContextHolder.resetLocaleContext();
+        }
+        assertTrue(pages.list(null, null, null, null, 1).getBody().contains(">Find an act<"), "English by default");
+    }
+
+    @Test
+    void languageSwitchKeepsThePage() {
+        assertEquals("?lang=it", Html.currentUrlWithLang("it"), "outside a request only the parameter");
+        assertEquals("Converted", Html.statusWords("CONVERTED"));
+        assertEquals("Something new", Html.statusWords("SOMETHING_NEW"), "unknown statuses still read well");
+    }
+
+    @Test
+    void bothLanguagesHaveTheSameTexts() throws IOException {
+        java.util.Properties en = new java.util.Properties();
+        java.util.Properties it = new java.util.Properties();
+        try (var a = getClass().getResourceAsStream("/i18n/messages_en.properties");
+             var b = getClass().getResourceAsStream("/i18n/messages_it.properties")) {
+            en.load(new java.io.InputStreamReader(a, java.nio.charset.StandardCharsets.UTF_8));
+            it.load(new java.io.InputStreamReader(b, java.nio.charset.StandardCharsets.UTF_8));
+        }
+        assertEquals(en.keySet(), it.keySet(), "every English text has an Italian one and vice versa");
     }
 
     @Test

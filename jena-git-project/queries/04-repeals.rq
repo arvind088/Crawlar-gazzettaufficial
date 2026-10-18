@@ -1,5 +1,7 @@
 # Acts that repeal other acts
 # Which act repeals which act as a whole, newest first.
+# it: Atti che abrogano altri atti
+# it: Quale atto abroga per intero quale atto, dal più recente.
 PREFIX eli: <http://data.europa.eu/eli/ontology#>
 
 SELECT ?act ?repeals ?date

@@ -5,6 +5,12 @@ import java.time.format.DateTimeParseException;
 import java.util.Locale;
 import java.util.Map;
 
+import javax.servlet.http.HttpServletRequest;
+
+import org.springframework.web.context.request.RequestAttributes;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
+
 /**
  * The page frame shared by the three public views (Legal acts, Act details,
  * SPARQL) and the generic resource page: header with navigation, one style
@@ -27,28 +33,62 @@ public final class Html {
 
     /** A whole page. {@code active} is "acts" or "sparql" for the highlighted menu item. */
     public static String page(String title, String active, String head, String body) {
-        return "<!doctype html>\n<html lang=\"en\">\n<head>\n<meta charset=\"utf-8\">\n"
+        String lang = I18n.lang();
+        return "<!doctype html>\n<html lang=\"" + lang + "\">\n<head>\n<meta charset=\"utf-8\">\n"
                 + "<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">\n"
                 + "<title>" + escape(title) + " &middot; " + APP_NAME + "</title>\n"
                 + FONTS
                 + (head == null ? "" : head)
                 + "<style>" + CSS + "</style>\n</head>\n<body>\n"
-                + "<a class=\"skip\" href=\"#main\">Skip to content</a>\n"
-                + "<div class=\"topbar\"><div class=\"wrap\"><span>Linked open data &middot; European Legislation "
-                + "Identifier (ELI)</span><a href=\"/api/health\"><span class=\"status-dot\"></span>Live triple store</a>"
-                + "</div></div>\n"
+                + "<a class=\"skip\" href=\"#main\">" + escape(I18n.t("skip")) + "</a>\n"
+                + "<div class=\"topbar\"><div class=\"wrap\"><span>" + escape(I18n.t("topbar.eli")) + "</span>"
+                + "<span class=\"topbar-right\">" + languageSwitch(lang)
+                + "<a href=\"/api/health\"><span class=\"status-dot\"></span>" + escape(I18n.t("topbar.live")) + "</a>"
+                + "</span></div></div>\n"
                 + "<header class=\"site\"><div class=\"wrap\">"
                 + "<a class=\"brand\" href=\"/\"><span class=\"brand-mark\" aria-hidden=\"true\">" + SCALES + "</span>"
                 + "<span><span class=\"brand-title\">" + APP_NAME + "</span>"
-                + "<span class=\"brand-sub\">Leggi, decreti-legge e decreti legislativi from Normattiva, "
-                + "checked against Gazzetta Ufficiale</span></span></a>"
-                + "<nav class=\"tabs\" aria-label=\"Main\"><a href=\"/\"" + current(active, "acts") + ">Legal acts</a>"
-                + "<a href=\"/query\"" + current(active, "sparql") + ">SPARQL</a></nav>"
+                + "<span class=\"brand-sub\">" + escape(I18n.t("brand.sub")) + "</span></span></a>"
+                + "<nav class=\"tabs\" aria-label=\"" + escape(I18n.t("nav.aria")) + "\"><a href=\"/\""
+                + current(active, "acts") + ">" + escape(I18n.t("nav.acts")) + "</a>"
+                + "<a href=\"/query\"" + current(active, "sparql") + ">" + escape(I18n.t("nav.sparql")) + "</a></nav>"
                 + "</div></header>\n<main id=\"main\" class=\"wrap\">\n" + body + "</main>\n"
-                + "<footer class=\"site\"><div class=\"wrap\"><span>Data: Normattiva OpenData (Akoma Ntoso), "
-                + "checked against Gazzetta Ufficiale. Every page is read live from the triple store.</span>"
-                + "<span class=\"footer-links\"><a href=\"/query\">SPARQL</a><a href=\"/api/health\">Status</a></span>"
+                + "<footer class=\"site\"><div class=\"wrap\"><span>" + escape(I18n.t("footer.text")) + "</span>"
+                + "<span class=\"footer-links\"><a href=\"/query\">SPARQL</a><a href=\"/api/health\">"
+                + escape(I18n.t("footer.status")) + "</a></span>"
                 + "</div></footer>\n</body>\n</html>\n";
+    }
+
+    /** "Italiano · English": links to the same page in the other language. */
+    private static String languageSwitch(String lang) {
+        StringBuilder html = new StringBuilder("<nav class=\"lang\" aria-label=\"")
+                .append(escape(I18n.t("lang.aria"))).append("\">");
+        for (String[] option : new String[][] {{I18n.ITALIAN, "Italiano"}, {I18n.ENGLISH, "English"}}) {
+            html.append("<a href=\"").append(escape(currentUrlWithLang(option[0]))).append("\" lang=\"")
+                    .append(option[0]).append("\" hreflang=\"").append(option[0]).append("\"")
+                    .append(option[0].equals(lang) ? " aria-current=\"true\"" : "").append(">")
+                    .append(option[1]).append("</a>");
+        }
+        return html.append("</nav>").toString();
+    }
+
+    /** The address of the current page with {@code lang} set; just "?lang=…" outside a request. */
+    static String currentUrlWithLang(String lang) {
+        RequestAttributes attributes = RequestContextHolder.getRequestAttributes();
+        if (!(attributes instanceof ServletRequestAttributes servlet)) {
+            return "?lang=" + lang;
+        }
+        HttpServletRequest request = servlet.getRequest();
+        StringBuilder url = new StringBuilder(request.getRequestURI()).append("?");
+        String query = request.getQueryString();
+        if (query != null) {
+            for (String part : query.split("&")) {
+                if (!part.isEmpty() && !part.startsWith("lang=")) {
+                    url.append(part).append('&');
+                }
+            }
+        }
+        return url.append("lang=").append(lang).toString();
     }
 
     /**
@@ -92,7 +132,7 @@ public final class Html {
             case "REPEALED", "NOT_CONVERTED", "MISMATCH", "NOT_FOUND" -> "bad";
             default -> "neutral";
         };
-        return "<span class=\"badge " + tone + "\">" + escape(words(status)) + "</span>";
+        return "<span class=\"badge " + tone + "\">" + escape(statusWords(status)) + "</span>";
     }
 
     /** The Gazzetta Ufficiale check as a short label. */
@@ -101,7 +141,7 @@ public final class Html {
             return "";
         }
         if ("MATCH".equals(status)) {
-            return "<span class=\"badge good\" title=\"Type, number and dates agree with Gazzetta Ufficiale\">"
+            return "<span class=\"badge good\" title=\"" + escape(I18n.t("gazzetta.match.title")) + "\">"
                     + "Gazzetta &#10003;</span>";
         }
         return badge(status).replace("\">", "\">Gazzetta: ");
@@ -112,7 +152,7 @@ public final class Html {
         if (level == null || level.isBlank()) {
             return "";
         }
-        String title = "A".equals(level) ? "Both acts record the relation" : "Only one source records the relation";
+        String title = I18n.t("A".equals(level) ? "trust.a.title" : "trust.b.title");
         return "<span class=\"trust " + ("A".equals(level) ? "a" : "b") + "\" title=\"" + title + "\">"
                 + escape(level) + "</span>";
     }
@@ -124,6 +164,13 @@ public final class Html {
             default -> "changes";
         };
         return "<span class=\"rel " + kind + "\">" + escape(text) + "</span>";
+    }
+
+    /** A status in the current language: "AWAITING_LAW_TEXT" → "Awaiting law text" / "In attesa del testo della legge". */
+    public static String statusWords(String code) {
+        String key = "status." + code;
+        String text = I18n.t(key);
+        return text.equals(key) ? words(code) : text;
     }
 
     /** "AWAITING_LAW_TEXT" → "Awaiting law text". */
@@ -218,6 +265,9 @@ public final class Html {
             .topbar{background:var(--blue-dark);color:#fff;font-size:14px}
             .topbar .wrap{display:flex;flex-wrap:wrap;justify-content:space-between;gap:8px;padding-top:7px;padding-bottom:7px}
             .topbar a{color:#fff;text-decoration:none;display:inline-flex;align-items:center;gap:8px;font-weight:600}
+            .topbar-right{display:flex;flex-wrap:wrap;align-items:center;gap:18px}
+            .lang{display:flex;gap:4px}.topbar .lang a{padding:2px 8px;border-radius:4px;font-weight:600}
+            .topbar .lang a[aria-current]{background:#fff;color:var(--blue-dark)}
             .status-dot{width:9px;height:9px;border-radius:50%;background:#7ee2b8}
             header.site{background:var(--blue);color:#fff}
             header.site .wrap{display:flex;flex-direction:column;gap:14px;padding-top:22px}

@@ -1,5 +1,7 @@
 # Acts by year
 # How many acts were published each year, newest year first.
+# it: Atti per anno
+# it: Quanti atti sono stati pubblicati ogni anno, dal più recente.
 PREFIX eli: <http://data.europa.eu/eli/ontology#>
 PREFIX dcterms: <http://purl.org/dc/terms/>
 
