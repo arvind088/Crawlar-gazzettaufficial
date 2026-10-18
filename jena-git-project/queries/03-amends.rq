@@ -1,0 +1,11 @@
+# Acts that amend other acts
+# Which act changes the text of which act, newest first. Change LIMIT to see more.
+PREFIX eli: <http://data.europa.eu/eli/ontology#>
+
+SELECT ?act ?amends ?date
+WHERE {
+  ?act eli:amends ?amends ;
+       eli:date_document ?date .
+}
+ORDER BY DESC(?date)
+LIMIT 50

@@ -1,0 +1,11 @@
+# Acts that change other acts in other ways
+# Changes Normattiva records that are not a textual amendment or a whole repeal (often dates, deadlines or derogations).
+PREFIX eli: <http://data.europa.eu/eli/ontology#>
+
+SELECT ?act ?changes ?date
+WHERE {
+  ?act eli:changes ?changes ;
+       eli:date_document ?date .
+}
+ORDER BY DESC(?date)
+LIMIT 50

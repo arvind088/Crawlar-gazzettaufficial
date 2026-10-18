@@ -199,13 +199,13 @@ public class EliHtmlRenderer {
 
     private String styles() {
         return """
-                section{background:#fff;border:1px solid var(--line);border-radius:10px;margin:16px 0;padding:6px 20px 16px}
+                section{background:#fff;border-radius:8px;box-shadow:var(--shadow);margin:0;padding:6px 22px 16px}
                 section h2{margin:14px 0 4px}
                 section dl{display:grid;grid-template-columns:230px minmax(0,1fr);margin:0}
-                section dt,section dd{border-top:1px solid var(--line);margin:0;padding:10px 0}
+                section dt,section dd{border-top:1px solid var(--line-soft);margin:0;padding:10px 0}
                 section dt{padding-right:16px}
                 .label{display:block;font-weight:700}
-                .predicate,.full-uri{color:var(--muted);font-family:ui-monospace,Consolas,Menlo,monospace;font-size:12px}
+                .predicate,.full-uri{color:var(--slate);font-family:var(--mono);font-size:12.5px}
                 .full-uri{display:block;word-break:break-all}
                 section dd ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px}
                 a.resource{font-weight:700;text-decoration:none}

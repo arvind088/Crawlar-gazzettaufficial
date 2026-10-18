@@ -84,7 +84,7 @@ Facts (an act, a version, "X amends Y") are only ever added. Results that can ch
 (PENDING today, CONVERTED next month) are **assessment nodes** with `ilg:assesses` and
 `ilg:assessedOn`. A run writes a new node only when the result differs from the latest one;
 nothing is removed. Queries take the latest with `FILTER NOT EXISTS { a newer one }`, and the
-whole history stays queryable (`queries/10-status-history.rq`).
+whole history stays queryable (`queries/more/status-history.rq`).
 
 ## 3. Pipeline
 
@@ -175,12 +175,21 @@ transactions and touch no files. The store survives restarts.
 
 ## 5. Web application
 
-Server-rendered HTML, no JavaScript. Every page is built from live SPARQL queries.
+Server-rendered HTML, no JavaScript. Every page is built from live SPARQL queries. Colours and
+type follow the Italian public administration's design system (Designers Italia): Italia blue
+`#0066CC` for navigation and links, Titillium Web as typeface, and green, amber and red only for
+meaning (confirmed; waiting or to check; repealed or contradicted).
 
-- **Legal acts** (`/`): list with search and filters.
-- **Act details**: at the act's own ELI address. Browsers get HTML; `Accept: text/turtle` or
-  `?format=ttl` gets RDF (content negotiation). Versions and formats get a generic resource page.
-- **SPARQL**: `/query` for people, `/sparql` (SPARQL 1.1 Protocol, read-only, 30 s limit) for programs.
+- **Legal acts** (`/`): search, four numbers (acts, Gazzetta check, relations, decree-laws),
+  filters, and one card per act with its statuses. `/acts.csv` gives the same list as CSV.
+- **Act details**: at the act's own ELI address. The answer first (citation, title, statuses,
+  ELI address), then facts, conversion (the six checks behind "How was this verified?"), the
+  Gazzetta check, the versions as a timeline, and the relations with trust A/B and evidence.
+  Browsers get HTML; `Accept: text/turtle` or `?format=ttl` gets RDF (content negotiation).
+  Versions and formats get a generic resource page.
+- **SPARQL**: `/query` for people: eight example questions (`queries/*.rq`) and readable results
+  (acts as citations, document types by name). `/sparql` (SPARQL 1.1 Protocol, read-only, 30 s
+  limit) for programs.
 
 ## 6. Keeping up to date
 
