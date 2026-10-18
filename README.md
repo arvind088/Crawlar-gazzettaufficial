@@ -78,7 +78,7 @@ All helper scripts are in [`scripts/`](scripts):
 | `run-app` | Start the web app |
 | `build-corpus` | First full download and processing (hours) |
 | `daily-update` | Fetch changed and missing acts, re-run the pipeline |
-| `evaluate` | Draw a sample to check by hand (`sample`), then compute precision (`evaluate`) |
+| `evaluate` | Checks by hand: precision (`sample`, then `evaluate`) and recall (`recall-sample`, then `recall`) |
 | `validate-akn` | Check Akoma Ntoso files before import |
 
 ## Repository layout
