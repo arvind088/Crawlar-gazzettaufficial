@@ -1,6 +1,7 @@
 package it.legislation.web;
 
 import static it.legislation.web.Html.escape;
+import static it.legislation.web.I18n.t;
 
 import java.io.IOException;
 import java.io.StringWriter;
@@ -66,8 +67,21 @@ public class SparqlPage {
             LIMIT 20
             """;
 
-    /** One example: file name, the title and description from its leading comments, and the query. */
-    record Example(String name, String title, String description, String query) {}
+    /**
+     * One example: file name, title and description in English and Italian (from its
+     * leading comments; Italian lines start with "it:"), and the query.
+     */
+    record Example(String name, String titleEn, String descriptionEn, String titleIt, String descriptionIt,
+                   String query) {
+        /** The title in the current language (English when there is no Italian one). */
+        String title() {
+            return I18n.italian() && !titleIt.isEmpty() ? titleIt : titleEn;
+        }
+
+        String description() {
+            return I18n.italian() && !descriptionIt.isEmpty() ? descriptionIt : descriptionEn;
+        }
+    }
 
     private static final Pattern SAFE_IRI = Pattern.compile("[^<>\"\\s{}|\\\\^`]+");
 
@@ -104,14 +118,14 @@ public class SparqlPage {
                     .findFirst().orElse(null);
         }
 
-        StringBuilder body = new StringBuilder("<div><h1>Ask the data</h1><p class=\"muted\">Pick a question, run it, "
-                + "download the answer. Every number on this site comes from a query you can rerun here. "
-                + "Read-only; queries stop after " + timeoutSeconds + " seconds. Programs use the endpoint "
-                + "<span class=\"mono\">/sparql</span> (SPARQL 1.1 Protocol).</p></div>\n<div class=\"split\">\n");
+        StringBuilder body = new StringBuilder("<div><h1>" + escape(t("sparql.title")) + "</h1><p class=\"muted\">"
+                + t("sparql.intro", timeoutSeconds, "<span class=\"mono\">/sparql</span>")
+                + "</p></div>\n<div class=\"split\">\n");
         if (!exampleQueries.isEmpty()) {
             String current = chosen == null ? null : chosen.name();
-            body.append("<aside class=\"side\"><section class=\"card\"><h2>Questions</h2><nav class=\"examples\" "
-                    + "aria-label=\"Example questions\">");
+            body.append("<aside class=\"side\"><section class=\"card\"><h2>").append(escape(t("sparql.questions")))
+                    .append("</h2><nav class=\"examples\" aria-label=\"").append(escape(t("sparql.questions.aria")))
+                    .append("\">");
             int n = 1;
             for (Example e : exampleQueries.values()) {
                 body.append("<a href=\"/query?example=").append(escape(URLEncoder.encode(e.name(), StandardCharsets.UTF_8)))
@@ -121,20 +135,20 @@ public class SparqlPage {
             body.append("</nav></section></aside>\n");
         }
         body.append("<div class=\"mainc\"><form class=\"card\" method=\"get\" action=\"/query\">")
-                .append("<h2><label for=\"query\">").append(escape(chosen == null ? "Your query" : chosen.title()))
+                .append("<h2><label for=\"query\">").append(escape(chosen == null ? t("sparql.yours") : chosen.title()))
                 .append("</label></h2>")
                 .append(chosen == null || chosen.description().isEmpty() ? ""
                         : "<p class=\"muted\">" + escape(chosen.description()) + "</p>")
                 .append("<textarea id=\"query\" name=\"query\" spellcheck=\"false\">").append(escape(text))
-                .append("</textarea><div class=\"actions\"><button type=\"submit\">Run query</button>")
-                .append("<a class=\"button secondary\" href=\"/query\">Reset</a>")
-                .append("<span class=\"muted\">Read-only &middot; ").append(timeoutSeconds).append(" s limit</span>")
+                .append("</textarea><div class=\"actions\"><button type=\"submit\">").append(escape(t("sparql.run")))
+                .append("</button><a class=\"button secondary\" href=\"/query\">").append(escape(t("sparql.reset")))
+                .append("</a><span class=\"muted\">").append(escape(t("sparql.limit", timeoutSeconds))).append("</span>")
                 .append("</div></form>\n");
         if (run) {
             body.append(results(text));
         }
         body.append("</div>\n</div>\n");
-        return ResponseEntity.ok().contentType(ActPages.HTML).body(Html.page("SPARQL", "sparql", null, body.toString()));
+        return ResponseEntity.ok().contentType(ActPages.HTML).body(Html.page(t("nav.sparql"), "sparql", null, body.toString()));
     }
 
     /**
@@ -151,16 +165,21 @@ public class SparqlPage {
                 try {
                     String name = f.getFileName().toString().replaceFirst("\\.rq$", "");
                     String query = Files.readString(f);
-                    List<String> comments = new ArrayList<>();
+                    List<String> english = new ArrayList<>();
+                    List<String> italian = new ArrayList<>();
                     for (String line : query.split("\\R")) {
                         if (!line.startsWith("#")) {
                             break;
                         }
-                        comments.add(line.replaceFirst("^#+\\s?", "").trim());
+                        String text = line.replaceFirst("^#+\\s?", "").trim();
+                        if (text.startsWith("it:")) {
+                            italian.add(text.substring(3).trim());
+                        } else {
+                            english.add(text);
+                        }
                     }
-                    String title = comments.isEmpty() ? name : comments.get(0).replaceFirst("\\.$", "");
-                    String description = comments.size() < 2 ? "" : String.join(" ", comments.subList(1, comments.size()));
-                    found.put(name, new Example(name, title, description, query));
+                    found.put(name, new Example(name, title(english, name), description(english),
+                            title(italian, ""), description(italian), query));
                 } catch (IOException ignored) {
                     // an unreadable example is left out
                 }
@@ -171,12 +190,20 @@ public class SparqlPage {
         return found;
     }
 
+    private static String title(List<String> lines, String fallback) {
+        return lines.isEmpty() ? fallback : lines.get(0).replaceFirst("\\.$", "");
+    }
+
+    private static String description(List<String> lines) {
+        return lines.size() < 2 ? "" : String.join(" ", lines.subList(1, lines.size()));
+    }
+
     private String results(String text) {
         Query query;
         try {
             query = QueryFactory.create(text);
         } catch (RuntimeException e) {
-            return "<p class=\"error\">The query is not valid SPARQL: " + escape(e.getMessage()) + "</p>\n";
+            return "<p class=\"error\">" + escape(t("sparql.invalid")) + " " + escape(e.getMessage()) + "</p>\n";
         }
         String encoded = URLEncoder.encode(text, StandardCharsets.UTF_8);
         try {
@@ -192,13 +219,14 @@ public class SparqlPage {
                     Model model = query.isConstructType() ? execution.execConstruct() : execution.execDescribe();
                     StringWriter turtle = new StringWriter();
                     RDFDataMgr.write(turtle, model, RDFFormat.TURTLE_PRETTY);
-                    return "<section class=\"card\"><p class=\"muted\">" + model.size()
-                            + " triples. <a href=\"/sparql?output=turtle&amp;query=" + escape(encoded)
-                            + "\">Download Turtle</a></p><pre>" + escape(turtle.toString()) + "</pre></section>\n";
+                    return "<section class=\"card\"><p class=\"muted\">" + escape(t("sparql.triples", model.size()))
+                            + " <a href=\"/sparql?output=turtle&amp;query=" + escape(encoded)
+                            + "\">" + escape(t("sparql.turtle")) + "</a></p><pre>" + escape(turtle.toString())
+                            + "</pre></section>\n";
                 }
             });
         } catch (IOException | RuntimeException e) {
-            return "<p class=\"error\">The query failed: " + escape(e.getMessage()) + "</p>\n";
+            return "<p class=\"error\">" + escape(t("sparql.failed")) + " " + escape(e.getMessage()) + "</p>\n";
         }
     }
 
@@ -224,10 +252,12 @@ public class SparqlPage {
         }
         Map<String, String> citations = citations(dataset, iris);
 
-        StringBuilder html = new StringBuilder("<section class=\"card\"><div class=\"results-head\"><h2>Result <span "
-                + "class=\"muted\">&middot; ").append(rows.size()).append(more ? "+" : "")
-                .append(rows.size() == 1 ? " row" : " rows").append(more ? " (first " + MAX_ROWS + " shown)" : "")
-                .append("</span></h2><span class=\"muted\">Download: <a href=\"/sparql?output=csv&amp;query=")
+        StringBuilder html = new StringBuilder("<section class=\"card\"><div class=\"results-head\"><h2>")
+                .append(escape(t("sparql.result"))).append(" <span class=\"muted\">&middot; ")
+                .append(escape(I18n.count("sparql.rows", rows.size(), I18n.number(rows.size()) + (more ? "+" : ""))))
+                .append(more ? " " + escape(t("sparql.first", I18n.number(MAX_ROWS))) : "")
+                .append("</span></h2><span class=\"muted\">").append(escape(t("sparql.download")))
+                .append(" <a href=\"/sparql?output=csv&amp;query=")
                 .append(escape(encoded)).append("\">CSV</a> &middot; <a href=\"/sparql?output=json&amp;query=")
                 .append(escape(encoded)).append("\">JSON</a></span></div>\n<div class=\"table-wrap\"><table><thead><tr>");
         vars.forEach(v -> html.append("<th>").append(escape(v)).append("</th>"));

@@ -1,5 +1,7 @@
 # Laws that convert decree-laws
 # Each conversion law, the decree-law it converts, and how many days it took (art. 77: at most 60).
+# it: Leggi che convertono decreti-legge
+# it: Ogni legge di conversione, il decreto-legge che converte e in quanti giorni (art. 77: al massimo 60).
 PREFIX eli: <http://data.europa.eu/eli/ontology#>
 PREFIX ilg: <http://example.org/italian-legislation/ontology#>
 

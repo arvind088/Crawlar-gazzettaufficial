@@ -1,5 +1,7 @@
 # Acts that change other acts in other ways
 # Changes Normattiva records that are not a textual amendment or a whole repeal (often dates, deadlines or derogations).
+# it: Atti che incidono su altri atti in altro modo
+# it: Interventi registrati da Normattiva che non sono una modifica testuale né un'abrogazione totale (spesso date, termini o deroghe).
 PREFIX eli: <http://data.europa.eu/eli/ontology#>
 
 SELECT ?act ?changes ?date

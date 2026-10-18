@@ -175,7 +175,11 @@ transactions and touch no files. The store survives restarts.
 
 ## 5. Web application
 
-Server-rendered HTML, no JavaScript. Every page is built from live SPARQL queries. Colours and
+Server-rendered HTML, no JavaScript. Every page is built from live SPARQL queries. The interface
+is in English and Italian: `?lang=it` / `?lang=en` (the switch at the top right) chooses, a cookie
+remembers the choice, and otherwise the browser's language decides. Texts are in
+`src/main/resources/i18n/messages_{en,it}.properties`; the data itself (titles, citations) is
+Italian in both. Colours and
 type follow the Italian public administration's design system (Designers Italia): Italia blue
 `#0066CC` for navigation and links, Titillium Web as typeface, and green, amber and red only for
 meaning (confirmed; waiting or to check; repealed or contradicted).
