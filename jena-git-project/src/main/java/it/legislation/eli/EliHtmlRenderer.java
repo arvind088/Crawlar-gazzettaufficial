@@ -6,6 +6,7 @@ import java.util.Map;
 import org.springframework.stereotype.Component;
 
 import it.legislation.web.Html;
+import it.legislation.web.I18n;
 
 import it.legislation.eli.EliResolutionService.RelatedValue;
 import it.legislation.eli.EliResolutionService.RelationGroup;
@@ -53,6 +54,35 @@ public class EliHtmlRenderer {
             Map.entry("http://example.org/italian-legislation/ontology#modifiedBy", "Modified by")
     );
 
+    /** The same labels in Italian; a predicate missing here keeps its English label. */
+    private static final Map<String, String> PREDICATE_LABELS_IT = Map.ofEntries(
+            Map.entry("http://data.europa.eu/eli/ontology#is_realized_by", "Versioni"),
+            Map.entry("http://data.europa.eu/eli/ontology#realizes", "Versione di"),
+            Map.entry("http://data.europa.eu/eli/ontology#is_embodied_by", "Formati"),
+            Map.entry("http://data.europa.eu/eli/ontology#is_embodied_in", "Formato di"),
+            Map.entry("http://data.europa.eu/eli/ontology#date_publication", "Pubblicato"),
+            Map.entry("http://data.europa.eu/eli/ontology#in_force", "In vigore"),
+            Map.entry("http://data.europa.eu/eli/ontology#first_date_entry_in_force", "In vigore dal"),
+            Map.entry("http://data.europa.eu/eli/ontology#date_no_longer_in_force", "In vigore fino al"),
+            Map.entry("http://data.europa.eu/eli/ontology#date_document", "Data dell'atto"),
+            Map.entry("http://data.europa.eu/eli/ontology#type_document", "Tipo di atto"),
+            Map.entry("http://data.europa.eu/eli/ontology#id_local", "Identificativo locale"),
+            Map.entry("http://data.europa.eu/eli/ontology#title", "Titolo"),
+            Map.entry("http://data.europa.eu/eli/ontology#version", "Versione"),
+            Map.entry("http://data.europa.eu/eli/ontology#version_date", "Data della versione"),
+            Map.entry("http://data.europa.eu/eli/ontology#language", "Lingua"),
+            Map.entry("http://data.europa.eu/eli/ontology#format", "Formato"),
+            Map.entry("http://data.europa.eu/eli/ontology#publisher", "Editore"),
+            Map.entry("http://www.w3.org/2000/01/rdf-schema#label", "Etichetta"),
+            Map.entry("http://www.w3.org/1999/02/22-rdf-syntax-ns#type", "Classe RDF"),
+            Map.entry("http://purl.org/dc/terms/source", "Fonte"),
+            Map.entry("http://www.w3.org/2002/07/owl#sameAs", "Coincide con"),
+            Map.entry("http://example.org/italian-legislation/ontology#converts", "Converte in legge"),
+            Map.entry("http://data.europa.eu/eli/ontology#amends", "Modifica"),
+            Map.entry("http://data.europa.eu/eli/ontology#repeals", "Abroga"),
+            Map.entry("http://data.europa.eu/eli/ontology#changes", "Incide su")
+    );
+
     private final EliUriService uriService;
 
     public EliHtmlRenderer(EliUriService uriService) {
@@ -63,14 +93,16 @@ public class EliHtmlRenderer {
         StringBuilder body = new StringBuilder();
         body.append("<h1>").append(escape(resource.label())).append("</h1>\n")
                 .append("<p class=\"mono muted\">").append(escape(resource.publishedUri())).append("</p>\n")
-                .append("<p><a href=\"").append(escape(resource.path())).append("?format=ttl\">View as RDF (Turtle)</a>");
+                .append("<p><a href=\"").append(escape(resource.path())).append("?format=ttl\">")
+                .append(escape(I18n.t("resource.turtle"))).append("</a>");
         String act = actPath(resource.path());
         if (act != null) {
-            body.append(" &middot; <a href=\"").append(escape(act)).append("\">The act</a>");
+            body.append(" &middot; <a href=\"").append(escape(act)).append("\">").append(escape(I18n.t("resource.act")))
+                    .append("</a>");
         }
         body.append("</p>\n");
-        body.append(section("Properties and links", resource.outgoing(), false));
-        body.append(section("Referred to by", resource.incoming(), true));
+        body.append(section(I18n.t("resource.properties"), resource.outgoing(), false));
+        body.append(section(I18n.t("resource.inbound"), resource.incoming(), true));
         return Html.page(resource.label(), "acts",
                 "<link rel=\"alternate\" type=\"text/turtle\" href=\"" + escape(resource.path()) + "?format=ttl\">\n"
                         + "<style>" + styles() + "</style>\n",
@@ -78,11 +110,10 @@ public class EliHtmlRenderer {
     }
 
     public String renderNotFound(String path) {
-        return Html.page("Not found", "acts", null,
-                "<h1>Nothing at this address</h1>\n<p class=\"mono muted\">" + escape(uriService.uriForPath(path))
-                        + "</p>\n<p>The triple store holds no resource with this ELI identifier. The act may be "
-                        + "outside the imported corpus (laws, decree-laws and legislative decrees from 2020), or the "
-                        + "identifier may be mistyped.</p>\n<p><a href=\"/\">Search the legal acts</a></p>\n");
+        return Html.page(I18n.t("notfound.title"), "acts", null,
+                "<h1>" + escape(I18n.t("notfound.title")) + "</h1>\n<p class=\"mono muted\">"
+                        + escape(uriService.uriForPath(path)) + "</p>\n<p>" + escape(I18n.t("notfound.text"))
+                        + "</p>\n<p><a href=\"/\">" + escape(I18n.t("notfound.search")) + "</a></p>\n");
     }
 
     /** The act a version or format belongs to: the first seven segments of its ELI path. */
@@ -157,7 +188,8 @@ public class EliHtmlRenderer {
     }
 
     private String label(String predicate) {
-        String known = PREDICATE_LABELS.get(predicate);
+        String known = I18n.italian() && PREDICATE_LABELS_IT.containsKey(predicate)
+                ? PREDICATE_LABELS_IT.get(predicate) : PREDICATE_LABELS.get(predicate);
         if (known != null) {
             return known;
         }
@@ -199,13 +231,13 @@ public class EliHtmlRenderer {
 
     private String styles() {
         return """
-                section{background:#fff;border:1px solid var(--line);border-radius:10px;margin:16px 0;padding:6px 20px 16px}
+                section{background:#fff;border-radius:8px;box-shadow:var(--shadow);margin:0;padding:6px 22px 16px}
                 section h2{margin:14px 0 4px}
                 section dl{display:grid;grid-template-columns:230px minmax(0,1fr);margin:0}
-                section dt,section dd{border-top:1px solid var(--line);margin:0;padding:10px 0}
+                section dt,section dd{border-top:1px solid var(--line-soft);margin:0;padding:10px 0}
                 section dt{padding-right:16px}
                 .label{display:block;font-weight:700}
-                .predicate,.full-uri{color:var(--muted);font-family:ui-monospace,Consolas,Menlo,monospace;font-size:12px}
+                .predicate,.full-uri{color:var(--slate);font-family:var(--mono);font-size:12.5px}
                 .full-uri{display:block;word-break:break-all}
                 section dd ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px}
                 a.resource{font-weight:700;text-decoration:none}

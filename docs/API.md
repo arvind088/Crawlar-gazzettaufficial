@@ -185,7 +185,9 @@ Base: `http://localhost:8080` locally, the ELI base URI once deployed.
 | GET | `/eli/id/{yyyy}/{mm}/{dd}/{code}/sg` | Act details page (HTML) |
 | GET | same, with `Accept: text/turtle` or `?format=ttl` | The act as RDF (Turtle) |
 | GET | `/eli/id/…/sg/ita/original`, `…/vigente/{date}`, `…/akn` | Version and format pages, HTML or Turtle |
-| GET | `/query` | SPARQL page; `?query=…` runs a query, `?example=08-conversions` loads one from `queries/` |
+| GET | any page, `?lang=it` or `?lang=en` | The same page in Italian or English; the choice is kept in the `lang` cookie |
+| GET | `/acts.csv` | The Legal acts list as CSV, with the same `q`, `type`, `year`, `status` parameters |
+| GET | `/query` | SPARQL page; `?query=…` runs a query, `?example=05-converts` runs one of the example questions in `queries/` |
 | GET / POST | `/sparql` | SPARQL 1.1 Protocol: `?query=` (GET), form field `query` or body `application/sparql-query` (POST). SELECT/ASK: JSON, XML or CSV; CONSTRUCT/DESCRIBE: Turtle, RDF/XML, N-Triples or JSON-LD. Chosen by `Accept` or `?output=json|xml|csv|turtle|rdfxml|ntriples|jsonld`. Read-only, 30 s limit. A browser opening `/sparql` is sent to `/query` |
 | GET | `/api/health` | JSON: store size, loaded files, daily-update status |
 

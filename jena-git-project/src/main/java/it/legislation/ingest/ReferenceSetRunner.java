@@ -60,16 +60,20 @@ public class ReferenceSetRunner {
 
         /** 95% Wilson score interval, which behaves well for small samples and precision near 1. */
         public double[] wilson() {
-            int n = yes + no;
-            if (n == 0) {
-                return new double[] {Double.NaN, Double.NaN};
-            }
-            double z = 1.959964;
-            double p = (double) yes / n;
-            double centre = (p + z * z / (2 * n)) / (1 + z * z / n);
-            double half = z * Math.sqrt(p * (1 - p) / n + z * z / (4.0 * n * n)) / (1 + z * z / n);
-            return new double[] {Math.max(0, centre - half), Math.min(1, centre + half)};
+            return ReferenceSetRunner.wilson(yes, yes + no);
         }
+    }
+
+    /** 95% Wilson score interval for {@code successes} out of {@code n}; NaN when n is 0. */
+    static double[] wilson(int successes, int n) {
+        if (n == 0) {
+            return new double[] {Double.NaN, Double.NaN};
+        }
+        double z = 1.959964;
+        double p = (double) successes / n;
+        double centre = (p + z * z / (2 * n)) / (1 + z * z / n);
+        double half = z * Math.sqrt(p * (1 - p) / n + z * z / (4.0 * n * n)) / (1 + z * z / n);
+        return new double[] {Math.max(0, centre - half), Math.min(1, centre + half)};
     }
 
     public static void main(String[] args) throws IOException {

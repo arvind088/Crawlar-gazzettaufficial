@@ -7,8 +7,10 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.List;
+import java.util.Locale;
 
 import org.junit.jupiter.api.Test;
+import org.springframework.context.i18n.LocaleContextHolder;
 
 import it.legislation.eli.EliUriService;
 import it.legislation.store.Tdb2DatasetService;
@@ -45,13 +47,38 @@ class ActPagesTest {
         assertTrue(all.contains("href=\"/eli/id/2020/03/17/20G00034/sg\""), "links stay on this host");
 
         String laws = pages.list(null, "LEGGE", null, null, 1).getBody();
-        assertTrue(laws.contains("1 act,") || laws.contains("1 act<"));
-        assertTrue(laws.contains("L. 24 aprile 2020, n. 27"));
-        assertFalse(laws.contains("D.L. 17 marzo 2020, n. 18</b>"));
+        assertTrue(laws.contains("1 act<"));
+        assertTrue(laws.contains(">L. 24 aprile 2020, n. 27</a>"));
+        assertFalse(laws.contains(">D.L. 17 marzo 2020, n. 18</a>"));
+        assertTrue(laws.contains("<input type=\"hidden\" name=\"type\" value=\"LEGGE\">"),
+                "a new search keeps the chosen filters");
 
         String search = pages.list("sanitario", null, null, null, 1).getBody();
-        assertTrue(search.contains("D.L. 17 marzo 2020, n. 18"));
-        assertFalse(search.contains("L. 24 aprile 2020, n. 27</b>"));
+        assertTrue(search.contains(">D.L. 17 marzo 2020, n. 18</a>"));
+        assertFalse(search.contains(">L. 24 aprile 2020, n. 27</a>"));
+    }
+
+    @Test
+    void listPageShowsTheCorpusInNumbers() throws IOException {
+        String html = pages.list(null, null, null, null, 1).getBody();
+        assertTrue(html.contains("<span class=\"k\">Acts</span><span class=\"v\">2</span>"));
+        assertTrue(html.contains("<span class=\"k\">Confirmed by Gazzetta</span><span class=\"v good\">1</span>"),
+                "only the decree has a Gazzetta check, and its latest is MATCH");
+        assertTrue(html.contains("amends 1 &middot; changes 1"));
+        assertTrue(html.contains("1 converted"));
+        assertTrue(html.contains("Gazzetta &#10003;"));
+        assertTrue(html.contains("href=\"/acts.csv\""));
+    }
+
+    @Test
+    void listDownloadsAsCsvWithTheSameFilters() throws IOException {
+        String csv = pages.csv(null, "DECRETO-LEGGE", null, null).getBody();
+        String[] lines = csv.split("\r\n");
+        assertEquals(2, lines.length, "header and one decree-law");
+        assertTrue(lines[0].startsWith("eli,code,type,date,number,citation,title"));
+        assertTrue(lines[1].contains("20G00034,DECRETO-LEGGE,2020-03-17,18,\"D.L. 17 marzo 2020, n. 18\""),
+                "a value with a comma is quoted");
+        assertTrue(lines[1].endsWith(",CONVERTED,MATCH"));
     }
 
     @Test
@@ -69,8 +96,15 @@ class ActPagesTest {
 
         String html = pages.details(act, "/eli/id/2020/03/17/20G00034/sg");
         assertTrue(html.contains("Conversion into law"));
-        assertTrue(html.contains("L. 24 aprile 2020, n. 27"));
+        assertTrue(html.contains("Converted by <a href=\"/eli/id/2020/04/29/20G00045/sg\">L. 24 aprile 2020, n. 27</a>"),
+                "the answer comes first");
         assertTrue(html.contains("43 of 60"));
+        assertTrue(html.contains("<details><summary>How was this verified?</summary>"),
+                "the checks of a clean conversion are one click away");
+        assertTrue(html.contains("The law came within the 60 days"));
+        assertTrue(html.contains("<span class=\"trust a\""));
+        assertTrue(html.contains("<span class=\"rel amends\">amended by</span>"));
+        assertTrue(html.contains("Original text"));
         assertTrue(html.contains("amended by"));
         assertTrue(html.contains("D.Lgs. 30 marzo 2001, n. 165"));
         assertTrue(html.contains("outside the imported corpus"));
@@ -94,6 +128,49 @@ class ActPagesTest {
         assertTrue(catalog.details("https://example.it/eli/id/1999/01/01/X/sg").isEmpty());
         assertFalse(catalog.isAct("https://example.it/eli/ext/decreto_legislativo/2001-03-30/165"));
         assertTrue(catalog.isAct(DL_18));
+    }
+
+    @Test
+    void pagesInItalian() throws IOException {
+        LocaleContextHolder.setLocale(Locale.ITALIAN);
+        try {
+            String list = pages.list(null, null, null, null, 1).getBody();
+            assertTrue(list.contains("<html lang=\"it\">"));
+            assertTrue(list.contains(">Cerca un atto<"));
+            assertTrue(list.contains(">Atti normativi<"), "the menu");
+            assertTrue(list.contains("2 atti"));
+            assertTrue(list.contains(">Convertito<"), "statuses are translated");
+            assertTrue(list.contains("aria-current=\"true\">Italiano"), "the language switch shows the current language");
+
+            String details = pages.details(catalog.details(DL_18).orElseThrow(), "/eli/id/2020/03/17/20G00034/sg");
+            assertTrue(details.contains("Convertito da <a href=\"/eli/id/2020/04/29/20G00045/sg\">"));
+            assertTrue(details.contains("43 giorni"));
+            assertTrue(details.contains("Come è stato verificato?"));
+            assertTrue(details.contains(">modificato da</span>"));
+            assertTrue(details.contains("D.L. 17 marzo 2020, n. 18"), "citations are the same in both languages");
+        } finally {
+            LocaleContextHolder.resetLocaleContext();
+        }
+        assertTrue(pages.list(null, null, null, null, 1).getBody().contains(">Find an act<"), "English by default");
+    }
+
+    @Test
+    void languageSwitchKeepsThePage() {
+        assertEquals("?lang=it", Html.currentUrlWithLang("it"), "outside a request only the parameter");
+        assertEquals("Converted", Html.statusWords("CONVERTED"));
+        assertEquals("Something new", Html.statusWords("SOMETHING_NEW"), "unknown statuses still read well");
+    }
+
+    @Test
+    void bothLanguagesHaveTheSameTexts() throws IOException {
+        java.util.Properties en = new java.util.Properties();
+        java.util.Properties it = new java.util.Properties();
+        try (var a = getClass().getResourceAsStream("/i18n/messages_en.properties");
+             var b = getClass().getResourceAsStream("/i18n/messages_it.properties")) {
+            en.load(new java.io.InputStreamReader(a, java.nio.charset.StandardCharsets.UTF_8));
+            it.load(new java.io.InputStreamReader(b, java.nio.charset.StandardCharsets.UTF_8));
+        }
+        assertEquals(en.keySet(), it.keySet(), "every English text has an Italian one and vice versa");
     }
 
     @Test
