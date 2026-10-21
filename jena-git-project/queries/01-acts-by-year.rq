@@ -1,14 +1,16 @@
-# How many acts per year and type.
+# Acts by year
+# How many acts were published each year, newest year first.
+# it: Atti per anno
+# it: Quanti atti sono stati pubblicati ogni anno, dal più recente.
 PREFIX eli: <http://data.europa.eu/eli/ontology#>
 PREFIX dcterms: <http://purl.org/dc/terms/>
 
-SELECT ?year ?type (COUNT(?act) AS ?acts)
+SELECT ?year (COUNT(?act) AS ?acts)
 WHERE {
   ?act a eli:LegalResource ;
        dcterms:source <https://dati.normattiva.it/> ;
-       eli:type_document ?type ;
        eli:date_document ?date .
   BIND (YEAR(?date) AS ?year)
 }
-GROUP BY ?year ?type
-ORDER BY ?year ?type
+GROUP BY ?year
+ORDER BY DESC(?year)

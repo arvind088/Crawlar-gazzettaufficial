@@ -1,4 +1,7 @@
-# How many acts and versions per type.
+# Acts by type
+# How many laws, decree-laws and legislative decrees there are, with their versions.
+# it: Atti per tipo
+# it: Quante leggi, decreti-legge e decreti legislativi ci sono, con le loro versioni.
 PREFIX eli: <http://data.europa.eu/eli/ontology#>
 PREFIX dcterms: <http://purl.org/dc/terms/>
 
@@ -7,7 +10,7 @@ WHERE {
   ?act a eli:LegalResource ;
        dcterms:source <https://dati.normattiva.it/> ;
        eli:type_document ?type .
-  OPTIONAL { ?act eli:is_realized_by ?version . }
+  OPTIONAL { ?act eli:is_realized_by ?version }
 }
 GROUP BY ?type
-ORDER BY ?type
+ORDER BY DESC(?acts)

@@ -119,8 +119,12 @@ public class ActCatalog {
         }
     }
 
-    /** Totals for the head of the list page. */
-    public record Totals(long acts, long versions, long relations) {}
+    /** Totals for the head of the list page; relations by kind (amends, changes, repeals, converts). */
+    public record Totals(long acts, long versions, long relations, Map<String, Long> relationsByKind) {
+        public long relations(String kind) {
+            return relationsByKind.getOrDefault(kind, 0L);
+        }
+    }
 
     // ------------------------------------------------------------------ queries
 
@@ -168,9 +172,18 @@ public class ActCatalog {
                 t[0] = s.getLiteral("acts").getLong();
                 t[1] = s.getLiteral("versions").getLong();
             });
-            each(dataset, PREFIXES + "SELECT (COUNT(?r) AS ?n) WHERE { ?r a ilg:Relation }",
-                    s -> t[2] = s.getLiteral("n").getLong());
-            return new Totals(t[0], t[1], t[2]);
+            Map<String, Long> byKind = new LinkedHashMap<>();
+            each(dataset, PREFIXES + """
+                    SELECT ?property (COUNT(?r) AS ?n)
+                    WHERE { ?r a ilg:Relation ; ilg:relationProperty ?property }
+                    GROUP BY ?property ORDER BY DESC(?n)
+                    """, s -> {
+                String property = s.getResource("property").getURI();
+                byKind.put(property.substring(Math.max(property.lastIndexOf('#'), property.lastIndexOf('/')) + 1),
+                        s.getLiteral("n").getLong());
+                t[2] += s.getLiteral("n").getLong();
+            });
+            return new Totals(t[0], t[1], t[2], byKind);
         });
     }
 
