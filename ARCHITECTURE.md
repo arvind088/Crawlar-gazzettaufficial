@@ -141,6 +141,10 @@ Rules:
   and «quoted text» are removed first, and a sentence naming an article, paragraph or letter is
   not a whole repeal.
 - A relation found only in Y's history becomes `changes`, trust B.
+- A relation found only in Y's history is dropped when X is a law or legislative decree older than
+  Y: it cannot change an act published after it. Only a decree-law can, through the changes its
+  conversion law adds. (Normattiva's history of D.L. 179/2022 names L. 21 gennaio 2022, n. 6: the
+  right number, the wrong year.)
 
 **Trust:** A when the modifying act's change list and the modified act's history both record the
 relation (two independent statements), B when only one does — mostly because the modified act is
