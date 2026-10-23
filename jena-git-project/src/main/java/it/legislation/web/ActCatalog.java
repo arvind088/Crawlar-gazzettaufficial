@@ -71,8 +71,9 @@ public class ActCatalog {
         }
     }
 
-    /** A version (ELI expression) with the file it was read from. */
-    public record Version(String uri, String date, String label, String source, String sha256) {}
+    /** A version (ELI expression) with the file it was read from and the acts that produced it. */
+    public record Version(String uri, String date, String label, String source, String sha256,
+                          List<OtherAct> changedBy) {}
 
     /** The act at the other end of a relation. */
     public record OtherAct(String uri, String typeCode, String date, String number, String title, boolean inCorpus) {
@@ -240,7 +241,28 @@ public class ActCatalog {
                       OPTIONAL { ?e eli:is_embodied_by ?f . OPTIONAL { ?f dcterms:source ?src } OPTIONAL { ?f ilg:sha256 ?h } }
                     } GROUP BY ?e
                     """, actUri), s -> versions.add(new Version(s.getResource("e").getURI(), text(s, "date"),
-                    text(s, "label"), text(s, "source"), text(s, "sha"))));
+                    text(s, "label"), text(s, "source"), text(s, "sha"), new ArrayList<>())));
+            // Which act produced each version (ilg:changedBy, from the version history).
+            Map<String, Version> byUri = new HashMap<>();
+            versions.forEach(v -> byUri.put(v.uri(), v));
+            each(dataset, bind("""
+                    SELECT ?e ?by (SAMPLE(?t) AS ?type) (SAMPLE(?d) AS ?date) (SAMPLE(?n) AS ?number)
+                           (SAMPLE(?ti) AS ?title) (SAMPLE(?c) AS ?corpus) WHERE {
+                      ?act eli:is_realized_by ?e . ?e ilg:changedBy ?by .
+                      OPTIONAL { ?by eli:type_document ?t }
+                      OPTIONAL { ?by eli:date_document ?d }
+                      OPTIONAL { ?by eli:number ?n }
+                      OPTIONAL { ?by eli:title ?ti }
+                      OPTIONAL { ?by eli:id_local ?c }
+                    } GROUP BY ?e ?by ORDER BY ?date
+                    """, actUri), s -> {
+                Version v = byUri.get(s.getResource("e").getURI());
+                if (v != null) {
+                    String by = s.getResource("by").getURI();
+                    v.changedBy().add(new OtherAct(by, Html.typeCode(text(s, "type")), text(s, "date"),
+                            text(s, "number"), text(s, "title") == null ? by : text(s, "title"), text(s, "corpus") != null));
+                }
+            });
             // The original text first, then the consolidated versions by date.
             versions.sort(Comparator.comparing((Version v) -> !v.uri().endsWith("/original"))
                     .thenComparing(Version::date, Comparator.nullsFirst(Comparator.naturalOrder())));
