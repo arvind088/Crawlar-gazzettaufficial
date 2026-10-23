@@ -80,4 +80,21 @@ class AknRelationReaderTest {
                 2020, n. 9, 8 marzo 2020, n. 11, sono abrogati.»</p></content></paragraph></article>""");
         assertEquals(Set.of(), e.textRepeals(), "D.Lgs. 44/2020 quotes L. 27/2020 in its notes");
     }
+
+    @Test
+    void historyEventsWithDatesFromARealLifecycle() throws IOException {
+        // D.Lgs. 196/2003 (privacy code), version 58: 56 events, the first is its own publication.
+        AknRelationReader.Evidence e = new AknRelationReader()
+                .read(Path.of("src/test/resources/akn-relations/dlgs-2003-196-v58-lifecycle.xml"));
+        List<AknRelationReader.LifecycleEvent> events = e.events();
+        assertEquals(55, events.size(), "the act's own publication is not a change");
+        assertEquals(LocalDate.of(2003, 12, 29), events.get(0).date());
+        assertEquals(new ActKey("DECRETO-LEGGE", LocalDate.of(2003, 12, 24), "354"), events.get(0).act().orElseThrow());
+        assertEquals(new ActKey("DECRETO-LEGGE", LocalDate.of(2026, 2, 19), "19"), events.get(54).act().orElseThrow());
+        assertEquals(8L, events.stream().filter(ev -> ev.act().isEmpty()).count(),
+                "Normattiva leaves some references empty; they are kept as events without an act");
+        for (int i = 1; i < events.size(); i++) {
+            assertFalse(events.get(i).date().isBefore(events.get(i - 1).date()), "oldest first");
+        }
+    }
 }

@@ -370,6 +370,7 @@ public final class Html {
             .tl-mark{display:flex;flex-direction:column;align-items:center;flex:0 0 16px}
             .tl-dot{width:14px;height:14px;border-radius:50%;background:var(--blue);margin-top:5px}
             .tl-dot.first{background:var(--ink)}
+            .tl-by{font-size:15px}
             .tl-line{flex:1;width:2px;background:var(--line)}
             ol.timeline li:last-child .tl-line{display:none}
             .tl-body{padding-bottom:14px;display:flex;flex-direction:column;min-width:0}
