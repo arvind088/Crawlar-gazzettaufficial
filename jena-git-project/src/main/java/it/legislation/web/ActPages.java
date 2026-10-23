@@ -482,7 +482,22 @@ public class ActPages {
                     .append("\"></span><span class=\"tl-line\"></span></span><span class=\"tl-body\"><a href=\"")
                     .append(escape(link(v.uri()))).append("\"><b>").append(escape(Html.italianDate(v.date())))
                     .append("</b> &middot; ").append(escape(t(original ? "version.original" : "version.inforce")))
-                    .append("</a><span class=\"mono muted\">").append(escape(fileName(v.source()))).append("</span></span></li>");
+                    .append("</a>");
+            if (!v.changedBy().isEmpty()) {
+                html.append("<span class=\"tl-by\">").append(escape(t("version.changedBy"))).append(' ');
+                for (int i = 0; i < v.changedBy().size(); i++) {
+                    ActCatalog.OtherAct by = v.changedBy().get(i);
+                    html.append(i == 0 ? "" : ", ");
+                    if (by.inCorpus() && uris.pathOf(by.uri()).isPresent()) {
+                        html.append("<a href=\"").append(escape(link(by.uri()))).append("\">")
+                                .append(escape(by.citation())).append("</a>");
+                    } else {
+                        html.append(escape(by.citation()));
+                    }
+                }
+                html.append("</span>");
+            }
+            html.append("<span class=\"mono muted\">").append(escape(fileName(v.source()))).append("</span></span></li>");
         }
         return html.append("</ol>").toString();
     }

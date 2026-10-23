@@ -26,7 +26,8 @@
 <https://example.it/eli/id/2020/03/17/20G00034/sg/ita/original/akn>
         a eli:Format ; dcterms:source "corpus/2020-03-17_20G00034_ORIGINALE_V0.xml" .
 <https://example.it/eli/id/2020/03/17/20G00034/sg/ita/vigente/2020-04-30>
-        a eli:LegalExpression ; eli:version_date "2020-04-30"^^xsd:date .
+        a eli:LegalExpression ; eli:version_date "2020-04-30"^^xsd:date ;
+        ilg:changedBy <https://example.it/eli/id/2020/04/29/20G00045/sg> .
 
 <https://example.it/eli/id/2020/04/29/20G00045/sg>
         a eli:LegalResource ;
