@@ -36,6 +36,7 @@ import it.legislation.relations.RelationDetector;
 import it.legislation.relations.RelationDetector.Conversion;
 import it.legislation.relations.RelationDetector.ConversionStatus;
 import it.legislation.relations.RelationDetector.Relation;
+import it.legislation.relations.VersionHistory;
 
 /**
  * Finds the relations between the imported acts (R6): which law converts
@@ -46,7 +47,9 @@ import it.legislation.relations.RelationDetector.Relation;
  * Akoma Ntoso files from {@code data/raw/normattiva}. Writes
  * {@code data/rdf/relations.ttl} (loaded into the store), and two reports:
  * {@code data/clean/conversions.tsv} (one line per decree-law) and
- * {@code data/clean/relations.tsv} (one line per relation).
+ * {@code data/clean/relations.tsv} (one line per relation). It also links each consolidated version
+ * to the act that produced it ({@link VersionHistory}): {@code data/rdf/version_history.ttl} and
+ * {@code data/clean/version_history.tsv}, next to the other outputs.
  *
  * <pre>
  * mvn -B compile exec:java "-Dexec.mainClass=it.legislation.ingest.RelationRunner"
@@ -66,7 +69,7 @@ public class RelationRunner {
     static final String RESOURCE_TYPE = "http://www.gazzettaufficiale.it/eli/tables/resource-type#";
 
     public record Summary(int acts, int filesRead, List<String> unreadable, RelationDetector.Result result,
-                          boolean written) {}
+                          VersionHistory.Result history, boolean written) {}
 
     public static void main(String[] args) throws IOException {
         Map<String, String> options = new LinkedHashMap<>();
@@ -105,6 +108,17 @@ public class RelationRunner {
                 .forEach(c -> System.out.println("  " + pad(c.status().name(), 22) + c.decree().key()
                         + " -> " + (c.law() == null ? (c.decreeNoteNamesLaw() == null ? "-" : c.decreeNoteNamesLaw())
                         : c.law().key()) + "  " + checks(c)));
+        VersionHistory.Result h = summary.history();
+        long inForce = h.links().stream().filter(l -> Boolean.TRUE.equals(l.onEntryIntoForce())).count();
+        long inForceKnown = h.links().stream().filter(l -> l.onEntryIntoForce() != null).count();
+        long confirmed = h.links().stream().filter(VersionHistory.Link::confirmedByChangeList).count();
+        long inCorpus = h.links().stream().filter(l -> l.modifier() != null).count();
+        System.out.println("Version history: " + h.versionsWithCause() + " of " + h.versions()
+                + " consolidated versions linked to the act(s) that produced them (" + h.links().size() + " links)");
+        System.out.println("  starts on the changing act's entry into force: " + inForce + " of " + inForceKnown
+                + "; confirmed by its change list: " + confirmed + " of " + inCorpus + " (changing act in corpus)");
+        System.out.println("  events not linked: " + h.eventsWithoutAct() + " without an act, " + h.eventsNotPlausible()
+                + " not plausible, " + h.eventsAfterLastVersion() + " after the last version (of " + h.events() + ")");
         System.out.println(summary.written() ? "Wrote " + out + ", " + conversions + ", " + relations
                 : "No change: " + out + " is already up to date");
     }
@@ -140,7 +154,13 @@ public class RelationRunner {
         boolean written = writeModelIfChanged(out, model);
         written |= writeIfChanged(conversionsReport, conversionsTsv(result).getBytes(StandardCharsets.UTF_8));
         written |= writeIfChanged(relationsReport, relationsTsv(result).getBytes(StandardCharsets.UTF_8));
-        return new Summary(corpus.acts().size(), files, unreadable, result, written);
+
+        VersionHistory.Result history = VersionHistory.link(corpus, latest, result.relations(),
+                entryIntoForce(acts.resolveSibling("gazzetta_check.ttl")));
+        written |= writeModelIfChanged(out.resolveSibling("version_history.ttl"), versionHistoryRdf(corpus, history));
+        written |= writeIfChanged(relationsReport.resolveSibling("version_history.tsv"),
+                versionHistoryTsv(history).getBytes(StandardCharsets.UTF_8));
+        return new Summary(corpus.acts().size(), files, unreadable, result, history, written);
     }
 
     /**
@@ -279,6 +299,87 @@ public class RelationRunner {
             history.record(model, d, "ConversionCheck", base + "/conversion/" + c.decree().codice(), day, values.build());
         }
         return model;
+    }
+
+    /** Work URI → entry into force, from the Gazzetta Ufficiale check; empty when the file is missing. */
+    static Map<String, LocalDate> entryIntoForce(Path gazzettaCheck) throws IOException {
+        Map<String, LocalDate> dates = new java.util.HashMap<>();
+        if (!Files.exists(gazzettaCheck)) {
+            return dates;
+        }
+        Model model = ModelFactory.createDefaultModel();
+        try (java.io.InputStream in = Files.newInputStream(gazzettaCheck)) {
+            RDFDataMgr.read(model, in, org.apache.jena.riot.Lang.TURTLE);
+        }
+        model.listStatements(null, model.createProperty(ELI, "first_date_entry_in_force"), (org.apache.jena.rdf.model.RDFNode) null)
+                .forEachRemaining(st -> {
+                    if (st.getSubject().isURIResource() && st.getObject().isLiteral()) {
+                        try {
+                            dates.put(st.getSubject().getURI(), LocalDate.parse(st.getString()));
+                        } catch (java.time.format.DateTimeParseException ignored) {
+                            // a date that cannot be read is left out
+                        }
+                    }
+                });
+        return dates;
+    }
+
+    /**
+     * The version history as RDF: {@code version ilg:changedBy act}, and one {@code ilg:VersionChange}
+     * node per link with its evidence (event date, days to the version, entry into force, change list).
+     * These are facts read from the files: the history of a version that already exists does not change.
+     */
+    static Model versionHistoryRdf(CorpusIndex corpus, VersionHistory.Result history) {
+        Model model = ModelFactory.createDefaultModel();
+        model.setNsPrefix("eli", ELI);
+        model.setNsPrefix("ilg", ILG);
+        model.setNsPrefix("rdfs", RDFS.uri);
+        model.setNsPrefix("owl", OWL.NS);
+        model.setNsPrefix("xsd", XSDDatatype.XSD + "#");
+        String base = corpus.baseUri();
+        Property changedBy = model.createProperty(ILG, "changedBy");
+        changedBy.addProperty(RDF.type, OWL.ObjectProperty);
+        changedBy.addProperty(RDFS.label, "changed by", "en");
+        changedBy.addProperty(RDFS.comment, "This consolidated version (ELI Expression) contains the changes made by "
+                + "the given act. Read from the act's history (Akoma Ntoso lifecycle) and the version dates.", "en");
+        Resource change = model.createResource(ILG + "VersionChange");
+        Property version = model.createProperty(ILG, "version");
+        Property act = model.createProperty(ILG, "changingAct");
+        Property eventDate = model.createProperty(ILG, "eventDate");
+        Property days = model.createProperty(ILG, "daysAfterEvent");
+        Property inForce = model.createProperty(ILG, "startsOnEntryIntoForce");
+        Property confirmed = model.createProperty(ILG, "confirmedByChangeList");
+        for (VersionHistory.Link l : history.links()) {
+            Resource v = model.createResource(l.version().uri());
+            Resource changer = l.modifier() != null ? model.createResource(l.modifier().workUri())
+                    : external(model, base, l.changedBy());
+            v.addProperty(changedBy, changer);
+            Resource node = model.createResource(base + "/version-change/" + l.act().codice() + "/" + l.version().date()
+                    + "/" + id(l.modifier(), l.changedBy()));
+            node.addProperty(RDF.type, change);
+            node.addProperty(version, v);
+            node.addProperty(act, changer);
+            node.addLiteral(eventDate, model.createTypedLiteral(l.eventDate().toString(), XSDDatatype.XSDdate));
+            node.addLiteral(days, model.createTypedLiteral(l.daysAfterEvent()));
+            if (l.onEntryIntoForce() != null) {
+                node.addLiteral(inForce, model.createTypedLiteral(l.onEntryIntoForce()));
+            }
+            node.addLiteral(confirmed, model.createTypedLiteral(l.confirmedByChangeList()));
+        }
+        return model;
+    }
+
+    static String versionHistoryTsv(VersionHistory.Result history) {
+        StringBuilder sb = new StringBuilder("act_codice\tact\tversion_date\tchanged_by_codice\tchanged_by\tevent_date"
+                + "\tdays_after_event\tstarts_on_entry_into_force\tconfirmed_by_change_list\n");
+        for (VersionHistory.Link l : history.links()) {
+            sb.append(l.act().codice()).append('\t').append(l.act().key()).append('\t').append(l.version().date())
+                    .append('\t').append(l.modifier() == null ? "" : l.modifier().codice()).append('\t')
+                    .append(l.changedBy()).append('\t').append(l.eventDate()).append('\t').append(l.daysAfterEvent())
+                    .append('\t').append(l.onEntryIntoForce() == null ? "" : l.onEntryIntoForce()).append('\t')
+                    .append(l.confirmedByChangeList()).append('\n');
+        }
+        return sb.toString();
     }
 
     /** URI for an act outside the corpus, from its citation key. */

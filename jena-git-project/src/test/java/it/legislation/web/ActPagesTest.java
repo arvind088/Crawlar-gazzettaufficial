@@ -105,6 +105,9 @@ class ActPagesTest {
         assertTrue(html.contains("<span class=\"trust a\""));
         assertTrue(html.contains("<span class=\"rel amends\">amended by</span>"));
         assertTrue(html.contains("Original text"));
+        assertTrue(html.contains("changed by <a href=\"/eli/id/2020/04/29/20G00045/sg\">L. 24 aprile 2020, n. 27</a>"),
+                "each version names the act that produced it");
+        assertEquals(1, act.versions().get(1).changedBy().size());
         assertTrue(html.contains("amended by"));
         assertTrue(html.contains("D.Lgs. 30 marzo 2001, n. 165"));
         assertTrue(html.contains("outside the imported corpus"));

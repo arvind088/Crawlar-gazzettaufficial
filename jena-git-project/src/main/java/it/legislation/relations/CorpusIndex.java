@@ -37,7 +37,11 @@ public class CorpusIndex {
     public record Act(String workUri, String codice, LocalDate publicationDate, ActKey key, String title,
                       String originalFile, String latestFile) {}
 
+    /** A consolidated version of an act (ELI Expression) and the date it applies from. */
+    public record Version(String uri, LocalDate date, boolean original) {}
+
     private final Map<String, Act> byCodice = new LinkedHashMap<>();
+    private final Map<String, List<Version>> versions = new HashMap<>();
     private final Map<ActKey, List<Act>> byKey = new HashMap<>();
     private final String baseUri;
 
@@ -65,6 +69,7 @@ public class CorpusIndex {
         Property versionDate = model.createProperty(ELI, "version_date");
 
         List<Act> acts = new ArrayList<>();
+        Map<String, List<Version>> versionsByCodice = new HashMap<>();
         String base = null;
         for (Resource work : model.listSubjectsWithProperty(RDF.type, model.createResource(ELI + "LegalResource")).toList()) {
             if (work.getProperty(idLocal) == null || work.getProperty(typeDocument) == null
@@ -78,8 +83,14 @@ public class CorpusIndex {
             String originalFile = null;
             String latestFile = null;
             LocalDate latest = null;
+            List<Version> actVersions = new ArrayList<>();
             for (Statement s : work.listProperties(realizedBy).toList()) {
                 Resource expression = s.getResource();
+                if (expression.getProperty(versionDate) != null) {
+                    actVersions.add(new Version(expression.getURI(),
+                            LocalDate.parse(expression.getProperty(versionDate).getString()),
+                            expression.getURI().endsWith("/ita/original")));
+                }
                 Resource format = expression.getPropertyResourceValue(embodiedBy);
                 String file = format == null || format.getProperty(DCTerms.source) == null ? null
                         : format.getProperty(DCTerms.source).getString();
@@ -99,13 +110,27 @@ public class CorpusIndex {
             if (base == null && work.getURI().contains("/eli/id/")) {
                 base = work.getURI().substring(0, work.getURI().indexOf("/eli/id/"));
             }
+            actVersions.sort(Comparator.comparing(Version::date).thenComparing(v -> !v.original()));
+            versionsByCodice.put(work.getProperty(idLocal).getString(), actVersions);
             acts.add(new Act(work.getURI(), work.getProperty(idLocal).getString(),
                     LocalDate.parse(work.getProperty(datePublication).getString()), key,
                     work.getProperty(title) == null ? "" : work.getProperty(title).getString(),
                     originalFile, latestFile == null ? originalFile : latestFile));
         }
         acts.sort(Comparator.comparing(Act::publicationDate).thenComparing(Act::codice));
-        return new CorpusIndex(acts, base == null ? "https://example.org" : base);
+        CorpusIndex index = new CorpusIndex(acts, base == null ? "https://example.org" : base);
+        index.versions.putAll(versionsByCodice);
+        return index;
+    }
+
+    /** The act's versions, oldest first (the original text first on the same day). */
+    public List<Version> versions(String codice) {
+        return versions.getOrDefault(codice, List.of());
+    }
+
+    /** For tests: set an act's versions. */
+    void putVersions(String codice, List<Version> list) {
+        versions.put(codice, list);
     }
 
     public Collection<Act> acts() {

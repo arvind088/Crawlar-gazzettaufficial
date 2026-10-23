@@ -66,6 +66,8 @@ public class Tdb2DatasetService {
     static final Path GAZZETTA_CHECK = Path.of("data", "rdf", "gazzetta_check.ttl");
     /** Relations between acts (converts, amends, repeals, changes) with evidence, by {@code RelationRunner}. */
     static final Path RELATIONS = Path.of("data", "rdf", "relations.ttl");
+    /** Which act produced each consolidated version, by {@code RelationRunner}. */
+    static final Path VERSION_HISTORY = Path.of("data", "rdf", "version_history.ttl");
 
     private static final String GRAPH_BASE = "http://example.org/italian-legislation/graph/";
     private static final String PROVENANCE_GRAPH = GRAPH_BASE + "provenance";
@@ -123,7 +125,8 @@ public class Tdb2DatasetService {
                 new RdfGraphSource(GRAPH_BASE + "seed", SEED_ACTS),
                 new RdfGraphSource(GRAPH_BASE + "normattiva/akn", NORMATTIVA_AKN),
                 new RdfGraphSource(GRAPH_BASE + "gazzetta/check", GAZZETTA_CHECK),
-                new RdfGraphSource(GRAPH_BASE + "relations", RELATIONS)
+                new RdfGraphSource(GRAPH_BASE + "relations", RELATIONS),
+                new RdfGraphSource(GRAPH_BASE + "version-history", VERSION_HISTORY)
         );
     }
 

@@ -4,11 +4,13 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -28,7 +30,8 @@ import org.w3c.dom.NodeList;
  *       to other acts (destination URN and the editor's note);</li>
  *   <li>Article 1, paragraph 1: "Il decreto-legge … è convertito in legge",
  *       with a {@code ref} to the decree;</li>
- *   <li>{@code lifecycle}: the acts that changed this act ({@code passiveRef}).</li>
+ *   <li>{@code lifecycle}: the acts that changed this act ({@code passiveRef}), and when
+ *       ({@code eventRef} date): the history used to link each version to its cause.</li>
  * </ul>
  */
 public class AknRelationReader {
@@ -52,12 +55,23 @@ public class AknRelationReader {
     public record TextualMod(String eId, String type, String destinationHref, ActKey destination,
                              boolean wholeAct, String note) {}
 
+    /**
+     * One event of the act's history: on {@code date} the act named by {@code href} changed it.
+     * {@code act} is empty when the reference names no act (Normattiva leaves some empty).
+     */
+    public record LifecycleEvent(LocalDate date, Optional<ActKey> act, String href) {}
+
     /** Everything relation-related in one file. */
     public record Evidence(List<TextualMod> textualMods, Set<ActKey> article1Converts, Set<ActKey> lifecycleChangedBy,
-                           Set<ActKey> textRepeals) {
+                           Set<ActKey> textRepeals, List<LifecycleEvent> events) {
+
+        public Evidence(List<TextualMod> textualMods, Set<ActKey> article1Converts, Set<ActKey> lifecycleChangedBy,
+                        Set<ActKey> textRepeals) {
+            this(textualMods, article1Converts, lifecycleChangedBy, textRepeals, List.of());
+        }
 
         public Evidence(List<TextualMod> textualMods, Set<ActKey> article1Converts, Set<ActKey> lifecycleChangedBy) {
-            this(textualMods, article1Converts, lifecycleChangedBy, Set.of());
+            this(textualMods, article1Converts, lifecycleChangedBy, Set.of(), List.of());
         }
     }
 
@@ -82,7 +96,7 @@ public class AknRelationReader {
             throw new IOException("XML not readable: " + file + ": " + e.getMessage(), e);
         }
         Element root = document.getDocumentElement();
-        return new Evidence(textualMods(root), article1Converts(root), lifecycle(root), textRepeals(root));
+        return new Evidence(textualMods(root), article1Converts(root), lifecycle(root), textRepeals(root), events(root));
     }
 
     private static List<TextualMod> textualMods(Element root) {
@@ -239,6 +253,38 @@ public class AknRelationReader {
             ActKey.fromAknHref(href).ifPresent(acts::add);
         }
         return acts;
+    }
+
+    /** The dated events of the lifecycle that point to a changing act ({@code passiveRef}), oldest first. */
+    private static List<LifecycleEvent> events(Element root) {
+        List<LifecycleEvent> events = new ArrayList<>();
+        Element references = first(root, "references");
+        if (references == null) {
+            return events;
+        }
+        Map<String, String> passive = new HashMap<>();
+        NodeList refs = references.getElementsByTagNameNS(AKN, "passiveRef");
+        for (int i = 0; i < refs.getLength(); i++) {
+            Element ref = (Element) refs.item(i);
+            passive.put(ref.getAttribute("eId"), ref.getAttribute("href"));
+        }
+        NodeList list = root.getElementsByTagNameNS(AKN, "eventRef");
+        for (int i = 0; i < list.getLength(); i++) {
+            Element event = (Element) list.item(i);
+            String source = event.getAttribute("source");
+            if (!passive.containsKey(source)) {
+                continue; // the act's own publication, not a change
+            }
+            try {
+                LocalDate date = LocalDate.parse(event.getAttribute("date").trim());
+                String href = passive.get(source);
+                events.add(new LifecycleEvent(date, ActKey.fromAknHref(href), href));
+            } catch (java.time.format.DateTimeParseException e) {
+                // an event without a readable date cannot be placed in time
+            }
+        }
+        events.sort(java.util.Comparator.comparing(LifecycleEvent::date));
+        return events;
     }
 
     private static Element first(Element scope, String localName) {
