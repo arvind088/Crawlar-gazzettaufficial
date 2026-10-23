@@ -64,4 +64,25 @@ class RelationDetectorTest {
         assertEquals(ConversionStatus.PENDING, byDecree.get("D4").status());
         assertEquals(ConversionStatus.AWAITING_LAW_TEXT, byDecree.get("D5").status());
     }
+
+    @Test
+    void historyNamingAnOlderLawIsNotARelation() {
+        // Real case: D.L. 179/2022's history names L. 21 gennaio 2022, n. 6 (right number, wrong year).
+        Act decree = act("22G00192", "DECRETO-LEGGE", "2022-11-23", "179", "2022-11-23", "Misure urgenti");
+        Act oldLaw = act("22G00009", "LEGGE", "2022-01-21", "6", "2022-02-07", "Legge");
+        Act olderDecree = act("22G00002", "DECRETO-LEGGE", "2022-01-07", "1", "2022-01-07", "Misure");
+        Act laterLaw = act("23G00010", "LEGGE", "2023-01-17", "6", "2023-01-18", "Legge");
+        CorpusIndex corpus = new CorpusIndex(List.of(decree, oldLaw, olderDecree, laterLaw), "https://example.test");
+
+        Map<String, Evidence> latest = Map.of("22G00192",
+                new Evidence(List.of(), Set.of(), Set.of(oldLaw.key(), olderDecree.key(), laterLaw.key()), Set.of()));
+        RelationDetector.Result result = new RelationDetector(corpus).detect(Map.of(), latest, LocalDate.of(2026, 10, 21));
+
+        List<String> from = result.relations().stream().map(r -> r.fromKey().number() + "/" + r.fromKey().date().getYear())
+                .sorted().toList();
+        // The older law is dropped; an older decree-law (changes through its conversion) and a later law stay.
+        assertEquals(List.of("1/2022", "6/2023"), from);
+        assertEquals(true, RelationDetector.impossibleInHistory(oldLaw.key(), decree.key()));
+        assertEquals(false, RelationDetector.impossibleInHistory(olderDecree.key(), decree.key()));
+    }
 }
