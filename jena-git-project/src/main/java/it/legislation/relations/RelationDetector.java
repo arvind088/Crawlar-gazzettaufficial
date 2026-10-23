@@ -199,7 +199,8 @@ public class RelationDetector {
         // Lifecycle only: Y says X changed it, X's text has no textualMod for Y (or X is not imported).
         for (Act to : corpus.acts()) {
             for (ActKey fromKey : changedBy.getOrDefault(to.codice(), Set.of())) {
-                if (fromKey.equals(to.key()) || fromTextual.contains(fromKey + "|" + to.key())) {
+                if (fromKey.equals(to.key()) || fromTextual.contains(fromKey + "|" + to.key())
+                        || impossibleInHistory(fromKey, to.key())) {
                     continue;
                 }
                 Act from = corpus.resolve(fromKey).orElse(null);
@@ -210,6 +211,18 @@ public class RelationDetector {
 
         List<Conversion> conversions = conversions(original, today, relations);
         return new Result(relations, conversions, total, indirect, unresolved);
+    }
+
+    /**
+     * R7, plausibility of a history-only relation: a law or legislative decree cannot change an act
+     * published after it. (A decree-law can: its conversion law adds changes that are legally the
+     * decree's, "D.L. … convertito con modificazioni dalla L. …".) Normattiva's history sometimes
+     * names an act of the right number but the wrong year, e.g. D.L. 23 novembre 2022, n. 179 lists
+     * L. 21 gennaio 2022, n. 6 with an event dated before the decree existed.
+     */
+    static boolean impossibleInHistory(ActKey from, ActKey to) {
+        return from.date() != null && to.date() != null && from.date().isBefore(to.date())
+                && !"DECRETO-LEGGE".equals(from.typeCode());
     }
 
     private List<Conversion> conversions(Map<String, Evidence> original, LocalDate today, List<Relation> relations) {
