@@ -1,0 +1,7 @@
+group	acts	actual	found	missed	recall	wilson_low	wilson_high
+outgoing (0-3 found)	6	3	3	0	1.0000	0.4385	1.0000
+outgoing (4-12 found)	6	45	45	0	1.0000	0.9213	1.0000
+incoming	12	78	77	1	0.9872	0.9309	0.9977
+ALL outgoing	12	48	48	0	1.0000	0.9259	1.0000
+ALL	24	126	125	1	0.9921	0.9564	0.9986
+ALL incoming	12	78	77	1	0.9872	0.9309	0.9977
