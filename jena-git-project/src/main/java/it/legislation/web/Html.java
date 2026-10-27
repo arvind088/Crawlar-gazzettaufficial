@@ -119,42 +119,19 @@ public final class Html {
 
     /**
      * A coloured label for a status value. One meaning per colour on every page:
-     * green = confirmed (converted, Gazzetta match, trust A), amber = waiting or
-     * needs a look, red = repealed, not converted or contradicted.
+     * green = converted, amber = waiting (pending), red = not converted.
      */
     public static String badge(String status) {
         if (status == null || status.isBlank()) {
             return "";
         }
         String tone = switch (status) {
-            case "CONVERTED", "CONVERTED_ONE_SOURCE", "MATCH", "FOUND" -> "good";
-            case "PENDING", "AWAITING_LAW_TEXT", "REVIEW", "ERROR" -> "warn";
-            case "REPEALED", "NOT_CONVERTED", "MISMATCH", "NOT_FOUND" -> "bad";
+            case "CONVERTED" -> "good";
+            case "PENDING" -> "warn";
+            case "NOT_CONVERTED" -> "bad";
             default -> "neutral";
         };
         return "<span class=\"badge " + tone + "\">" + escape(statusWords(status)) + "</span>";
-    }
-
-    /** The Gazzetta Ufficiale check as a short label. */
-    public static String gazzettaBadge(String status) {
-        if (status == null || status.isBlank()) {
-            return "";
-        }
-        if ("MATCH".equals(status)) {
-            return "<span class=\"badge good\" title=\"" + escape(I18n.t("gazzetta.match.title")) + "\">"
-                    + "Gazzetta &#10003;</span>";
-        }
-        return badge(status).replace("\">", "\">Gazzetta: ");
-    }
-
-    /** Trust level: solid A (two sources agree), outlined B (one source). */
-    public static String trust(String level) {
-        if (level == null || level.isBlank()) {
-            return "";
-        }
-        String title = I18n.t("A".equals(level) ? "trust.a.title" : "trust.b.title");
-        return "<span class=\"trust " + ("A".equals(level) ? "a" : "b") + "\" title=\"" + title + "\">"
-                + escape(level) + "</span>";
     }
 
     /** A relation kind as a coloured label: converts, amends, repeals, changes. */

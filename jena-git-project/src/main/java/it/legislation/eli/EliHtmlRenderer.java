@@ -211,8 +211,7 @@ public class EliHtmlRenderer {
                 "http://www.w3.org/2000/01/rdf-schema#", "rdfs:",
                 "http://www.w3.org/1999/02/22-rdf-syntax-ns#", "rdf:",
                 "http://www.w3.org/2002/07/owl#", "owl:",
-                "http://schema.org/", "schema:",
-                "http://example.org/italian-legislation/ontology#", "ilg:"
+                "http://schema.org/", "schema:"
         );
         for (Map.Entry<String, String> entry : prefixes.entrySet()) {
             if (uri.startsWith(entry.getKey())) {

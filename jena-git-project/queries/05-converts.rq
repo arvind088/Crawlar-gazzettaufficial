@@ -1,16 +1,21 @@
 # Laws that convert decree-laws
-# Each conversion law, the decree-law it converts, and how many days it took (art. 77: at most 60).
+# Each conversion law ("Conversione in legge … del decreto-legge …" in its title) and the decree-law it converts.
 # it: Leggi che convertono decreti-legge
-# it: Ogni legge di conversione, il decreto-legge che converte e in quanti giorni (art. 77: al massimo 60).
+# it: Ogni legge di conversione ("Conversione in legge … del decreto-legge …" nel titolo) e il decreto-legge che converte.
 PREFIX eli: <http://data.europa.eu/eli/ontology#>
-PREFIX ilg: <http://example.org/italian-legislation/ontology#>
+PREFIX rt: <http://www.gazzettaufficiale.it/eli/tables/resource-type#>
 
-SELECT ?law ?decree (MAX(?d) AS ?days) ?date
+SELECT ?law ?decree ?decreePublished ?lawPublished
 WHERE {
-  ?law ilg:converts ?decree ;
-       eli:date_document ?date .
-  OPTIONAL { ?check ilg:assesses ?decree ; ilg:law ?law ; ilg:daysToConversion ?d }
+  ?law eli:type_document rt:LEGGE ;
+       eli:title ?title ;
+       eli:date_publication ?lawPublished ;
+       eli:amends|eli:changes|eli:repeals ?decree .
+  ?decree eli:type_document rt:DECRETO-LEGGE ;
+          eli:number ?number ;
+          eli:date_publication ?decreePublished .
+  FILTER (STRSTARTS(LCASE(STR(?title)), "conversione in legge"))
+  FILTER (REGEX(STR(?title), CONCAT("n\\. ?", STR(?number), "([^0-9]|$)")))
 }
-GROUP BY ?law ?decree ?date
-ORDER BY DESC(?date)
+ORDER BY DESC(?lawPublished)
 LIMIT 50

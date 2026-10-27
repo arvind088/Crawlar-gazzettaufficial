@@ -94,12 +94,14 @@ class GazzettaCheckRunnerTest {
 
         Model rdf = RDFDataMgr.loadModel(out.toString());
         String ttl = Files.readString(out);
-        assertTrue(ttl.contains("\"MATCH\""), ttl);
-        assertTrue(ttl.contains("\"NOT_FOUND\""), ttl);
         assertTrue(ttl.contains("2026-06-21"), "entry into force of the confirmed act: " + ttl);
-        assertTrue(ttl.contains("eli/gu/2026/06/20/141/sg"), ttl);
         assertFalse(ttl.contains("2026-08-29"), "no Gazzetta facts are added to an act that does not match");
-        assertTrue(rdf.size() > 5);
+        assertFalse(ttl.contains("example.org"), "ELI only: the result of the check is in the report");
+        assertEquals(1L, rdf.size(), "one eli:first_date_entry_in_force");
+        String tsv = Files.readString(report);
+        assertTrue(tsv.contains("26G00123\t2026-06-20\tLEGGE"), tsv);
+        assertTrue(tsv.contains("\tMATCH\t") && tsv.contains("\tNOT_FOUND\t"), tsv);
+        assertTrue(tsv.contains("\t141\t2026-06-21\t"), "GU issue and entry into force in the report: " + tsv);
         assertTrue(Files.readString(report).contains("26G00174\t2026-08-28\tDECRETO-LEGGE\t999\t2026-08-28\tMISMATCH\tnumber: 999 ≠ 154"));
 
         assertTrue(Files.exists(cache.resolve("2026_06_20_26G00123_sg.html")));

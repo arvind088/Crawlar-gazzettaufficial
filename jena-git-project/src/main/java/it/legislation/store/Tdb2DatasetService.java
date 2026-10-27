@@ -54,20 +54,14 @@ import org.springframework.stereotype.Service;
 @Service
 public class Tdb2DatasetService {
 
-    static final Path GAZZETTA_DELTA = Path.of("data", "rdf", "gazzetta_metadata_delta.ttl");
-    static final Path NORMATTIVA_MODIFICATIONS = Path.of("data", "rdf", "normattiva_modifications.ttl");
-    static final Path NORMATTIVA_AUTO_MODIFICATIONS = Path.of("data", "rdf", "normattiva_modifications_auto.ttl");
-    static final Path NORMATTIVA_MULTIVERSION_SAMPLE = Path.of("data", "rdf", "normattiva_multiversion_sample.ttl");
-    static final Path IN_FORCE = Path.of("data", "rdf", "in_force.ttl");
-    static final Path SEED_ACTS = Path.of("data", "rdf", "seed_acts.ttl");
-    /** ELI RDF built from Normattiva Akoma Ntoso by {@code AknImportRunner}. */
-    static final Path NORMATTIVA_AKN = Path.of("data", "rdf", "normattiva_akn.ttl");
-    /** Result of checking each Normattiva act against Gazzetta Ufficiale, by {@code GazzettaCheckRunner}. */
-    static final Path GAZZETTA_CHECK = Path.of("data", "rdf", "gazzetta_check.ttl");
-    /** Relations between acts (converts, amends, repeals, changes) with evidence, by {@code RelationRunner}. */
+    /** Layer 1: the acts, from their original text ({@code AknImportRunner}). */
+    static final Path LAYER1_ACTS = Path.of("data", "rdf", "layer1_acts.ttl");
+    /** Layer 1: date of entry into force from Gazzetta Ufficiale, for confirmed acts ({@code GazzettaCheckRunner}). */
+    static final Path LAYER1_GAZZETTA = Path.of("data", "rdf", "layer1_gazzetta.ttl");
+    /** Layer 2: the consolidated versions ({@code AknImportRunner}). */
+    static final Path LAYER2_VERSIONS = Path.of("data", "rdf", "layer2_versions.ttl");
+    /** Which act modifies which, and which act each version consolidates ({@code RelationRunner}). */
     static final Path RELATIONS = Path.of("data", "rdf", "relations.ttl");
-    /** Which act produced each consolidated version, by {@code RelationRunner}. */
-    static final Path VERSION_HISTORY = Path.of("data", "rdf", "version_history.ttl");
 
     private static final String GRAPH_BASE = "http://example.org/italian-legislation/graph/";
     private static final String PROVENANCE_GRAPH = GRAPH_BASE + "provenance";
@@ -115,18 +109,13 @@ public class Tdb2DatasetService {
         return sources;
     }
 
+    /** The data, ELI only: the two layers and the relations. */
     public static List<RdfGraphSource> defaultSources() {
         return List.of(
-                new RdfGraphSource(GRAPH_BASE + "gazzetta", GAZZETTA_DELTA),
-                new RdfGraphSource(GRAPH_BASE + "normattiva/manual", NORMATTIVA_MODIFICATIONS),
-                new RdfGraphSource(GRAPH_BASE + "normattiva/auto", NORMATTIVA_AUTO_MODIFICATIONS),
-                new RdfGraphSource(GRAPH_BASE + "normattiva/multiversion-sample", NORMATTIVA_MULTIVERSION_SAMPLE),
-                new RdfGraphSource(GRAPH_BASE + "in-force", IN_FORCE),
-                new RdfGraphSource(GRAPH_BASE + "seed", SEED_ACTS),
-                new RdfGraphSource(GRAPH_BASE + "normattiva/akn", NORMATTIVA_AKN),
-                new RdfGraphSource(GRAPH_BASE + "gazzetta/check", GAZZETTA_CHECK),
-                new RdfGraphSource(GRAPH_BASE + "relations", RELATIONS),
-                new RdfGraphSource(GRAPH_BASE + "version-history", VERSION_HISTORY)
+                new RdfGraphSource(GRAPH_BASE + "layer1/acts", LAYER1_ACTS),
+                new RdfGraphSource(GRAPH_BASE + "layer1/gazzetta", LAYER1_GAZZETTA),
+                new RdfGraphSource(GRAPH_BASE + "layer2/versions", LAYER2_VERSIONS),
+                new RdfGraphSource(GRAPH_BASE + "relations", RELATIONS)
         );
     }
 

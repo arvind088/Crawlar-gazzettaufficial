@@ -101,7 +101,7 @@ class DailyUpdateRunnerTest {
         if (!Files.exists(acts)) {
             Path sample = Files.createDirectories(temp.resolve("sample"));
             Files.copy(Path.of("src/test/resources/akn-relations/legge-2020-27-relations.xml"), sample.resolve("l27.xml"));
-            new AknImportRunner(new EliUriService("https://example.test")).run(sample, acts);
+            new AknImportRunner(new EliUriService("https://example.test")).run(sample, acts, temp.resolve("versions.ttl"));
         }
         return new DailyUpdateRunner(source, today -> {
             pipelineRuns.add(today);

@@ -27,7 +27,7 @@ class ActPagesTest {
     private final ActPages pages = new ActPages(catalog, new EliUriService("https://example.it"));
 
     @Test
-    void listsImportedActsNewestFirstWithLatestStatuses() throws IOException {
+    void listsImportedActsNewestFirstWithConversionStatus() throws IOException {
         List<ActCatalog.ActRow> acts = catalog.acts();
 
         // The external act (outside the corpus) is not listed.
@@ -36,8 +36,8 @@ class ActPagesTest {
         ActCatalog.ActRow decree = acts.get(1);
         assertEquals("D.L. 17 marzo 2020, n. 18", decree.citation());
         assertEquals(2, decree.versions());
-        assertEquals("CONVERTED", decree.conversionStatus());
-        assertEquals("MATCH", decree.gazzettaStatus(), "the later check wins over the earlier ERROR");
+        assertEquals("CONVERTED", decree.conversionStatus(), "L. 27/2020's title says it converts it");
+        assertEquals(null, acts.get(0).conversionStatus(), "only decree-laws have one");
     }
 
     @Test
@@ -62,11 +62,10 @@ class ActPagesTest {
     void listPageShowsTheCorpusInNumbers() throws IOException {
         String html = pages.list(null, null, null, null, 1).getBody();
         assertTrue(html.contains("<span class=\"k\">Acts</span><span class=\"v\">2</span>"));
-        assertTrue(html.contains("<span class=\"k\">Confirmed by Gazzetta</span><span class=\"v good\">1</span>"),
-                "only the decree has a Gazzetta check, and its latest is MATCH");
+        assertTrue(html.contains("<span class=\"k\">Versions</span><span class=\"v\">3</span>"));
         assertTrue(html.contains("amends 1 &middot; changes 1"));
-        assertTrue(html.contains("1 converted"));
-        assertTrue(html.contains("Gazzetta &#10003;"));
+        assertTrue(html.contains("1 converted · 0 not converted · 0 pending"));
+        assertFalse(html.contains("Gazzetta &#10003;"), "no Gazzetta badge: the check is a report");
         assertTrue(html.contains("href=\"/acts.csv\""));
     }
 
@@ -78,40 +77,38 @@ class ActPagesTest {
         assertTrue(lines[0].startsWith("eli,code,type,date,number,citation,title"));
         assertTrue(lines[1].contains("20G00034,DECRETO-LEGGE,2020-03-17,18,\"D.L. 17 marzo 2020, n. 18\""),
                 "a value with a comma is quoted");
-        assertTrue(lines[1].endsWith(",CONVERTED,MATCH"));
+        assertTrue(lines[1].endsWith(",CONVERTED"));
     }
 
     @Test
-    void decreePageShowsConversionChecksVersionsAndRelations() throws IOException {
+    void decreePageShowsConversionVersionsAndRelations() throws IOException {
         ActCatalog.ActDetails act = catalog.details(DL_18).orElseThrow();
-        assertEquals("CONVERTED", act.conversion().orElseThrow().value("conversionStatus"));
-        assertEquals(2, act.gazzettaHistory().size());
-        assertEquals("MATCH", act.gazzetta().orElseThrow().value("gazzettaCheck"));
+        ActCatalog.Conversion conversion = act.conversion().orElseThrow();
+        assertEquals("CONVERTED", conversion.status());
+        assertEquals(L_27, conversion.law().uri());
+        assertEquals(43L, conversion.days());
         assertEquals("/original", act.versions().get(0).uri().substring(act.versions().get(0).uri().lastIndexOf('/')));
 
         ActCatalog.Relation amended = act.relations().stream().filter(r -> !r.outgoing()).findFirst().orElseThrow();
-        assertEquals("amends", amended.propertyName());
+        assertEquals("converts", amended.propertyName(), "the converting law's relation is shown as a conversion");
         assertEquals(L_27, amended.other().uri());
-        assertEquals("A", amended.latest().value("trustLevel"), "the latest assessment is shown");
 
         String html = pages.details(act, "/eli/id/2020/03/17/20G00034/sg");
         assertTrue(html.contains("Conversion into law"));
         assertTrue(html.contains("Converted by <a href=\"/eli/id/2020/04/29/20G00045/sg\">L. 24 aprile 2020, n. 27</a>"),
                 "the answer comes first");
         assertTrue(html.contains("43 of 60"));
-        assertTrue(html.contains("<details><summary>How was this verified?</summary>"),
-                "the checks of a clean conversion are one click away");
-        assertTrue(html.contains("The law came within the 60 days"));
-        assertTrue(html.contains("<span class=\"trust a\""));
-        assertTrue(html.contains("<span class=\"rel amends\">amended by</span>"));
+        assertFalse(html.contains("How was this verified?"), "no C1-C6 checks any more");
+        assertFalse(html.contains("<span class=\"trust"), "no trust levels any more");
+        assertTrue(html.contains("<span class=\"rel converts\">converted into law by</span>"));
+        assertTrue(html.contains("href=\"https://www.gazzettaufficiale.it/eli/id/2020/03/17/20G00034/sg\""),
+                "the Gazzetta Ufficiale page, from owl:sameAs");
         assertTrue(html.contains("Original text"));
         assertTrue(html.contains("changed by <a href=\"/eli/id/2020/04/29/20G00045/sg\">L. 24 aprile 2020, n. 27</a>"),
                 "each version names the act that produced it");
         assertEquals(1, act.versions().get(1).changedBy().size());
-        assertTrue(html.contains("amended by"));
         assertTrue(html.contains("D.Lgs. 30 marzo 2001, n. 165"));
         assertTrue(html.contains("outside the imported corpus"));
-        assertTrue(html.contains("History (2 assessments)"));
         assertTrue(html.contains("?format=ttl"));
     }
 
@@ -120,6 +117,7 @@ class ActPagesTest {
         ActCatalog.ActDetails law = catalog.details(L_27).orElseThrow();
         assertEquals(1, law.converts().size());
         assertEquals(DL_18, law.converts().get(0).decree().uri());
+        assertEquals(43L, law.converts().get(0).days());
 
         String html = pages.details(law, "/eli/id/2020/04/29/20G00045/sg");
         assertTrue(html.contains("Decree-laws this law converts"));
@@ -129,7 +127,8 @@ class ActPagesTest {
     @Test
     void unknownActHasNoDetails() throws IOException {
         assertTrue(catalog.details("https://example.it/eli/id/1999/01/01/X/sg").isEmpty());
-        assertFalse(catalog.isAct("https://example.it/eli/ext/decreto_legislativo/2001-03-30/165"));
+        assertTrue(catalog.isAct("https://example.it/eli/ext/decreto_legislativo/2001-03-30/165"),
+                "an act outside the corpus is an eli:LegalResource too");
         assertTrue(catalog.isAct(DL_18));
     }
 
@@ -148,8 +147,7 @@ class ActPagesTest {
             String details = pages.details(catalog.details(DL_18).orElseThrow(), "/eli/id/2020/03/17/20G00034/sg");
             assertTrue(details.contains("Convertito da <a href=\"/eli/id/2020/04/29/20G00045/sg\">"));
             assertTrue(details.contains("43 giorni"));
-            assertTrue(details.contains("Come è stato verificato?"));
-            assertTrue(details.contains(">modificato da</span>"));
+            assertTrue(details.contains("modificato da"));
             assertTrue(details.contains("D.L. 17 marzo 2020, n. 18"), "citations are the same in both languages");
         } finally {
             LocaleContextHolder.resetLocaleContext();
