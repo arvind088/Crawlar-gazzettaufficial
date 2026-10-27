@@ -27,7 +27,6 @@ import org.apache.jena.riot.RDFFormat;
 import org.apache.jena.vocabulary.OWL;
 import org.apache.jena.vocabulary.RDF;
 
-import it.legislation.mapping.AssessmentHistory;
 import it.legislation.source.gazzetta.GazzettaActPage;
 import it.legislation.source.gazzetta.HttpPageFetcher;
 import it.legislation.source.gazzetta.PageFetcher;
@@ -53,19 +52,17 @@ import it.legislation.source.gazzetta.PageFetcher;
  *
  * Options: {@code --in}, {@code --out}, {@code --report}, {@code --cache}
  * (default {@code data/raw/gazzetta}), {@code --pause-ms} (default 1000),
- * {@code --today yyyy-mm-dd} (date of the assessments, default today),
  * {@code --limit N} (check only the first N acts), {@code --offline} (use
  * cached pages only).
  */
 public class GazzettaCheckRunner {
 
-    public static final Path DEFAULT_IN = AknImportRunner.DEFAULT_OUT;
-    public static final Path DEFAULT_OUT = Path.of("data", "rdf", "gazzetta_check.ttl");
+    public static final Path DEFAULT_IN = AknImportRunner.LAYER1;
+    public static final Path DEFAULT_OUT = Path.of("data", "rdf", "layer1_gazzetta.ttl");
     public static final Path DEFAULT_REPORT = Path.of("data", "clean", "gazzetta_check.tsv");
     public static final Path DEFAULT_CACHE = Path.of("data", "raw", "gazzetta");
 
     static final String ELI = "http://data.europa.eu/eli/ontology#";
-    static final String ILG = "http://example.org/italian-legislation/ontology#";
     static final String RESOURCE_TYPE = "http://www.gazzettaufficiale.it/eli/tables/resource-type#";
 
     /** Outcome of one act. */
@@ -106,18 +103,11 @@ public class GazzettaCheckRunner {
     private final PageFetcher fetcher;
     private final Path cache;
     private final boolean offline;
-    private final java.time.LocalDate today;
 
     public GazzettaCheckRunner(PageFetcher fetcher, Path cache, boolean offline) {
-        this(fetcher, cache, offline, java.time.LocalDate.now());
-    }
-
-    /** @param today date written on the assessments of this run */
-    public GazzettaCheckRunner(PageFetcher fetcher, Path cache, boolean offline, java.time.LocalDate today) {
         this.fetcher = fetcher;
         this.cache = cache;
         this.offline = offline;
-        this.today = today;
     }
 
     public static void main(String[] args) throws IOException {
@@ -137,9 +127,7 @@ public class GazzettaCheckRunner {
         long pause = Long.parseLong(options.getOrDefault("--pause-ms", "1000"));
         int limit = Integer.parseInt(options.getOrDefault("--limit", String.valueOf(Integer.MAX_VALUE)));
 
-        java.time.LocalDate today = java.time.LocalDate.parse(
-                options.getOrDefault("--today", java.time.LocalDate.now().toString()));
-        GazzettaCheckRunner runner = new GazzettaCheckRunner(new HttpPageFetcher(pause, 2), cache, offline, today);
+        GazzettaCheckRunner runner = new GazzettaCheckRunner(new HttpPageFetcher(pause, 2), cache, offline);
         Summary summary = runner.run(in, out, report, limit, GazzettaCheckRunner::log);
 
         System.out.println();
@@ -212,7 +200,7 @@ public class GazzettaCheckRunner {
         }
         checks.forEach(c -> counts.merge(c.status(), 1, Integer::sum));
 
-        boolean written = writeModelIfChanged(out, toRdf(checks, AssessmentHistory.read(out), today));
+        boolean written = writeModelIfChanged(out, toRdf(checks));
         written |= writeIfChanged(report, tsv(checks).getBytes(StandardCharsets.UTF_8));
         return new Summary(checks, counts, fetched, cached, written);
     }
@@ -299,51 +287,19 @@ public class GazzettaCheckRunner {
     }
 
     /**
-     * The check as RDF. The result of each act is a dated assessment ({@link AssessmentHistory}): a new one is
-     * written only when the result changed since the latest earlier one, and nothing is removed. Facts that
-     * only Gazzetta gives (GU issue, date of entry into force) are added to confirmed acts. Network errors
-     * are not recorded: they say nothing about the act.
+     * The check as RDF, ELI only: the date of entry into force that the Gazzetta page gives, for each act
+     * whose identity both sources confirm. The result of the check itself (match, differences, GU issue)
+     * is in the report.
      */
-    static Model toRdf(List<Check> checks, AssessmentHistory history, java.time.LocalDate day) {
+    static Model toRdf(List<Check> checks) {
         Model model = ModelFactory.createDefaultModel();
-        model.add(history.previous());
         model.setNsPrefix("eli", ELI);
-        model.setNsPrefix("ilg", ILG);
-        model.setNsPrefix("owl", OWL.NS);
         model.setNsPrefix("xsd", XSDDatatype.XSD + "#");
-        Property result = model.createProperty(ILG, "gazzettaCheck");
-        Property difference = model.createProperty(ILG, "gazzettaDifference");
-        Property confirmedBy = model.createProperty(ILG, "identityConfirmedBy");
-        Property guNumber = model.createProperty(ILG, "guNumber");
-        Property guIssue = model.createProperty(ILG, "guIssue");
         Property entryIntoForce = model.createProperty(ELI, "first_date_entry_in_force");
-
         for (Check check : checks) {
-            if (check.status() == Status.ERROR) {
-                continue;
-            }
-            Resource work = model.createResource(check.act().workUri());
-            AssessmentHistory.Values values = new AssessmentHistory.Values()
-                    .put(result, model.createLiteral(check.status().name()));
-            check.differences().forEach(d -> values.put(difference, model.createLiteral(d)));
-            String uri = check.act().workUri();
-            String base = uri.contains("/eli/id/") ? uri.substring(0, uri.indexOf("/eli/id/")) : uri;
-            history.record(model, work, "GazzettaCheck", base + "/check/gazzetta/" + check.act().codice(), day,
-                    values.build());
-            if (check.status() != Status.MATCH) {
-                continue;
-            }
-            GazzettaActPage page = check.page();
-            work.addProperty(confirmedBy, model.createResource(check.act().gazzettaUri()));
-            if (page.guNumber() != null) {
-                work.addProperty(guNumber, page.guNumber());
-            }
-            if (page.guIssueUri() != null) {
-                work.addProperty(guIssue, model.createResource(page.guIssueUri()));
-            }
-            if (page.entryIntoForce() != null) {
-                work.addLiteral(entryIntoForce,
-                        model.createTypedLiteral(page.entryIntoForce().toString(), XSDDatatype.XSDdate));
+            if (check.status() == Status.MATCH && check.page().entryIntoForce() != null) {
+                model.createResource(check.act().workUri()).addLiteral(entryIntoForce,
+                        model.createTypedLiteral(check.page().entryIntoForce().toString(), XSDDatatype.XSDdate));
             }
         }
         return model;

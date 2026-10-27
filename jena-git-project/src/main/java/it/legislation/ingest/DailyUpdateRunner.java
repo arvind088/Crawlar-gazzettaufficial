@@ -155,7 +155,7 @@ public class DailyUpdateRunner {
         Duration lookback = Duration.ofDays(Long.parseLong(options.getOrDefault("--lookback-days", "7")));
         NormattivaClient client = new NormattivaClient();
         DailyUpdateRunner runner = new DailyUpdateRunner(clientSource(client), defaultPipeline(root),
-                root, AknImportRunner.DEFAULT_OUT, new IngestionWatermark(IngestionWatermark.DEFAULT_PATH),
+                root, AknImportRunner.LAYER1, new IngestionWatermark(IngestionWatermark.DEFAULT_PATH),
                 new IngestionRunLog());
         Summary s = runner.run(IngestionWatermark.nowUtc(), lookback, dryRun, DailyUpdateRunner::log);
 
@@ -328,12 +328,12 @@ public class DailyUpdateRunner {
     public static Pipeline defaultPipeline(Path root, String base) {
         return today -> {
             AknImportRunner.Summary imported = new AknImportRunner(new EliUriService(base))
-                    .run(root, AknImportRunner.DEFAULT_OUT);
+                    .run(root, AknImportRunner.LAYER1, AknImportRunner.LAYER2);
             GazzettaCheckRunner.Summary checked = new GazzettaCheckRunner(new HttpPageFetcher(1000, 2),
-                    GazzettaCheckRunner.DEFAULT_CACHE, false, today)
-                    .run(AknImportRunner.DEFAULT_OUT, GazzettaCheckRunner.DEFAULT_OUT, GazzettaCheckRunner.DEFAULT_REPORT,
+                    GazzettaCheckRunner.DEFAULT_CACHE, false)
+                    .run(AknImportRunner.LAYER1, GazzettaCheckRunner.DEFAULT_OUT, GazzettaCheckRunner.DEFAULT_REPORT,
                             Integer.MAX_VALUE, line -> { });
-            RelationRunner.Summary related = new RelationRunner().run(AknImportRunner.DEFAULT_OUT, root,
+            RelationRunner.Summary related = new RelationRunner().run(AknImportRunner.LAYERS, root,
                     RelationRunner.DEFAULT_OUT, RelationRunner.DEFAULT_CONVERSIONS, RelationRunner.DEFAULT_RELATIONS, today);
             return "Pipeline: " + imported.acts() + " acts, " + imported.expressions() + " versions; Gazzetta "
                     + checked.counts() + " (" + checked.fetched() + " pages fetched); "

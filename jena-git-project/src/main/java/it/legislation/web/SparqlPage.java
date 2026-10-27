@@ -336,10 +336,6 @@ public class SparqlPage {
             return "<span class=\"mono\" title=\"" + escape(uri) + "\">eli:" + escape(uri.substring(ActCatalog.ELI.length()))
                     + "</span>";
         }
-        if (uri.startsWith(ActCatalog.ILG)) {
-            return "<span class=\"mono\" title=\"" + escape(uri) + "\">ilg:" + escape(uri.substring(ActCatalog.ILG.length()))
-                    + "</span>";
-        }
         String href = path.orElse(uri);
         return "<a class=\"mono\" title=\"" + escape(uri) + "\" href=\"" + escape(href) + "\""
                 + (path.isPresent() ? "" : " rel=\"noreferrer\"") + ">" + escape(href) + "</a>";

@@ -1,19 +1,27 @@
-# Decree-laws by conversion status
-# How many decree-laws are converted, repealed, pending, awaiting the law's text or not converted (latest check of each).
-# it: Decreti-legge per stato della conversione
-# it: Quanti decreti-legge sono convertiti, abrogati, in attesa, in attesa del testo della legge o non convertiti (ultima verifica di ciascuno).
-PREFIX ilg: <http://example.org/italian-legislation/ontology#>
+# Decree-laws: converted or not
+# A decree-law is converted when a law's title says it converts it; without one it is pending for 60 days, then not converted.
+# it: Decreti-legge: convertiti o no
+# it: Un decreto-legge è convertito quando il titolo di una legge dice che lo converte; senza, è in attesa per 60 giorni, poi non convertito.
+PREFIX eli: <http://data.europa.eu/eli/ontology#>
+PREFIX dcterms: <http://purl.org/dc/terms/>
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+PREFIX rt: <http://www.gazzettaufficiale.it/eli/tables/resource-type#>
 
-SELECT ?status (COUNT(?decree) AS ?decreeLaws)
+SELECT ?status (COUNT(DISTINCT ?decree) AS ?decreeLaws)
 WHERE {
-  ?check a ilg:ConversionCheck ;
-         ilg:assesses ?decree ;
-         ilg:assessedOn ?on ;
-         ilg:conversionStatus ?status .
-  FILTER NOT EXISTS {
-    ?newer a ilg:ConversionCheck ; ilg:assesses ?decree ; ilg:assessedOn ?later .
-    FILTER (?later > ?on)
+  ?decree eli:type_document rt:DECRETO-LEGGE ;
+          dcterms:source <https://dati.normattiva.it/> ;
+          eli:number ?number ;
+          eli:date_publication ?published .
+  OPTIONAL {
+    ?law eli:type_document rt:LEGGE ;
+         eli:title ?title ;
+         eli:amends|eli:changes|eli:repeals ?decree .
+    FILTER (STRSTARTS(LCASE(STR(?title)), "conversione in legge"))
+    FILTER (REGEX(STR(?title), CONCAT("n\\. ?", STR(?number), "([^0-9]|$)")))
   }
+  BIND (xsd:date(SUBSTR(STR(NOW()), 1, 10)) - "P60D"^^xsd:dayTimeDuration AS ?sixtyDaysAgo)
+  BIND (IF(BOUND(?law), "CONVERTED", IF(?published >= ?sixtyDaysAgo, "PENDING", "NOT_CONVERTED")) AS ?status)
 }
 GROUP BY ?status
 ORDER BY DESC(?decreeLaws)

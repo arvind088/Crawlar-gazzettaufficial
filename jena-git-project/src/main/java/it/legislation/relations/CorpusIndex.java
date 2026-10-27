@@ -25,7 +25,7 @@ import org.apache.jena.vocabulary.DCTerms;
 import org.apache.jena.vocabulary.RDF;
 
 /**
- * The acts already imported (ELI Works in {@code normattiva_akn.ttl}), with the
+ * The acts already imported (ELI Works in {@code layer1_acts.ttl}, versions in {@code layer2_versions.ttl}), with the
  * files of their original and latest versions, and an index from citation key
  * (type, date, number) to act.
  */
@@ -54,9 +54,19 @@ public class CorpusIndex {
     }
 
     public static CorpusIndex read(Path turtle) throws IOException {
+        return read(List.of(turtle));
+    }
+
+    /** Reads the acts from the layer files (Layer 1: acts, Layer 2: versions); missing files are skipped. */
+    public static CorpusIndex read(List<Path> turtles) throws IOException {
         Model model = ModelFactory.createDefaultModel();
-        try (InputStream in = Files.newInputStream(turtle)) {
-            RDFDataMgr.read(model, in, Lang.TURTLE);
+        for (Path turtle : turtles) {
+            if (!Files.exists(turtle)) {
+                continue;
+            }
+            try (InputStream in = Files.newInputStream(turtle)) {
+                RDFDataMgr.read(model, in, Lang.TURTLE);
+            }
         }
         Property idLocal = model.createProperty(ELI, "id_local");
         Property datePublication = model.createProperty(ELI, "date_publication");

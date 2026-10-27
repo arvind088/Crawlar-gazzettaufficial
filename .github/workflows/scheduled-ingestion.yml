@@ -57,11 +57,9 @@ jobs:
           GAZZETTA_RSS_OUTPUT: "data/clean/gazzetta_rss_updates.tsv"
           GAZZETTA_RSS_MAX_ENTRIES: ${{ inputs.rss_entries || '50' }}
 
-      # Normattiva is no longer fetched here. The daily update (DailyUpdateRunner)
+      # Normattiva is not fetched here. The daily update (DailyUpdateRunner)
       # needs the raw corpus and the store, which live on the application's
       # server, not on GitHub's machines: see ARCHITECTURE.md.
-      - name: Derive in-force status
-        run: mvn -B "-Dexec.mainClass=it.legislation.ingest.InForceEnrichmentRunner" exec:java
 
       - name: Commit harvested data
         run: |

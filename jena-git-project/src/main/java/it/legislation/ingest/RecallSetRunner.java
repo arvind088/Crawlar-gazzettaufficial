@@ -84,7 +84,7 @@ public class RecallSetRunner {
         String mode = args.length == 0 ? "recall" : args[0];
         if (mode.equals("recall-sample")) {
             boolean written = sample(Path.of("data", "clean", "gazzetta_check.tsv"),
-                    Path.of("data", "clean", "relations.tsv"), Path.of("data", "rdf", "normattiva_akn.ttl"), DEFAULT_SET);
+                    Path.of("data", "clean", "relations.tsv"), AknImportRunner.LAYERS, DEFAULT_SET);
             System.out.println(written ? "Wrote " + DEFAULT_SET + ": fill 'actual_count' and 'missed' for each row "
                     + "(see 'how_to_check'), then run with \"recall\"."
                     : DEFAULT_SET + " already exists; not overwritten (delete it first to draw a new sample).");
@@ -105,7 +105,7 @@ public class RecallSetRunner {
     }
 
     /** Draws the sample. Returns false, and writes nothing, when the set already exists. */
-    public static boolean sample(Path acts, Path relations, Path akn, Path out) throws IOException {
+    public static boolean sample(Path acts, Path relations, List<Path> akn, Path out) throws IOException {
         if (Files.exists(out)) {
             return false;
         }
@@ -164,9 +164,16 @@ public class RecallSetRunner {
     }
 
     /** Redactional code → number of versions (ELI expressions). */
-    private static Map<String, Integer> versions(Path akn) {
+    private static Map<String, Integer> versions(List<Path> layers) throws IOException {
         Map<String, Integer> count = new HashMap<>();
-        Model model = RDFDataMgr.loadModel(akn.toString());
+        Model model = org.apache.jena.rdf.model.ModelFactory.createDefaultModel();
+        for (Path layer : layers) {
+            if (java.nio.file.Files.exists(layer)) {
+                try (java.io.InputStream in = java.nio.file.Files.newInputStream(layer)) {
+                    RDFDataMgr.read(model, in, org.apache.jena.riot.Lang.TURTLE);
+                }
+            }
+        }
         String query = "PREFIX eli: <http://data.europa.eu/eli/ontology#> SELECT ?id (COUNT(DISTINCT ?e) AS ?n) "
                 + "WHERE { ?a eli:id_local ?id ; eli:is_realized_by ?e } GROUP BY ?id";
         try (QueryExecution execution = QueryExecutionFactory.create(query, model)) {

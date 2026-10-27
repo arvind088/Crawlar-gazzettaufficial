@@ -1,19 +1,15 @@
-# Which act produced each version of an act, with the evidence
-# Example: D.L. 18 dicembre 2020, n. 172 (codice redazionale 20G00196).
+# Which act(s) each version of an act consolidates (eli:consolidates): the changes it contains.
+# Example: D.L. 17 marzo 2020, n. 18 (codice redazionale 20G00034).
 PREFIX eli: <http://data.europa.eu/eli/ontology#>
-PREFIX ilg: <http://example.org/italian-legislation/ontology#>
 
-SELECT ?version ?versionDate ?changingAct ?eventDate ?daysAfterEvent ?startsOnEntryIntoForce ?confirmedByChangeList
+SELECT ?version ?versionDate ?changingAct ?type ?date ?number
 WHERE {
-  ?act eli:id_local "20G00196" ;
+  ?act eli:id_local "20G00034" ;
        eli:is_realized_by ?version .
   ?version eli:version_date ?versionDate .
-  ?change a ilg:VersionChange ;
-          ilg:version ?version ;
-          ilg:changingAct ?changingAct ;
-          ilg:eventDate ?eventDate ;
-          ilg:daysAfterEvent ?daysAfterEvent ;
-          ilg:confirmedByChangeList ?confirmedByChangeList .
-  OPTIONAL { ?change ilg:startsOnEntryIntoForce ?startsOnEntryIntoForce }
+  OPTIONAL {
+    ?version eli:consolidates ?changingAct .
+    OPTIONAL { ?changingAct eli:type_document ?type ; eli:date_document ?date ; eli:number ?number }
+  }
 }
 ORDER BY ?versionDate ?changingAct

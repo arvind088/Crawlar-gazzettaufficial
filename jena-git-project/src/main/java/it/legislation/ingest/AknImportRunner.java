@@ -28,23 +28,36 @@ import it.legislation.source.normattiva.CorpusCounts;
  *
  * <p>Every XML file is read and checked by {@link AknActReader}; accepted
  * versions are grouped by act (codice redazionale) and mapped by
- * {@link AknToEli}. The result is written to one Turtle file, which the
- * triple store loads at start-up. A rejected file never reaches the store;
- * its reasons are printed. Running twice on the same files gives the same
- * output, and the file is not rewritten when nothing changed.
+ * {@link AknToEli}. The result is written in two layers, both loaded by the
+ * triple store at start-up:
+ * <ul>
+ *   <li><b>Layer 1</b> ({@code data/rdf/layer1_acts.ttl}): one {@code eli:LegalResource} per act, built from
+ *       its original text (type, date, number, codice, title, Gazzetta ELI), and the original version;</li>
+ *   <li><b>Layer 2</b> ({@code data/rdf/layer2_versions.ttl}): every consolidated version
+ *       ({@code eli:LegalExpression} with its {@code eli:version_date}) and the Akoma Ntoso file it came from.</li>
+ * </ul>
+ * A rejected file never reaches the store; its reasons are printed. Running
+ * twice on the same files gives the same output, and a file is not rewritten
+ * when nothing changed.
  *
  * <pre>
  * mvn -B compile exec:java "-Dexec.mainClass=it.legislation.ingest.AknImportRunner"
  * </pre>
  *
  * Options: {@code --in <dir>} (default {@code data/raw/normattiva}),
- * {@code --out <file>} (default {@code data/rdf/normattiva_akn.ttl}),
+ * {@code --layer1 <file>} (default {@code data/rdf/layer1_acts.ttl}),
+ * {@code --layer2 <file>} (default {@code data/rdf/layer2_versions.ttl}),
  * {@code --base <uri>} (default {@code LEGAL_ELI_BASE_URI} or the application default).
  */
 public class AknImportRunner {
 
     public static final Path DEFAULT_IN = Path.of("data", "raw", "normattiva");
-    public static final Path DEFAULT_OUT = Path.of("data", "rdf", "normattiva_akn.ttl");
+    /** Layer 1: the acts, from their original text. */
+    public static final Path LAYER1 = Path.of("data", "rdf", "layer1_acts.ttl");
+    /** Layer 2: the consolidated versions of each act. */
+    public static final Path LAYER2 = Path.of("data", "rdf", "layer2_versions.ttl");
+    /** Both layers, which together describe every act and every version. */
+    public static final List<Path> LAYERS = List.of(LAYER1, LAYER2);
 
     /** What one run did. */
     public record Summary(int filesRead, int acts, int expressions, int duplicates,
@@ -70,18 +83,20 @@ public class AknImportRunner {
             options.put(args[i], args[i + 1]);
         }
         Path in = Path.of(options.getOrDefault("--in", DEFAULT_IN.toString()));
-        Path out = Path.of(options.getOrDefault("--out", DEFAULT_OUT.toString()));
+        Path layer1 = Path.of(options.getOrDefault("--layer1", LAYER1.toString()));
+        Path layer2 = Path.of(options.getOrDefault("--layer2", LAYER2.toString()));
         String base = options.getOrDefault("--base",
                 System.getenv().getOrDefault("LEGAL_ELI_BASE_URI", new EliUriService().baseUri()));
 
-        Summary summary = new AknImportRunner(new EliUriService(base)).run(in, out);
+        Summary summary = new AknImportRunner(new EliUriService(base)).run(in, layer1, layer2);
         System.out.println("Files read:   " + summary.filesRead());
         System.out.println("Acts:         " + summary.acts());
         System.out.println("Versions:     " + summary.expressions());
         System.out.println("Duplicates:   " + summary.duplicates() + " (same act and version in more than one file)");
         System.out.println("Rejected:     " + summary.rejected().size());
         summary.rejected().forEach(r -> System.out.println("  REJECTED " + r.sourceFile() + "  " + r.problems()));
-        System.out.println(summary.written() ? "Wrote " + out : "No change: " + out + " is already up to date");
+        System.out.println(summary.written() ? "Wrote " + layer1 + " and " + layer2
+                : "No change: " + layer1 + " and " + layer2 + " are already up to date");
         if (!summary.countChecks().isEmpty()) {
             System.out.println("Corpus check (acts in Normattiva vs acts imported):");
             summary.countChecks().forEach(c -> {
@@ -130,7 +145,7 @@ public class AknImportRunner {
         return missing;
     }
 
-    public Summary run(Path in, Path out) throws IOException {
+    public Summary run(Path in, Path layer1, Path layer2) throws IOException {
         List<Path> files;
         try (Stream<Path> walk = Files.walk(in)) {
             files = walk.filter(p -> p.toString().endsWith(".xml")).sorted().toList();
@@ -154,27 +169,50 @@ public class AknImportRunner {
             }
         }
 
-        Model all = ModelFactory.createDefaultModel();
+        Model acts = ModelFactory.createDefaultModel();
+        Model consolidated = ModelFactory.createDefaultModel();
         int expressions = 0;
         for (Map<String, AknExpression> versions : byAct.values()) {
             Model act = mapper.map(new ArrayList<>(versions.values()));
-            all.setNsPrefixes(act.getNsPrefixMap());
-            all.add(act);
+            acts.setNsPrefixes(act.getNsPrefixMap());
+            consolidated.setNsPrefixes(act.getNsPrefixMap());
+            split(act, acts, consolidated);
             expressions += versions.size();
         }
-
-        ByteArrayOutputStream buffer = new ByteArrayOutputStream();
-        RDFDataMgr.write(buffer, all, RDFFormat.TURTLE_PRETTY);
-        byte[] turtle = buffer.toByteArray();
-        boolean written = false;
-        if (!Files.exists(out) || !Arrays.equals(Files.readAllBytes(out), turtle)) {
-            if (out.getParent() != null) {
-                Files.createDirectories(out.getParent());
-            }
-            Files.write(out, turtle);
-            written = true;
-        }
+        boolean written = write(layer1, acts);
+        written |= write(layer2, consolidated);
         return new Summary(files.size(), byAct.size(), expressions, duplicates, List.copyOf(rejected), written,
                 countChecks(in, byAct));
+    }
+
+    /**
+     * Layer 2 gets every statement about a consolidated version or its file (subject or object under
+     * {@code /ita/vigente/}); Layer 1 gets the rest: the act and its original version.
+     */
+    static void split(Model act, Model layer1, Model layer2) {
+        act.listStatements().forEachRemaining(statement -> {
+            boolean version = isConsolidated(statement.getSubject())
+                    || (statement.getObject().isURIResource() && isConsolidated(statement.getObject().asResource()));
+            (version ? layer2 : layer1).add(statement);
+        });
+    }
+
+    private static boolean isConsolidated(org.apache.jena.rdf.model.Resource resource) {
+        return resource.isURIResource() && resource.getURI().contains("/ita/vigente/");
+    }
+
+    /** Writes the Turtle unless the file already holds exactly these bytes. */
+    private static boolean write(Path out, Model model) throws IOException {
+        ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+        RDFDataMgr.write(buffer, model, RDFFormat.TURTLE_PRETTY);
+        byte[] turtle = buffer.toByteArray();
+        if (Files.exists(out) && Arrays.equals(Files.readAllBytes(out), turtle)) {
+            return false;
+        }
+        if (out.getParent() != null) {
+            Files.createDirectories(out.getParent());
+        }
+        Files.write(out, turtle);
+        return true;
     }
 }

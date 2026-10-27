@@ -3,7 +3,6 @@ package it.legislation.relations;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.EnumMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
@@ -28,15 +27,15 @@ import it.legislation.relations.ModificationNote.Kind;
  * abrogazione, modifica, introduzione, soppressione or sostituzione →
  * {@code eli:amends}; a note that fits no rule → {@code eli:changes}. Notes
  * that describe the change as made through a third act ("la conversione del
- * D.L. …", "l'abrogazione del D.L. …") are not counted for Y. A relation is
- * level A when Y is imported and Y's own lifecycle names X as one of the acts
- * that changed it (two independent statements); otherwise level B.
+ * D.L. …", "l'abrogazione del D.L. …") are not counted for Y. The history of
+ * Y (lifecycle of its latest version) also names the acts that changed it: an
+ * act named there with no change-list entry for Y gives "X changes Y". Each
+ * relation records where it was found ({@link Relation#sources()}).
  *
- * <p><b>Conversion</b> of decree-law D by law L, rules C1–C6 (ARCHITECTURE.md):
- * C1 types, C2 a note of L says "la conversione … del D.L. ⟨D⟩", C3 Article 1 of
- * L says D "è convertito in legge" (or L's title says so), C4 D resolves to
- * exactly one imported act, C5 L published within 60 days of D (Constitution,
- * art. 77), C6 no other law passes for D.
+ * <p><b>Conversion</b>: law L converts decree-law D when L's title says
+ * "Conversione in legge[, con modificazioni,] del decreto-legge ⟨date⟩, n. ⟨number⟩"
+ * and that decree-law is in the corpus. A decree-law without such a law is
+ * pending for the 60 days the Constitution allows (art. 77), then not converted.
  */
 public class RelationDetector {
 
@@ -55,48 +54,43 @@ public class RelationDetector {
      * One relation between two acts. {@code to} is the imported act, or null
      * when the target is outside the corpus ({@code toKey} then identifies it).
      */
-    public record Relation(Act from, ActKey fromKey, Property property, Act to, ActKey toKey, String trust,
+    public record Relation(Act from, ActKey fromKey, Property property, Act to, ActKey toKey,
                            int textualMods, boolean confirmedByLifecycle, Map<Kind, Integer> kinds,
-                           List<String> exampleNotes, String sourceFile) {}
+                           List<String> exampleNotes, String sourceFile) {
 
-    /** Outcome for one decree-law. */
-    public enum ConversionStatus {
-        /** C1–C6 pass. */
-        CONVERTED,
-        /** C1, C4, C5, C6 pass and only one of C2 / C3. */
-        CONVERTED_ONE_SOURCE,
-        /** A candidate law exists but a check fails. */
-        REVIEW,
-        /** No conversion law, and the 60 days are not over yet. */
-        PENDING,
-        /** Normattiva lists a law converting it, whose text is not exported yet (not imported). */
-        AWAITING_LAW_TEXT,
-        /** Not converted: repealed by an imported act (usually merged into another decree's conversion law). */
-        REPEALED,
-        /** No conversion law, not repealed by an imported act, and more than 60 days have passed. */
-        NOT_CONVERTED
-    }
-
-    /** The checks for one (law, decree) pair. */
-    public record Checks(boolean c1, boolean c2, boolean c3, boolean c4, boolean c5, boolean c6, long days) {
-        boolean core() {
-            return c1 && c4 && c5;
+        /** Where the relation was found: "change list + history", "change list" or "history". */
+        public String sources() {
+            return textualMods > 0 ? (confirmedByLifecycle ? "change list + history" : "change list") : "history";
         }
     }
 
-    /** Result for one decree-law. {@code law}/{@code checks} are null when no candidate law was found. */
-    public record Conversion(Act decree, ConversionStatus status, Act law, Checks checks,
-                             int otherCandidates, String decreeNoteNamesLaw, List<String> repealedBy) {}
+    /** Outcome for one decree-law. */
+    public enum ConversionStatus {
+        /** A law's title says it converts this decree-law. */
+        CONVERTED,
+        /** No conversion law yet, and the 60 days are not over. */
+        PENDING,
+        /** No conversion law, and more than 60 days have passed. */
+        NOT_CONVERTED
+    }
+
+    /**
+     * Result for one decree-law. {@code law} is the converting law in the corpus, or null; {@code listedLaw}
+     * describes a converting law Normattiva lists but whose text is not imported yet; {@code days} is the time
+     * from the decree's publication to the law's (-1 when unknown).
+     */
+    public record Conversion(Act decree, ConversionStatus status, Act law, String listedLaw, long days) {}
 
     public record Result(List<Relation> relations, List<Conversion> conversions, int textualMods,
                          int indirectMods, int unresolvedDestinations) {}
 
+    /**
+     * "Conversione in legge[, con/senza modificazioni,] del decreto-legge 1° marzo 2022, n. 17". The day may
+     * be written "1°", and one Gazzetta title has the typing error "3l" (letter l) for 31.
+     */
     private static final Pattern TITLE_CONVERTS = Pattern.compile(
-            "Conversione in legge(?:,? con modificazioni,?)?(?:,? del decreto-legge| del D\\.L\\.)\\s+(\\d{1,2}\\s+[a-z]+\\s+\\d{4},?\\s+n\\.\\s?\\d+)",
-            Pattern.CASE_INSENSITIVE);
-    /** The decree's own note starts with ", convertito con modificazioni dalla L. …": the subject is the decree itself. */
-    private static final Pattern DECREE_NOTE = Pattern.compile(
-            "^\\W*convertit[oa]\\s+(?:con|senza)\\s+modificazioni\\s+dalla\\s+(L\\.\\s+\\d{1,2}\\s+[a-z]+\\s+\\d{4},?\\s+n\\.\\s?\\d+)",
+            "Conversione in legge(?:,? (?:con|senza) modificazioni,?)?(?:,? del decreto-legge| del D\\.L\\.)\\s+"
+                    + "([0-9l]{1,2})°?\\s+([a-z]+)\\s+(\\d{4}),?\\s+n\\.\\s?(\\d+)",
             Pattern.CASE_INSENSITIVE);
 
     private final CorpusIndex corpus;
@@ -192,7 +186,7 @@ public class RelationDetector {
         Set<String> fromTextual = new LinkedHashSet<>();
         for (Builder b : builders.values()) {
             boolean confirmed = b.to != null && changedBy.getOrDefault(b.to.codice(), Set.of()).contains(b.fromKey);
-            Relation relation = b.build(confirmed ? "A" : "B", confirmed);
+            Relation relation = b.build(confirmed);
             relations.add(relation);
             fromTextual.add(b.fromKey + "|" + b.toKey);
         }
@@ -204,12 +198,12 @@ public class RelationDetector {
                     continue;
                 }
                 Act from = corpus.resolve(fromKey).orElse(null);
-                relations.add(new Relation(from, fromKey, Property.CHANGES, to, to.key(), "B", 0, true,
+                relations.add(new Relation(from, fromKey, Property.CHANGES, to, to.key(), 0, true,
                         Map.of(), List.of(), to.latestFile()));
             }
         }
 
-        List<Conversion> conversions = conversions(original, today, relations);
+        List<Conversion> conversions = conversions(today);
         return new Result(relations, conversions, total, indirect, unresolved);
     }
 
@@ -225,130 +219,54 @@ public class RelationDetector {
                 && !"DECRETO-LEGGE".equals(from.typeCode());
     }
 
-    private List<Conversion> conversions(Map<String, Evidence> original, LocalDate today, List<Relation> relations) {
-        // C2 and C3 statements of each law.
-        Map<String, Set<ActKey>> c2 = new LinkedHashMap<>();
-        Map<String, Set<ActKey>> c3 = new LinkedHashMap<>();
+    /**
+     * Conversion by title: each law whose title says "Conversione in legge … del decreto-legge ⟨date⟩, n. ⟨n⟩"
+     * converts that decree-law, when it is in the corpus; Normattiva's list of laws whose text is not exported
+     * yet is used the same way. The other decree-laws are pending for 60 days, then not converted.
+     */
+    private List<Conversion> conversions(LocalDate today) {
+        Map<String, Act> lawOf = new LinkedHashMap<>();
         for (Act law : corpus.acts()) {
             if (!"LEGGE".equals(law.key().typeCode())) {
                 continue;
             }
-            Evidence evidence = original.get(law.codice());
-            Set<ActKey> notes = new LinkedHashSet<>();
-            Set<ActKey> text = new LinkedHashSet<>();
-            if (evidence != null) {
-                for (TextualMod mod : evidence.textualMods()) {
-                    ModificationNote note = ModificationNote.parse(mod.note());
-                    if (note.kind() == Kind.CONVERSION) {
-                        if (note.namedAct() != null) {
-                            notes.add(note.namedAct());
-                        } else if (mod.destination() != null && "DECRETO-LEGGE".equals(mod.destination().typeCode())) {
-                            notes.add(mod.destination()); // "la conversione" of the destination itself
-                        }
-                    }
-                }
-                text.addAll(evidence.article1Converts());
-            }
-            convertedDecree(law.title()).ifPresent(text::add);
-            c2.put(law.codice(), notes);
-            c3.put(law.codice(), text);
+            convertedDecree(law.title()).flatMap(corpus::resolve).ifPresent(decree ->
+                    lawOf.merge(decree.codice(), law, (a, b) -> a.publicationDate().isBefore(b.publicationDate()) ? a : b));
         }
-
-        Map<String, Set<String>> amendedBy = new LinkedHashMap<>();
-        for (Relation r : relations) {
-            if (r.textualMods() > 0 && r.to() != null && r.from() != null) {
-                amendedBy.computeIfAbsent(r.to().codice(), k -> new LinkedHashSet<>()).add(r.from().codice());
-            }
-        }
-        Map<String, List<String>> repealedBy = new LinkedHashMap<>();
-        for (Relation r : relations) {
-            if (r.property() == Property.REPEALS && r.to() != null && r.from() != null) {
-                repealedBy.computeIfAbsent(r.to().codice(), k -> new ArrayList<>()).add(r.from().codice());
-            }
-        }
-
         List<Conversion> result = new ArrayList<>();
         for (Act decree : corpus.acts()) {
             if (!"DECRETO-LEGGE".equals(decree.key().typeCode())) {
                 continue;
             }
-            String decreeNote = decreeNoteNamesLaw(original.get(decree.codice()));
-            Map<Act, Checks> candidates = new LinkedHashMap<>();
-            for (Act law : corpus.acts()) {
-                // C2: a structured Normattiva statement linking the two acts, from either side:
-                // the law's note "la conversione … del D.L. ⟨D⟩" or the decree's note "convertito … dalla L. ⟨L⟩".
-                boolean inC2 = c2.getOrDefault(law.codice(), Set.of()).contains(decree.key())
-                        || law.key().toString().equals(decreeNote);
-                boolean inC3 = c3.getOrDefault(law.codice(), Set.of()).contains(decree.key());
-                if (!inC2 && !inC3) {
-                    continue;
-                }
-                // Newer files have no notes: the law's textualMods changing the decree (the "modificazioni"
-                // of the conversion) are the structured link. Used only for a law the text already names.
-                if (!inC2 && amendedBy.getOrDefault(decree.codice(), Set.of()).contains(law.codice())) {
-                    inC2 = true;
-                }
-                long days = ChronoUnit.DAYS.between(decree.publicationDate(), law.publicationDate());
-                candidates.put(law, new Checks("LEGGE".equals(law.key().typeCode()), inC2, inC3,
-                        corpus.count(decree.key()) == 1, days > 0 && days <= 60, false, days));
-            }
-            long passing = candidates.values().stream().filter(c -> c.core() && (c.c2() || c.c3())).count();
-            List<String> repealers = repealedBy.getOrDefault(decree.codice(), List.of());
-
-            if (candidates.isEmpty()) {
+            Act law = lawOf.get(decree.codice());
+            if (law != null) {
+                result.add(new Conversion(decree, ConversionStatus.CONVERTED, law, null,
+                        ChronoUnit.DAYS.between(decree.publicationDate(), law.publicationDate())));
+            } else if (listed.containsKey(decree.key())) {
+                result.add(new Conversion(decree, ConversionStatus.CONVERTED, null, listed.get(decree.key()), -1));
+            } else {
                 long age = ChronoUnit.DAYS.between(decree.publicationDate(), today);
-                ConversionStatus status = listed.containsKey(decree.key()) ? ConversionStatus.AWAITING_LAW_TEXT
-                        : !repealers.isEmpty() ? ConversionStatus.REPEALED
-                        : age <= 60 ? ConversionStatus.PENDING : ConversionStatus.NOT_CONVERTED;
-                result.add(new Conversion(decree, status, null, null, 0,
-                        listed.containsKey(decree.key()) ? listed.get(decree.key()) : decreeNote, repealers));
-                continue;
+                result.add(new Conversion(decree, age <= 60 ? ConversionStatus.PENDING : ConversionStatus.NOT_CONVERTED,
+                        null, null, -1));
             }
-            Map.Entry<Act, Checks> best = candidates.entrySet().stream()
-                    .max(Comparator.comparingInt((Map.Entry<Act, Checks> e) -> score(e.getValue()))
-                            .thenComparing(e -> -e.getValue().days()))
-                    .orElseThrow();
-            Checks c = best.getValue();
-            Checks checks = new Checks(c.c1(), c.c2(), c.c3(), c.c4(), c.c5(), passing == 1, c.days());
-            ConversionStatus status = !checks.core() || !checks.c6() ? ConversionStatus.REVIEW
-                    : checks.c2() && checks.c3() ? ConversionStatus.CONVERTED
-                    : ConversionStatus.CONVERTED_ONE_SOURCE;
-            result.add(new Conversion(decree, status, best.getKey(), checks, candidates.size() - 1, decreeNote, repealers));
         }
         return result;
     }
 
-    /** The decree-law a title says it converts: "Conversione in legge[, con modificazioni,] del decreto-legge …". */
+    /**
+     * The decree-law a law's title says it converts: "Conversione in legge[, con modificazioni,] del
+     * decreto-legge 17 marzo 2020, n. 18" → DECRETO-LEGGE 2020-03-17 n. 18.
+     */
     public static Optional<ActKey> convertedDecree(String title) {
         if (title == null) {
             return Optional.empty();
         }
         Matcher m = TITLE_CONVERTS.matcher(AknRelationReader.clean(title));
-        return m.find() ? ModificationNote.namedAct("D.L. " + m.group(1)) : Optional.empty();
-    }
-
-    private static int score(Checks c) {
-        return (c.c1() ? 1 : 0) + (c.c2() ? 1 : 0) + (c.c3() ? 1 : 0) + (c.c4() ? 1 : 0) + (c.c5() ? 1 : 0);
-    }
-
-    /** The law a decree's own notes say converted it ("convertito con modificazioni dalla L. …"), if any. */
-    private static String decreeNoteNamesLaw(Evidence evidence) {
-        if (evidence == null) {
-            return null;
+        if (!m.find()) {
+            return Optional.empty();
         }
-        for (TextualMod mod : evidence.textualMods()) {
-            if (mod.note() == null) {
-                continue;
-            }
-            Matcher m = DECREE_NOTE.matcher(AknRelationReader.clean(mod.note()));
-            if (m.find()) {
-                Optional<ActKey> law = ModificationNote.namedAct(m.group(1));
-                if (law.isPresent()) {
-                    return law.get().toString();
-                }
-            }
-        }
-        return null;
+        String day = m.group(1).replace('l', '1').replace('L', '1');
+        return ModificationNote.namedAct("D.L. " + day + " " + m.group(2) + " " + m.group(3) + ", n. " + m.group(4));
     }
 
     /** Collects the textual modifications of one (from, to) pair. */
@@ -382,10 +300,10 @@ public class RelationDetector {
             }
         }
 
-        Relation build(String trust, boolean confirmed) {
+        Relation build(boolean confirmed) {
             // The strongest statement wins: a repeal of the whole act includes its amendments.
             Property property = repeals ? Property.REPEALS : amends ? Property.AMENDS : Property.CHANGES;
-            return new Relation(from, fromKey, property, to, toKey, trust, count, confirmed,
+            return new Relation(from, fromKey, property, to, toKey, count, confirmed,
                     Map.copyOf(kinds), List.copyOf(examples), sourceFile);
         }
     }

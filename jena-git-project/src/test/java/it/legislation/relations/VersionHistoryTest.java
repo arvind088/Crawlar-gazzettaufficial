@@ -48,7 +48,7 @@ class VersionHistoryTest {
                 event("2021-02-15", null),            // empty reference in Normattiva's history
                 event("2021-03-01", oldLaw.key()),
                 event("2021-06-01", later.key())));   // after the last version
-        List<Relation> relations = List.of(new Relation(law, law.key(), Property.AMENDS, decree, decree.key(), "A", 9,
+        List<Relation> relations = List.of(new Relation(law, law.key(), Property.AMENDS, decree, decree.key(), 9,
                 true, Map.of(), List.of(), "x.xml"));
         Map<String, LocalDate> inForce = Map.of(law.workUri(), LocalDate.of(2021, 1, 31));
 
