@@ -45,6 +45,8 @@ class DailyUpdateRunnerTest {
     class FakeSource implements DailyUpdateRunner.Source {
         final List<ExportRequest> exports = new ArrayList<>();
         boolean failExports;
+        /** L. 180/2026: Normattiva's all-versions export is empty; true when its other exports are empty too. */
+        boolean noTextAnywhere;
 
         @Override
         public List<JsonNode> updatedActs(LocalDate from, LocalDate to) {
@@ -77,7 +79,11 @@ class DailyUpdateRunnerTest {
                 throw new IOException("HTTP 503");
             }
             if (request.number() == 180) {
-                return zip(null); // listed, but Normattiva has not exported the text yet
+                // Listed; the all-versions export is empty (as for recent acts in October 2026), but the
+                // original text can be exported on its own, unless Normattiva has no text at all yet.
+                boolean original = request.mode() == ExportRequest.Mode.ORIGINAL;
+                return zip(original && !noTextAnywhere
+                        ? Path.of("src/test/resources/akn-relations/legge-2020-27-relations.xml") : null);
             }
             return zip(Path.of("src/test/resources/akn-relations/decreto-legge-2020-18-relations.xml"));
         }
@@ -120,15 +126,33 @@ class DailyUpdateRunnerTest {
         assertEquals(1, s.updated(), "D.L. 18/2020");
         assertEquals(2, s.outOfScope(), "a 2018 act and a regolamento");
         assertEquals(1, s.missing(), "L. 180/2026 is listed but not imported; L. 27/2020 is imported");
-        assertEquals(1, s.fetched());
-        assertEquals(1, s.notExportedYet());
+        assertEquals(2, s.fetched());
+        assertEquals(1, s.fromSingleTextExports(), "L. 180/2026 from its original text");
+        assertEquals(0, s.notExportedYet());
         assertTrue(s.failures().isEmpty(), s.failures().toString());
         assertEquals(List.of(LocalDate.of(2026, 10, 11)), pipelineRuns);
         assertTrue(Files.exists(temp.resolve("raw/updates/2026-10-11/DECRETO_LEGGE_2020-03-17_18_M_AKN.zip")));
+        assertTrue(Files.exists(temp.resolve("raw/updates/2026-10-11/LEGGE_2026-10-09_180_O_AKN")),
+                "the original text is unpacked where the import finds it");
+        assertEquals(List.of("M", "O", "V"), source.exports.stream().filter(r -> r.number() == 180)
+                .map(r -> r.mode().code()).toList(), "all versions first, then the original and current text");
         assertTrue(Files.readString(temp.resolve("raw/corpus/lists/LEGGE_2026_M_AKN.json")).contains("26G00201"));
         assertEquals(NOW, new IngestionWatermark(temp.resolve("watermarks.tsv"))
                 .lastSuccessfulEnd(DailyUpdateRunner.SOURCE).orElseThrow());
         assertTrue(Files.readString(temp.resolve("runs.tsv")).contains("COMPLETED"));
+    }
+
+    @Test
+    void anActWithoutAnyTextIsRetriedNextRun() throws IOException {
+        FakeSource source = new FakeSource();
+        source.noTextAnywhere = true;
+
+        DailyUpdateRunner.Summary s = runner(source, new ArrayList<>()).run(NOW, Duration.ofDays(7), false, line -> { });
+
+        assertEquals(1, s.fetched(), "only D.L. 18/2020");
+        assertEquals(0, s.fromSingleTextExports());
+        assertEquals(1, s.notExportedYet(), "L. 180/2026: no text in any export yet");
+        assertTrue(s.failures().isEmpty(), "an empty export is not a failure");
     }
 
     @Test
