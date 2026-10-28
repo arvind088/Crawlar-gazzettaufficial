@@ -1297,14 +1297,14 @@
 <https://osservatorio-eli.example.it/eli/id/2023/12/21/23G00209/sg>
         eli:first_date_entry_in_force  "2023-12-22"^^xsd:date .
 
-<https://osservatorio-eli.example.it/eli/id/2018/09/04/18G00129/sg>
-        eli:first_date_entry_in_force  "2018-09-19"^^xsd:date .
-
 <https://osservatorio-eli.example.it/eli/id/2020/02/14/20G00015/sg>
         eli:first_date_entry_in_force  "2020-02-15"^^xsd:date .
 
 <https://osservatorio-eli.example.it/eli/id/2022/02/17/22G00017/sg>
         eli:first_date_entry_in_force  "2022-02-18"^^xsd:date .
+
+<https://osservatorio-eli.example.it/eli/id/2020/06/24/20G00080/sg>
+        eli:first_date_entry_in_force  "2020-06-25"^^xsd:date .
 
 <https://osservatorio-eli.example.it/eli/id/2020/05/10/20G00047/sg>
         eli:first_date_entry_in_force  "2020-05-11"^^xsd:date .
@@ -1315,20 +1315,17 @@
 <https://osservatorio-eli.example.it/eli/id/2022/09/12/22G00142/sg>
         eli:first_date_entry_in_force  "2022-09-27"^^xsd:date .
 
-<https://osservatorio-eli.example.it/eli/id/2020/06/24/20G00080/sg>
-        eli:first_date_entry_in_force  "2020-06-25"^^xsd:date .
-
 <https://osservatorio-eli.example.it/eli/id/2025/01/16/25G00002/sg>
         eli:first_date_entry_in_force  "2025-01-31"^^xsd:date .
+
+<https://osservatorio-eli.example.it/eli/id/2025/11/19/25G00180/sg>
+        eli:first_date_entry_in_force  "2025-11-20"^^xsd:date .
 
 <https://osservatorio-eli.example.it/eli/id/2023/11/24/23G00178/sg>
         eli:first_date_entry_in_force  "2023-12-09"^^xsd:date .
 
 <https://osservatorio-eli.example.it/eli/id/2024/05/09/24G00078/sg>
         eli:first_date_entry_in_force  "2024-05-10"^^xsd:date .
-
-<https://osservatorio-eli.example.it/eli/id/2025/11/19/25G00180/sg>
-        eli:first_date_entry_in_force  "2025-11-20"^^xsd:date .
 
 <https://osservatorio-eli.example.it/eli/id/2026/04/27/26G00074/sg>
         eli:first_date_entry_in_force  "2026-05-12"^^xsd:date .
