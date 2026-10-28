@@ -1,5 +1,5 @@
 codice	gu_date	type	number	date_of_act	status	differences	title_differs	gu_number	entry_into_force	gazzetta_url
-003G0218	2003-07-29	DECRETO_LEGISLATIVO	196	2003-06-30	ERROR	HTTP 500 for https://www.gazzettaufficiale.it/eli/id/2003/07/29/003G0218/sg				https://www.gazzettaufficiale.it/eli/id/2003/07/29/003G0218/sg
+003G0218	2003-07-29	DECRETO_LEGISLATIVO	196	2003-06-30	ERROR	not in cache (offline run)				https://www.gazzettaufficiale.it/eli/id/2003/07/29/003G0218/sg
 18G00129	2018-09-04	DECRETO_LEGISLATIVO	101	2018-08-10	MATCH			205	2018-09-19	https://www.gazzettaufficiale.it/eli/id/2018/09/04/18G00129/sg
 20G00004	2020-01-09	DECRETO-LEGGE	1	2020-01-09	MATCH			6	2020-01-10	https://www.gazzettaufficiale.it/eli/id/2020/01/09/20G00004/sg
 20G00009	2020-01-31	LEGGE	2	2020-01-30	MATCH			25	2020-02-01	https://www.gazzettaufficiale.it/eli/id/2020/01/31/20G00009/sg
@@ -495,7 +495,7 @@ codice	gu_date	type	number	date_of_act	status	differences	title_differs	gu_numbe
 23G00041	2023-03-30	LEGGE	33	2023-03-23	MATCH			76	2023-03-31	https://www.gazzettaufficiale.it/eli/id/2023/03/30/23G00041/sg
 23G00042	2023-03-30	DECRETO-LEGGE	34	2023-03-30	MATCH			76	2023-03-31	https://www.gazzettaufficiale.it/eli/id/2023/03/30/23G00042/sg
 23G00043	2023-03-31	DECRETO-LEGGE	35	2023-03-31	MATCH			77	2023-04-01	https://www.gazzettaufficiale.it/eli/id/2023/03/31/23G00043/sg
-23G00044	2023-03-31	DECRETO_LEGISLATIVO	36	2023-03-31	ERROR	HTTP 500 for https://www.gazzettaufficiale.it/eli/id/2023/03/31/23G00044/sg				https://www.gazzettaufficiale.it/eli/id/2023/03/31/23G00044/sg
+23G00044	2023-03-31	DECRETO_LEGISLATIVO	36	2023-03-31	ERROR	not in cache (offline run)				https://www.gazzettaufficiale.it/eli/id/2023/03/31/23G00044/sg
 23G00045	2023-04-07	LEGGE	37	2023-03-30	MATCH			83	2023-04-08	https://www.gazzettaufficiale.it/eli/id/2023/04/07/23G00045/sg
 23G00046	2023-04-11	LEGGE	38	2023-04-11	MATCH			85	2023-04-12	https://www.gazzettaufficiale.it/eli/id/2023/04/11/23G00046/sg
 23G00047	2023-04-14	DECRETO-LEGGE	39	2023-04-14	MATCH			88	2023-04-15	https://www.gazzettaufficiale.it/eli/id/2023/04/14/23G00047/sg
