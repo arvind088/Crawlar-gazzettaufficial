@@ -3420,12 +3420,6 @@
         eli:title           "Ratifica ed esecuzione dell'Accordo tra la Repubblica italiana e la Repubblica della Macedonia, ora Repubblica della Macedonia del Nord, in materia di sicurezza sociale, fatto a Skopje il 25 luglio 2014."@it;
         eli:version_date    "2025-10-28"^^xsd:date .
 
-<https://osservatorio-eli.example.it/eli/id/2018/09/04/18G00129/sg/ita/original/akn>
-        a               eli:Format;
-        eli:embodies    <https://osservatorio-eli.example.it/eli/id/2018/09/04/18G00129/sg/ita/original>;
-        eli:format      <https://www.iana.org/assignments/media-types/application/akn+xml>;
-        dcterms:source  "dlgs-2018-101-modifier/DECRETO_LEGISLATIVO_2018-08-10_101_O_AKN/DECRETO LEGISLATIVO_20180810_101/2018-09-04_18G00129_ORIGINALE_V0.xml" .
-
 <https://osservatorio-eli.example.it/eli/id/2023/10/19/23G00155/sg/ita/original/akn>
         a               eli:Format;
         eli:embodies    <https://osservatorio-eli.example.it/eli/id/2023/10/19/23G00155/sg/ita/original>;
@@ -4217,20 +4211,6 @@
         dcterms:source        <https://dati.normattiva.it/>;
         owl:sameAs            <http://www.gazzettaufficiale.it/eli/id/2020/10/16/20G00147/sg> .
 
-<https://osservatorio-eli.example.it/eli/id/2003/07/29/003G0218/sg>
-        a                     eli:LegalResource;
-        rdfs:label            "Codice in materia di protezione dei dati personali."@it;
-        eli:date_document     "2003-06-30"^^xsd:date;
-        eli:date_publication  "2003-07-29"^^xsd:date;
-        eli:id_local          "003G0218";
-        eli:is_realized_by    <https://osservatorio-eli.example.it/eli/id/2003/07/29/003G0218/sg/ita/original>;
-        eli:number            "196";
-        eli:title             "Codice in materia di protezione dei dati personali."@it;
-        eli:type_document     <http://www.gazzettaufficiale.it/eli/tables/resource-type#DECRETO_LEGISLATIVO>;
-        dcterms:identifier    "urn:nir:stato:decreto.legislativo:2003-06-30;196";
-        dcterms:source        <https://dati.normattiva.it/>;
-        owl:sameAs            <http://www.gazzettaufficiale.it/eli/id/2003/07/29/003G0218/sg> .
-
 <https://osservatorio-eli.example.it/eli/id/2020/08/04/20G00107/sg/ita/original>
         a                   eli:LegalExpression;
         rdfs:label          "Ratifica ed esecuzione dell'Accordo tra il Governo della Repubblica italiana e il Governo della Repubblica democratica federale di Etiopia sulla cooperazione nel settore della difesa, fatto ad Addis Abeba il 10 aprile 2019. (testo originale)"@it;
@@ -4717,15 +4697,6 @@
         eli:realizes        <https://osservatorio-eli.example.it/eli/id/2023/09/23/23G00139/sg>;
         eli:title           "Conversione in legge, con modificazioni, del decreto-legge 28 luglio 2023, n. 98, recante misure urgenti in materia di tutela dei lavoratori in caso di emergenza climatica e di termini di versamento."@it;
         eli:version_date    "2023-09-24"^^xsd:date .
-
-<https://osservatorio-eli.example.it/eli/id/2018/09/04/18G00129/sg/ita/original>
-        a                   eli:LegalExpression;
-        rdfs:label          "Disposizioni per l'adeguamento della normativa nazionale alle disposizioni del regolamento (UE) 2016/679 del Parlamento europeo e del Consiglio, del 27 aprile 2016, relativo alla protezione delle persone fisiche con riguardo al trattamento dei dati personali, nonche' alla libera circolazione di tali dati e che abroga la direttiva 95/46/CE (regolamento generale sulla protezione dei dati). (testo originale)"@it;
-        eli:is_embodied_by  <https://osservatorio-eli.example.it/eli/id/2018/09/04/18G00129/sg/ita/original/akn>;
-        eli:language        <http://publications.europa.eu/resource/authority/language/ITA>;
-        eli:realizes        <https://osservatorio-eli.example.it/eli/id/2018/09/04/18G00129/sg>;
-        eli:title           "Disposizioni per l'adeguamento della normativa nazionale alle disposizioni del regolamento (UE) 2016/679 del Parlamento europeo e del Consiglio, del 27 aprile 2016, relativo alla protezione delle persone fisiche con riguardo al trattamento dei dati personali, nonche' alla libera circolazione di tali dati e che abroga la direttiva 95/46/CE (regolamento generale sulla protezione dei dati)."@it;
-        eli:version_date    "2018-09-19"^^xsd:date .
 
 <https://osservatorio-eli.example.it/eli/id/2023/03/23/23G00037/sg>
         a                     eli:LegalResource;
@@ -7869,12 +7840,6 @@
         eli:embodies    <https://osservatorio-eli.example.it/eli/id/2021/07/30/21G00118/sg/ita/original>;
         eli:format      <https://www.iana.org/assignments/media-types/application/akn+xml>;
         dcterms:source  "corpus/LEGGE/2021/LEGGE_2021_M_AKN/LEGGE_20210729_108/2021-07-30_21G00118_ORIGINALE_V0.xml" .
-
-<https://osservatorio-eli.example.it/eli/id/2003/07/29/003G0218/sg/ita/original/akn>
-        a               eli:Format;
-        eli:embodies    <https://osservatorio-eli.example.it/eli/id/2003/07/29/003G0218/sg/ita/original>;
-        eli:format      <https://www.iana.org/assignments/media-types/application/akn+xml>;
-        dcterms:source  "dlgs-2003-196-privacy-code/DECRETO_LEGISLATIVO_2003-06-30_196_M_AKN/DECRETO LEGISLATIVO_20030630_196/2003-07-29_003G0218_ORIGINALE_V0.xml" .
 
 <https://osservatorio-eli.example.it/eli/id/2020/06/10/20G00066/sg/ita/original>
         a                   eli:LegalExpression;
@@ -19238,15 +19203,6 @@
         eli:format      <https://www.iana.org/assignments/media-types/application/akn+xml>;
         dcterms:source  "corpus/DECRETO_LEGISLATIVO/2020/DECRETO_LEGISLATIVO_2020_M_AKN/DECRETO LEGISLATIVO_20200512_43/2020-06-08_20G00061_ORIGINALE_V0.xml" .
 
-<https://osservatorio-eli.example.it/eli/id/2003/07/29/003G0218/sg/ita/original>
-        a                   eli:LegalExpression;
-        rdfs:label          "Codice in materia di protezione dei dati personali. (testo originale)"@it;
-        eli:is_embodied_by  <https://osservatorio-eli.example.it/eli/id/2003/07/29/003G0218/sg/ita/original/akn>;
-        eli:language        <http://publications.europa.eu/resource/authority/language/ITA>;
-        eli:realizes        <https://osservatorio-eli.example.it/eli/id/2003/07/29/003G0218/sg>;
-        eli:title           "Codice in materia di protezione dei dati personali."@it;
-        eli:version_date    "2004-01-01"^^xsd:date .
-
 <https://osservatorio-eli.example.it/eli/id/2023/12/21/23G00209/sg/ita/original>
         a                   eli:LegalExpression;
         rdfs:label          "Ratifica ed esecuzione dell'Accordo sullo spazio aereo comune tra l'Unione europea e i suoi Stati membri, da una parte, e l'Ucraina, dall'altra, firmato a Kiev il 12 ottobre 2021. (testo originale)"@it;
@@ -20494,20 +20450,6 @@
         eli:embodies    <https://osservatorio-eli.example.it/eli/id/2026/07/25/26G00147/sg/ita/original>;
         eli:format      <https://www.iana.org/assignments/media-types/application/akn+xml>;
         dcterms:source  "corpus/LEGGE/2026/LEGGE_2026_M_AKN/LEGGE_20260717_131/2026-07-25_26G00147_ORIGINALE_V0.xml" .
-
-<https://osservatorio-eli.example.it/eli/id/2018/09/04/18G00129/sg>
-        a                     eli:LegalResource;
-        rdfs:label            "Disposizioni per l'adeguamento della normativa nazionale alle disposizioni del regolamento (UE) 2016/679 del Parlamento europeo e del Consiglio, del 27 aprile 2016, relativo alla protezione delle persone fisiche con riguardo al trattamento dei dati personali, nonche' alla libera circolazione di tali dati e che abroga la direttiva 95/46/CE (regolamento generale sulla protezione dei dati)."@it;
-        eli:date_document     "2018-08-10"^^xsd:date;
-        eli:date_publication  "2018-09-04"^^xsd:date;
-        eli:id_local          "18G00129";
-        eli:is_realized_by    <https://osservatorio-eli.example.it/eli/id/2018/09/04/18G00129/sg/ita/original>;
-        eli:number            "101";
-        eli:title             "Disposizioni per l'adeguamento della normativa nazionale alle disposizioni del regolamento (UE) 2016/679 del Parlamento europeo e del Consiglio, del 27 aprile 2016, relativo alla protezione delle persone fisiche con riguardo al trattamento dei dati personali, nonche' alla libera circolazione di tali dati e che abroga la direttiva 95/46/CE (regolamento generale sulla protezione dei dati)."@it;
-        eli:type_document     <http://www.gazzettaufficiale.it/eli/tables/resource-type#DECRETO_LEGISLATIVO>;
-        dcterms:identifier    "urn:nir:stato:decreto.legislativo:2018-08-10;101";
-        dcterms:source        <https://dati.normattiva.it/>;
-        owl:sameAs            <http://www.gazzettaufficiale.it/eli/id/2018/09/04/18G00129/sg> .
 
 <https://osservatorio-eli.example.it/eli/id/2023/07/21/23G00101/sg/ita/original>
         a                   eli:LegalExpression;
@@ -22342,7 +22284,7 @@
         a               eli:Format;
         eli:embodies    <https://osservatorio-eli.example.it/eli/id/2026/01/19/26G00013/sg/ita/original>;
         eli:format      <https://www.iana.org/assignments/media-types/application/akn+xml>;
-        dcterms:source  "baseline-never-updated/LEGGE_2025-12-29_217_O_AKN/LEGGE_20251229_217/2026-01-19_26G00013_ORIGINALE_V0.xml" .
+        dcterms:source  "corpus/LEGGE/2025/LEGGE_2025-12_M_AKN/LEGGE_20251229_217/2026-01-19_26G00013_ORIGINALE_V0.xml" .
 
 <https://osservatorio-eli.example.it/eli/id/2024/01/30/24G00018/sg>
         a                     eli:LegalResource;
