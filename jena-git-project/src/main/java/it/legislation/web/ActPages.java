@@ -383,8 +383,8 @@ public class ActPages {
         body.append("</div>\n<div class=\"mainc\">");
         body.append(versions(act.versions()));
         String self = RelationReport.key(act.typeCode(), date, act.fact(ELI + "number"));
-        body.append(relationTable(t("rel.in"), t("hint.rel.in"), act.relations(), false, self));
-        body.append(relationTable(t("rel.out"), t("hint.rel.out"), act.relations(), true, self));
+        body.append(relationTable(t("rel.in"), t("hint.rel.in"), act.relations(), false, self, act.citation()));
+        body.append(relationTable(t("rel.out"), t("hint.rel.out"), act.relations(), true, self, act.citation()));
         body.append("</div>\n</div>\n");
         return Html.page(act.citation(), "acts",
                 "<link rel=\"alternate\" type=\"text/turtle\" href=\"" + escape(path) + "?format=ttl\">\n",
@@ -529,7 +529,8 @@ public class ActPages {
         return html.append("</ol>").toString();
     }
 
-    private String relationTable(String heading, String hint, List<Relation> all, boolean outgoing, String self) {
+    private String relationTable(String heading, String hint, List<Relation> all, boolean outgoing, String self,
+                                 String selfName) {
         List<Relation> rows = all.stream().filter(r -> r.outgoing() == outgoing).toList();
         StringBuilder html = new StringBuilder("<section class=\"card\"><h2>").append(heading).append(" (")
                 .append(rows.size()).append(")</h2>").append(Html.hint(hint, "g-relations"));
@@ -537,86 +538,37 @@ public class ActPages {
             return html.append("<p class=\"muted\">").append(escape(t("rel.none"))).append("</p></section>\n").toString();
         }
         int shown = rows.size() > RELATIONS_SHOWN + 5 ? RELATIONS_SHOWN : rows.size();
-        html.append(relationRows(rows.subList(0, shown), outgoing, self));
+        html.append(relationRows(rows.subList(0, shown), outgoing, self, selfName));
         if (shown < rows.size()) {
             html.append("<details><summary>").append(escape(t("rel.more", rows.size() - shown))).append("</summary>")
-                    .append(relationRows(rows.subList(shown, rows.size()), outgoing, self)).append("</details>");
+                    .append(relationRows(rows.subList(shown, rows.size()), outgoing, self, selfName)).append("</details>");
         }
         return html.append("</section>\n").toString();
     }
 
-    private String relationRows(List<Relation> rows, boolean outgoing, String self) {
+    /**
+     * Each relation as a sentence read left to right: the modifying act, what it did,
+     * the act it changed, and when. One of the two acts is this act, so it is always
+     * clear who changed whom.
+     */
+    private String relationRows(List<Relation> rows, boolean outgoing, String self, String selfName) {
         StringBuilder html = new StringBuilder("<div class=\"table-wrap\"><table class=\"relations\"><thead><tr><th>"
-                + escape(t("col.act")) + "</th><th>" + escape(t("col.relation")) + "</th><th>" + escape(t("col.what"))
-                + "</th></tr></thead><tbody>");
+                + escape(t("col.modifying")) + "</th><th>" + escape(t("col.relation")) + "</th><th>"
+                + escape(t("col.modified")) + "</th><th>" + escape(t("col.date")) + "</th></tr></thead><tbody>");
+        String thisAct = "<b>" + escape(selfName) + "</b><div class=\"muted\">" + escape(t("rel.thisact")) + "</div>";
         for (Relation r : rows) {
-            html.append("<tr><td>").append(otherAct(r.other())).append("</td><td>")
-                    .append(Html.relation(r.propertyName(), verb(r.propertyName(), outgoing))).append("</td><td>")
-                    .append(whatChanged(r, outgoing, self)).append("</td></tr>");
+            ActCatalog.OtherAct other = r.other();
+            String otherKey = RelationReport.key(other.typeCode(), other.date(), other.number());
+            String from = outgoing ? self : otherKey;
+            String to = outgoing ? otherKey : self;
+            String when = evidence.versions(to, from).stream().map(RelationReport.Change::eventDate)
+                    .filter(d -> d != null && !d.isBlank()).findFirst().map(Html::italianDate).orElse("");
+            html.append("<tr><td>").append(outgoing ? thisAct : otherAct(other)).append("</td><td>")
+                    .append(Html.relation(r.propertyName(), verb(r.propertyName(), true))).append("</td><td>")
+                    .append(outgoing ? otherAct(other) : thisAct).append("</td><td class=\"nowrap\">")
+                    .append(escape(when)).append("</td></tr>");
         }
         return html.append("</tbody></table></div>").toString();
-    }
-
-    /**
-     * What the relation means in practice, from the relation finder's report: the new
-     * text it produced and from when, how many changes of which kinds, Normattiva's
-     * editor's notes, and where the relation was found.
-     */
-    private String whatChanged(Relation r, boolean outgoing, String self) {
-        ActCatalog.OtherAct other = r.other();
-        String otherKey = RelationReport.key(other.typeCode(), other.date(), other.number());
-        String from = outgoing ? self : otherKey;
-        String to = outgoing ? otherKey : self;
-        java.util.Optional<RelationReport.Link> link = evidence.link(from, to);
-        List<RelationReport.Change> versions = evidence.versions(to, from);
-        StringBuilder html = new StringBuilder("<div class=\"what\">");
-
-        if (!versions.isEmpty()) {
-            String dates = versions.stream().map(v -> Html.italianDate(v.versionDate())).distinct()
-                    .collect(java.util.stream.Collectors.joining(", "));
-            html.append("<p>").append(escape(outgoing ? t("what.newtext.out", other.citation(), dates)
-                    : t("what.newtext.in", dates))).append("</p>");
-        }
-        if (link.isEmpty()) {
-            return html.append(versions.isEmpty() ? "<p class=\"muted\">" + escape(t("what.none")) + "</p>" : "")
-                    .append("</div>").toString();
-        }
-        RelationReport.Link l = link.get();
-        if (l.changes() > 0) {
-            StringBuilder kinds = new StringBuilder();
-            l.kinds().forEach((kind, n) -> kinds.append(kinds.length() > 0 ? ", " : "")
-                    .append(I18n.count("what.kind." + kind, n, String.valueOf(n))));
-            html.append("<p><b>").append(escape(I18n.count("what.changes", l.changes(), String.valueOf(l.changes()))))
-                    .append("</b>").append(kinds.length() > 0 ? ": " + escape(kinds.toString()) : "").append("</p>");
-        }
-        if (!l.notes().isEmpty()) {
-            html.append("<p class=\"note\"><span class=\"muted\">").append(escape(t("what.note"))).append("</span> ")
-                    .append(escape(cleanNote(l.notes().get(0)))).append("</p>");
-            if (l.notes().size() > 1) {
-                html.append("<details><summary>").append(escape(t("what.allnotes", l.notes().size()))).append("</summary><ul>");
-                l.notes().forEach(n -> html.append("<li>").append(escape(cleanNote(n))).append("</li>"));
-                html.append("</ul></details>");
-            }
-        } else if (l.changes() == 0) {
-            html.append("<p class=\"muted\">").append(escape(t("what.historyonly"))).append("</p>");
-        }
-        html.append("<p class=\"src muted\">").append(escape(t("what.found", sourceWords(l.sources())))).append("</p>");
-        return html.append("</div>").toString();
-    }
-
-    /** The note as Normattiva writes it, without the leading comma it has when cut from a sentence. */
-    private static String cleanNote(String note) {
-        String n = note.trim().replaceFirst("^[,;:\\s]+", "");
-        return n.isEmpty() ? n : "\u201C" + n + "\u201D";
-    }
-
-    private static String sourceWords(String sources) {
-        return switch (sources == null ? "" : sources) {
-            case "change list + history" -> t("what.src.both");
-            case "change list" -> t("what.src.list");
-            case "history" -> t("what.src.history");
-            default -> sources == null ? "" : sources;
-        };
     }
 
     private static String verb(String property, boolean outgoing) {

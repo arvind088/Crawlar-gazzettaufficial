@@ -383,11 +383,8 @@ public final class Html {
             ol.timeline li:last-child .tl-line{display:none}
             .tl-body{padding-bottom:14px;display:flex;flex-direction:column;min-width:0}
             .table-wrap{overflow-x:auto}
-            table.relations td:first-child{min-width:200px}
-            .what{display:flex;flex-direction:column;gap:4px;font-size:15px;min-width:260px}
-            .what .note{overflow-wrap:anywhere}.what .src{font-size:13.5px}
-            .what summary{cursor:pointer;color:var(--blue);font-size:14.5px}
-            .what ul{margin:4px 0 0;padding-left:18px;display:flex;flex-direction:column;gap:4px}
+            table.relations td:first-child,table.relations td:nth-child(3){min-width:180px}
+            .nowrap{white-space:nowrap}
             table{width:100%;border-collapse:collapse;font-size:15.5px}
             th,td{text-align:left;padding:10px 8px;border-bottom:1px solid var(--line-soft);vertical-align:top}
             thead th{color:var(--slate);font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;
