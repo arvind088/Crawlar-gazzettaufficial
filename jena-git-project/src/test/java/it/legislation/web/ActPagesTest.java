@@ -28,7 +28,7 @@ class ActPagesTest {
     private final ActCatalog catalog = new ActCatalog(store);
     private static final Path NONE = Path.of("target", "no-such-report.tsv");
     private final ActPages pages = new ActPages(catalog, new EliUriService("https://example.it"),
-            new DataFreshness(NONE), new GazzettaReport(NONE));
+            new DataFreshness(NONE), new GazzettaReport(NONE), new RelationReport(NONE));
 
     @Test
     void listsImportedActsNewestFirstWithConversionStatus() throws IOException {
@@ -193,14 +193,14 @@ class ActPagesTest {
         Files.writeString(watermarks, "source\tlastSuccessfulEnd\tlastRunStartedAt\tlastRunFinishedAt\tlastRunState\tnote\n"
                 + "normattiva-daily\t2026-10-28T21:44:04Z\t2026-10-21T13:55:55Z\t2026-10-28T22:58:06Z\tSUCCESS\t\n");
         ActPages fresh = new ActPages(catalog, new EliUriService("https://example.it"), new DataFreshness(watermarks),
-                new GazzettaReport(NONE));
+                new GazzettaReport(NONE), new RelationReport(NONE));
 
         String html = fresh.list("sanitario", null, null, null, 1).getBody();
         assertTrue(html.contains("<p class=\"scope muted\">Whole dataset &middot; data updated to 28 October 2026"
                 + " &middot; acts from 2020</p>"), "searching does not change the numbers, so they say so");
 
         String never = new ActPages(catalog, new EliUriService("https://example.it"),
-                new DataFreshness(dir.resolve("missing.tsv")), new GazzettaReport(NONE)).list(null, null, null, null, 1).getBody();
+                new DataFreshness(dir.resolve("missing.tsv")), new GazzettaReport(NONE), new RelationReport(NONE)).list(null, null, null, null, 1).getBody();
         assertTrue(never.contains("<p class=\"scope muted\">Whole dataset &middot; acts from 2020</p>"),
                 "no date when the daily update has never run");
     }
@@ -262,7 +262,7 @@ class ActPagesTest {
         Path report = dir.resolve("gazzetta_check.tsv");
         Files.writeString(report, GAZZETTA_CHECK);
         ActPages checked = new ActPages(catalog, new EliUriService("https://example.it"), new DataFreshness(NONE),
-                new GazzettaReport(report));
+                new GazzettaReport(report), new RelationReport(NONE));
 
         String decree = checked.details(catalog.details(DL_18).orElseThrow(), "/eli/id/2020/03/17/20G00034/sg");
         assertTrue(decree.contains("<b>Confirmed.</b> Type, number, date of the act and publication date agree"));
@@ -296,5 +296,35 @@ class ActPagesTest {
         assertTrue(html.contains("L. 24 aprile 2020, n. 27"), "the act not confirmed is named");
         assertTrue(html.contains("Repeals always means the whole act."));
         assertFalse(html.toLowerCase(Locale.ROOT).contains("universit"), "presented as a sample, not a university project");
+    }
+
+    @Test
+    void relationsSayWhatChangedWhenAndWhereItWasFound(@TempDir Path dir) throws IOException {
+        Path relations = dir.resolve("relations.tsv");
+        Files.writeString(relations, "from_codice\tfrom\tproperty\tto_codice\tto\tsources\ttextual_mods"
+                + "\tconfirmed_by_lifecycle\tkinds\texample_note\tnotes\n"
+                + "20G00045\tLEGGE 2020-04-24 n. 27\tamends\t20G00034\tDECRETO-LEGGE 2020-03-17 n. 18\tchange list + history\t3"
+                + "\ttrue\t{AMENDMENT=2, INSERTION=1}\t, di conversione, ha disposto la modifica dell'art. 1."
+                + "\t, di conversione, ha disposto la modifica dell'art. 1. ¶ ha disposto l'introduzione dell'art. 1-bis.\n"
+                + "20G00034\tDECRETO-LEGGE 2020-03-17 n. 18\tchanges\t\tDECRETO_LEGISLATIVO 2001-03-30 n. 165\thistory\t0"
+                + "\ttrue\t{}\t\t\n");
+        Files.writeString(dir.resolve("version_history.tsv"), "act_codice\tact\tversion_date\tchanged_by_codice\tchanged_by"
+                + "\tevent_date\tdays_after_event\tstarts_on_entry_into_force\tconfirmed_by_change_list\n"
+                + "20G00034\tDECRETO-LEGGE 2020-03-17 n. 18\t2020-04-30\t20G00045\tLEGGE 2020-04-24 n. 27\t2020-04-29\t1\ttrue\ttrue\n");
+        ActPages withEvidence = new ActPages(catalog, new EliUriService("https://example.it"), new DataFreshness(NONE),
+                new GazzettaReport(NONE), new RelationReport(relations));
+
+        String html = withEvidence.details(catalog.details(DL_18).orElseThrow(), "/eli/id/2020/03/17/20G00034/sg");
+        assertTrue(html.contains("<th>What changed</th>"));
+        assertTrue(html.contains("New text of this act in force from 30 aprile 2020."), "which version the law produced");
+        assertTrue(html.contains("<b>3 changes</b>: 2 amendments, 1 insertion"));
+        assertTrue(html.contains("“di conversione, ha disposto la modifica dell&#39;art. 1.”"), "the note, without its leading comma");
+        assertTrue(html.contains("Show all 2 notes"));
+        assertTrue(html.contains("Found in: the changed act&#39;s history and the modifying act&#39;s list of changes"));
+        assertTrue(html.contains("does not record what it changed"), "a history-only relation says so");
+
+        String law = withEvidence.details(catalog.details(L_27).orElseThrow(), "/eli/id/2020/04/29/20G00045/sg");
+        assertTrue(law.contains("New text of D.L. 17 marzo 2020, n. 18 in force from 30 aprile 2020."),
+                "seen from the modifying act, it names the act that changed");
     }
 }

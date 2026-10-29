@@ -295,8 +295,12 @@ public class RelationDetector {
             kinds.merge(kind, 1, Integer::sum);
             repeals |= property == Property.REPEALS;
             amends |= property == Property.AMENDS;
-            if (examples.size() < 2 && note != null && examples.stream().noneMatch(note::equals)) {
-                examples.add(note.length() > 300 ? note.substring(0, 300) + "…" : note);
+            // Every distinct editor's note (up to 30), so the pages can say what changed.
+            if (examples.size() < 30 && note != null && !note.isBlank()) {
+                String kept = note.length() > 600 ? note.substring(0, 600) + "…" : note;
+                if (examples.stream().noneMatch(kept::equals)) {
+                    examples.add(kept);
+                }
             }
         }
 
