@@ -1822,6 +1822,9 @@
 <http://www.gazzettaufficiale.it/eli/id/2021/06/04/21G00088/sg>
         eli:first_date_entry_in_force  "2021-06-05"^^xsd:date .
 
+<http://www.gazzettaufficiale.it/eli/id/2026/09/29/26G00188/sg>
+        eli:first_date_entry_in_force  "2026-09-30"^^xsd:date .
+
 <http://www.gazzettaufficiale.it/eli/id/2021/11/20/21G00177/sg>
         eli:first_date_entry_in_force  "2021-11-21"^^xsd:date .
 
