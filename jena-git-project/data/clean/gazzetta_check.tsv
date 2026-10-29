@@ -493,7 +493,7 @@ codice	gu_date	type	number	date_of_act	status	differences	title_differs	gu_numbe
 23G00041	2023-03-30	LEGGE	33	2023-03-23	MATCH			76	2023-03-31	https://www.gazzettaufficiale.it/eli/id/2023/03/30/23G00041/sg
 23G00042	2023-03-30	DECRETO-LEGGE	34	2023-03-30	MATCH			76	2023-03-31	https://www.gazzettaufficiale.it/eli/id/2023/03/30/23G00042/sg
 23G00043	2023-03-31	DECRETO-LEGGE	35	2023-03-31	MATCH			77	2023-04-01	https://www.gazzettaufficiale.it/eli/id/2023/03/31/23G00043/sg
-23G00044	2023-03-31	DECRETO_LEGISLATIVO	36	2023-03-31	ERROR	HTTP 500 for https://www.gazzettaufficiale.it/eli/id/2023/03/31/23G00044/sg				https://www.gazzettaufficiale.it/eli/id/2023/03/31/23G00044/sg
+23G00044	2023-03-31	DECRETO_LEGISLATIVO	36	2023-03-31	ERROR	not in cache (offline run)				https://www.gazzettaufficiale.it/eli/id/2023/03/31/23G00044/sg
 23G00045	2023-04-07	LEGGE	37	2023-03-30	MATCH			83	2023-04-08	https://www.gazzettaufficiale.it/eli/id/2023/04/07/23G00045/sg
 23G00046	2023-04-11	LEGGE	38	2023-04-11	MATCH			85	2023-04-12	https://www.gazzettaufficiale.it/eli/id/2023/04/11/23G00046/sg
 23G00047	2023-04-14	DECRETO-LEGGE	39	2023-04-14	MATCH			88	2023-04-15	https://www.gazzettaufficiale.it/eli/id/2023/04/14/23G00047/sg
@@ -1113,3 +1113,4 @@ codice	gu_date	type	number	date_of_act	status	differences	title_differs	gu_numbe
 26G00183	2026-09-24	LEGGE	165	2026-09-18	MATCH			222	2026-10-09	https://www.gazzettaufficiale.it/eli/id/2026/09/24/26G00183/sg
 26G00184	2026-09-25	LEGGE	166	2026-09-25	MATCH			223	2026-09-26	https://www.gazzettaufficiale.it/eli/id/2026/09/25/26G00184/sg
 26G00186	2026-09-28	DECRETO-LEGGE	167	2026-09-28	MATCH			225	2026-09-29	https://www.gazzettaufficiale.it/eli/id/2026/09/28/26G00186/sg
+26G00188	2026-09-29	DECRETO-LEGGE	168	2026-09-29	ERROR	not in cache (offline run)				https://www.gazzettaufficiale.it/eli/id/2026/09/29/26G00188/sg
