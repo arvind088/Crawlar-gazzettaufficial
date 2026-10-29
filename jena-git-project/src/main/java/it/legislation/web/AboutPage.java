@@ -45,7 +45,10 @@ public class AboutPage {
     private final DataFreshness freshness;
     private final GazzettaReport gazzetta;
 
-    public AboutPage(ActCatalog catalog, DataFreshness freshness, GazzettaReport gazzetta) {
+    private final DiscoveryReport discovery;
+
+    public AboutPage(ActCatalog catalog, DataFreshness freshness, GazzettaReport gazzetta, DiscoveryReport discovery) {
+        this.discovery = discovery;
         this.catalog = catalog;
         this.freshness = freshness;
         this.gazzetta = gazzetta;
@@ -109,6 +112,25 @@ public class AboutPage {
         OptionalInt withoutText = freshness.withoutText();
         if (withoutText.isPresent() && withoutText.getAsInt() > 0) {
             html.append("<li>").append(escape(t("about.cov.notext", withoutText.getAsInt()))).append("</li>");
+        }
+        List<DiscoveryReport.Row> announced = discovery.all();
+        if (!announced.isEmpty()) {
+            List<DiscoveryReport.Row> waiting = discovery.waiting();
+            html.append("<li>").append(escape(waiting.isEmpty() ? t("about.cov.waiting.none", I18n.number(announced.size()))
+                    : t("about.cov.waiting", I18n.number(waiting.size()), I18n.number(announced.size()))));
+            if (!waiting.isEmpty()) {
+                html.append("<ul>");
+                for (DiscoveryReport.Row row : waiting) {
+                    html.append("<li>").append(escape(Html.citation(row.type(), row.dateOfAct(), row.number())))
+                            .append(" (<span class=\"mono\">").append(escape(row.codice())).append("</span>), GU ")
+                            .append(escape(Html.italianDate(row.guDate())))
+                            .append(row.url().isBlank() ? "" : " <a href=\"" + escape(row.url()) + "\" rel=\"noreferrer\">"
+                                    + escape(t("gz.open")) + "</a>")
+                            .append("</li>");
+                }
+                html.append("</ul>");
+            }
+            html.append("</li>");
         }
         List<GazzettaReport.Row> checked = gazzetta.all();
         List<GazzettaReport.Row> unconfirmed = checked.stream().filter(r -> !r.matched()).toList();

@@ -280,7 +280,15 @@ class ActPagesTest {
         Files.writeString(watermarks, "source\tlastSuccessfulEnd\tlastRunStartedAt\tlastRunFinishedAt\tlastRunState\tnote\n"
                 + "normattiva-daily\t2026-10-28T21:44:04Z\t2026-10-21T13:55:55Z\t2026-10-28T22:58:06Z\tSUCCESS\t"
                 + "0 downloaded, 29 without text, 0 failed\n");
-        String html = new AboutPage(catalog, new DataFreshness(watermarks), new GazzettaReport(report)).about().getBody();
+        Path discovery = dir.resolve("gazzetta_discovery.tsv");
+        Files.writeString(discovery, "codice\tgu_date\ttype\tnumber\tdate_of_act\ttitle\tstatus\tpage\tgu_number"
+                + "\tentry_into_force\tgazzetta_url\n"
+                + "26G00188\t2026-09-29\tDECRETO-LEGGE\t168\t2026-09-29\tDECRETO-LEGGE 29 settembre 2026, n. 168\tWAITING\tread"
+                + "\t227\t2026-09-30\thttps://www.gazzettaufficiale.it/eli/id/2026/09/29/26G00188/sg\n"
+                + "20G00034\t2020-03-17\tDECRETO-LEGGE\t18\t2020-03-17\tDECRETO-LEGGE 17 marzo 2020, n. 18\tIN_NORMATTIVA"
+                + "\tread\t70\t2020-03-17\thttps://www.gazzettaufficiale.it/eli/id/2020/03/17/20G00034/sg\n");
+        String html = new AboutPage(catalog, new DataFreshness(watermarks), new GazzettaReport(report),
+                new DiscoveryReport(discovery)).about().getBody();
 
         for (String id : List.of("what", "sources", "use", "relations", "coverage", "glossary")) {
             assertTrue(html.contains("id=\"" + id + "\""), id);
@@ -295,6 +303,8 @@ class ActPagesTest {
         assertTrue(html.contains("1 of 2 acts are confirmed by their Gazzetta Ufficiale page"));
         assertTrue(html.contains("L. 24 aprile 2020, n. 27"), "the act not confirmed is named");
         assertTrue(html.contains("Repeals always means the whole act."));
+        assertTrue(html.contains("1 of the 2 laws, decree-laws and legislative decrees announced by the Gazzetta Ufficiale RSS feed"));
+        assertTrue(html.contains("D.L. 29 settembre 2026, n. 168"), "the act waiting for Normattiva is named");
         assertFalse(html.toLowerCase(Locale.ROOT).contains("universit"), "presented as a sample, not a university project");
     }
 

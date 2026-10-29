@@ -57,6 +57,12 @@ jobs:
           GAZZETTA_RSS_OUTPUT: "data/clean/gazzetta_rss_updates.tsv"
           GAZZETTA_RSS_MAX_ENTRIES: ${{ inputs.rss_entries || '50' }}
 
+      - name: Read the act pages of new laws, decree-laws and legislative decrees
+        # The RSS feed drives the crawler: each new act's Gazzetta page is read once
+        # (its details are kept in the report) and checked against Layer 1, so the
+        # report lists the acts published in the Gazzetta and not yet in Normattiva.
+        run: mvn -B -q "-Dexec.mainClass=it.legislation.ingest.GazzettaDiscoveryRunner" exec:java
+
       # Normattiva is not fetched here. The daily update (DailyUpdateRunner)
       # needs the raw corpus and the store, which live on the application's
       # server, not on GitHub's machines: see ARCHITECTURE.md.
