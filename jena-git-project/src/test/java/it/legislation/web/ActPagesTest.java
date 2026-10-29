@@ -26,7 +26,9 @@ class ActPagesTest {
     private final Tdb2DatasetService store =
             Tdb2DatasetService.inMemoryForRdfPaths(List.of(Path.of("src/test/resources/web/acts.ttl")));
     private final ActCatalog catalog = new ActCatalog(store);
-    private final ActPages pages = new ActPages(catalog, new EliUriService("https://example.it"));
+    private static final Path NONE = Path.of("target", "no-such-report.tsv");
+    private final ActPages pages = new ActPages(catalog, new EliUriService("https://example.it"),
+            new DataFreshness(NONE), new GazzettaReport(NONE));
 
     @Test
     void listsImportedActsNewestFirstWithConversionStatus() throws IOException {
@@ -190,14 +192,15 @@ class ActPagesTest {
         Path watermarks = dir.resolve("ingestion_watermarks.tsv");
         Files.writeString(watermarks, "source\tlastSuccessfulEnd\tlastRunStartedAt\tlastRunFinishedAt\tlastRunState\tnote\n"
                 + "normattiva-daily\t2026-10-28T21:44:04Z\t2026-10-21T13:55:55Z\t2026-10-28T22:58:06Z\tSUCCESS\t\n");
-        ActPages fresh = new ActPages(catalog, new EliUriService("https://example.it"), new DataFreshness(watermarks));
+        ActPages fresh = new ActPages(catalog, new EliUriService("https://example.it"), new DataFreshness(watermarks),
+                new GazzettaReport(NONE));
 
         String html = fresh.list("sanitario", null, null, null, 1).getBody();
         assertTrue(html.contains("<p class=\"scope muted\">Whole dataset &middot; data updated to 28 October 2026"
                 + " &middot; acts from 2020</p>"), "searching does not change the numbers, so they say so");
 
         String never = new ActPages(catalog, new EliUriService("https://example.it"),
-                new DataFreshness(dir.resolve("missing.tsv"))).list(null, null, null, null, 1).getBody();
+                new DataFreshness(dir.resolve("missing.tsv")), new GazzettaReport(NONE)).list(null, null, null, null, 1).getBody();
         assertTrue(never.contains("<p class=\"scope muted\">Whole dataset &middot; acts from 2020</p>"),
                 "no date when the daily update has never run");
     }
@@ -211,5 +214,87 @@ class ActPagesTest {
                 "the text in force comes before the original");
         assertTrue(html.contains("newest first &middot; <a href=\"/eli/id/2020/03/17/20G00034/sg/"),
                 "a direct link to the original text in the heading");
+    }
+
+    private static final String GAZZETTA_CHECK = "codice\tgu_date\ttype\tnumber\tdate_of_act\tstatus\tdifferences\t"
+            + "title_differs\tgu_number\tentry_into_force\tgazzetta_url\n"
+            + "20G00034\t2020-03-17\tDECRETO-LEGGE\t18\t2020-03-17\tMATCH\t\t\t70\t2020-03-17\t"
+            + "https://www.gazzettaufficiale.it/eli/id/2020/03/17/20G00034/sg\n"
+            + "20G00045\t2020-04-29\tLEGGE\t27\t2020-04-24\tERROR\tnot in cache (offline run)\t\t\t\t"
+            + "https://www.gazzettaufficiale.it/eli/id/2020/04/29/20G00045/sg\n";
+
+    @Test
+    void homepageSaysWhatThePortalIsAndHowToSearch() throws IOException {
+        String html = pages.list(null, null, null, null, 1).getBody();
+        assertTrue(html.contains("<h1>Explore Italian legislation and its connections</h1>"));
+        assertTrue(html.contains("<a href=\"/about\">How it works</a>"));
+        assertTrue(html.contains("aria-describedby=\"search-hint\""));
+        assertTrue(html.contains("“COVID”, “18/2020” or “20G00034”"));
+        assertTrue(html.contains("<a href=\"/about\">About &amp; Help</a>"), "in the menu and the footer");
+        assertTrue(html.contains("<a href=\"/about#glossary\">Glossary</a>"));
+        assertTrue(html.contains("<a href=\"/about#sources\">Data sources</a>"));
+        assertTrue(html.contains("<a href=\"/about#coverage\">Data updates</a>"));
+    }
+
+    @Test
+    void aNumberFindsTheActWithThatNumberNotEveryTitleContainingIt() throws IOException {
+        assertTrue(pages.list("18/2020", null, null, null, 1).getBody().contains("1 act<"));
+        assertTrue(pages.list("18", null, null, null, 1).getBody().contains(">D.L. 17 marzo 2020, n. 18</a>"));
+        assertFalse(pages.list("18", null, null, null, 1).getBody().contains(">L. 24 aprile 2020, n. 27</a>"),
+                "L. 27 has 18 in neither its number nor its year");
+        assertTrue(pages.list("n. 27", null, null, null, 1).getBody().contains(">L. 24 aprile 2020, n. 27</a>"));
+        assertTrue(pages.list("2020", null, null, null, 1).getBody().contains("2 acts"), "a year finds that year's acts");
+        assertTrue(pages.list("18/2019", null, null, null, 1).getBody().contains("No act matches"));
+    }
+
+    @Test
+    void actPageExplainsTermsWhereTheyAppear() throws IOException {
+        String html = pages.details(catalog.details(DL_18).orElseThrow(), "/eli/id/2020/03/17/20G00034/sg");
+        for (String term : List.of("g-eli", "g-version", "g-relations", "g-decree-law", "g-gazzetta")) {
+            assertTrue(html.contains("<a class=\"q\" href=\"/about#" + term + "\""), term);
+        }
+        assertTrue(html.contains("Each version is the text in force from a date."));
+        assertTrue(html.contains("Not checked yet."), "no report: says so rather than claiming a check");
+    }
+
+    @Test
+    void actPageSaysWhatTheGazzettaCheckFound(@TempDir Path dir) throws IOException {
+        Path report = dir.resolve("gazzetta_check.tsv");
+        Files.writeString(report, GAZZETTA_CHECK);
+        ActPages checked = new ActPages(catalog, new EliUriService("https://example.it"), new DataFreshness(NONE),
+                new GazzettaReport(report));
+
+        String decree = checked.details(catalog.details(DL_18).orElseThrow(), "/eli/id/2020/03/17/20G00034/sg");
+        assertTrue(decree.contains("<b>Confirmed.</b> Type, number, date of the act and publication date agree"));
+        assertTrue(decree.contains("Published in GU n. 70 of 17 marzo 2020"));
+
+        String law = checked.details(catalog.details(L_27).orElseThrow(), "/eli/id/2020/04/29/20G00045/sg");
+        assertTrue(law.contains("<b>Not confirmed.</b> The Gazzetta page could not be read"));
+    }
+
+    @Test
+    void aboutPageAnswersTheFiveQuestionsFromTheData(@TempDir Path dir) throws IOException {
+        Path report = dir.resolve("gazzetta_check.tsv");
+        Files.writeString(report, GAZZETTA_CHECK);
+        Path watermarks = dir.resolve("ingestion_watermarks.tsv");
+        Files.writeString(watermarks, "source\tlastSuccessfulEnd\tlastRunStartedAt\tlastRunFinishedAt\tlastRunState\tnote\n"
+                + "normattiva-daily\t2026-10-28T21:44:04Z\t2026-10-21T13:55:55Z\t2026-10-28T22:58:06Z\tSUCCESS\t"
+                + "0 downloaded, 29 without text, 0 failed\n");
+        String html = new AboutPage(catalog, new DataFreshness(watermarks), new GazzettaReport(report)).about().getBody();
+
+        for (String id : List.of("what", "sources", "use", "relations", "coverage", "glossary")) {
+            assertTrue(html.contains("id=\"" + id + "\""), id);
+        }
+        for (String term : AboutPage.TERMS) {
+            assertTrue(html.contains("<dt id=\"g-" + term + "\">"), term);
+        }
+        assertTrue(html.contains("aria-current=\"page\">About &amp; Help</a>"));
+        assertTrue(html.contains("2 acts dated from 2020 to 2020, with 3 versions"));
+        assertTrue(html.contains("updated to 28 October 2026"));
+        assertTrue(html.contains("29 recent acts are listed by Normattiva but sent without text"));
+        assertTrue(html.contains("1 of 2 acts are confirmed by their Gazzetta Ufficiale page"));
+        assertTrue(html.contains("L. 24 aprile 2020, n. 27"), "the act not confirmed is named");
+        assertTrue(html.contains("Repeals always means the whole act."));
+        assertFalse(html.toLowerCase(Locale.ROOT).contains("universit"), "presented as a sample, not a university project");
     }
 }
