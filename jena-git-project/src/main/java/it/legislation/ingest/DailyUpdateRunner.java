@@ -351,7 +351,7 @@ public class DailyUpdateRunner {
         };
     }
 
-    /** Import → Gazzetta check → relations, with the default files. */
+    /** Import → Gazzetta check → Gazzetta RSS discovery → relations, with the default files. */
     public static Pipeline defaultPipeline(Path root) {
         return defaultPipeline(root, System.getenv().getOrDefault("LEGAL_ELI_BASE_URI", new EliUriService().baseUri()));
     }
@@ -365,10 +365,16 @@ public class DailyUpdateRunner {
                     GazzettaCheckRunner.DEFAULT_CACHE, false)
                     .run(AknImportRunner.LAYER1, GazzettaCheckRunner.DEFAULT_OUT, GazzettaCheckRunner.DEFAULT_REPORT,
                             Integer.MAX_VALUE, line -> { });
+            // The Gazzetta RSS feed: acts already published, and whether Normattiva has them yet.
+            GazzettaDiscoveryRunner.Summary discovered = new GazzettaDiscoveryRunner(new HttpPageFetcher(1000, 2),
+                    GazzettaCheckRunner.DEFAULT_CACHE, false)
+                    .run(GazzettaDiscoveryRunner.DEFAULT_RSS, AknImportRunner.LAYER1, GazzettaDiscoveryRunner.DEFAULT_OUT,
+                            line -> { });
             RelationRunner.Summary related = new RelationRunner().run(AknImportRunner.LAYERS, root,
                     RelationRunner.DEFAULT_OUT, RelationRunner.DEFAULT_CONVERSIONS, RelationRunner.DEFAULT_RELATIONS, today);
             return "Pipeline: " + imported.acts() + " acts, " + imported.expressions() + " versions; Gazzetta "
-                    + checked.counts() + " (" + checked.fetched() + " pages fetched); "
+                    + checked.counts() + " (" + checked.fetched() + " pages fetched); Gazzetta RSS "
+                    + discovered.acts().size() + " acts, " + discovered.waiting() + " waiting for Normattiva; "
                     + related.result().relations().size() + " relations, "
                     + related.result().conversions().size() + " decree-laws";
         };

@@ -1,7 +1,7 @@
 # APIs
 
 1. [Normattiva OpenData API](#1-normattiva-opendata-api): where the acts come from
-2. [Gazzetta Ufficiale](#2-gazzetta-ufficiale): act pages (check) and the RSS feed (harvest)
+2. [Gazzetta Ufficiale](#2-gazzetta-ufficiale): act pages (check), the RSS feed (harvest) and discovery
 3. [The application's own endpoints](#3-the-applications-endpoints): pages, RDF, SPARQL
 
 ---
@@ -117,20 +117,20 @@ Gazzetta Ufficiale publishes HTML pages, not a JSON API. The project reads two k
 | URL | `https://www.gazzettaufficiale.it/eli/id/{yyyy}/{mm}/{dd}/{codice}/sg` (GU date and redactional code) |
 | Code | `ingest/GazzettaCheckRunner`, `source/gazzetta/GazzettaActPage`, `HttpPageFetcher` |
 | Politeness | 1 request per second, 2 retries; pages cached in `data/raw/gazzetta/` (not in Git) |
-| Output | `data/rdf/gazzetta_check.ttl`, `data/clean/gazzetta_check.tsv` |
+| Output | `data/clean/gazzetta_check.tsv` (outcome per act), `data/rdf/layer1_gazzetta.ttl` (`eli:first_date_entry_in_force` of confirmed acts) |
 
 What is read from the page:
 
 | Field | Where on the page |
 |---|---|
 | Redactional code, type, date of the act, GU date, title | ELI RDFa attributes `property="eli:id_local"`, `eli:type_document`, `eli:date_document`, `eli:date_publication`, `eli:title` |
-| Number | the heading, `… n. 18` (a `(Raccolta YYYY)` suffix is ignored) |
+| Number | the heading, `… n. 18` (a `(Raccolta YYYY)` suffix is ignored). The Gazzetta ELI and its metadata have no number |
 | GU issue | `Serie Generale n. 70` and the link to the issue |
 | Entry into force | `Entrata in vigore del provvedimento: 17/03/2020` |
 
 ```mermaid
 flowchart LR
-    A[Act from<br/>normattiva_akn.ttl] --> U[Build Gazzetta URL<br/>from GU date + code]
+    A[Act from<br/>layer1_acts.ttl] --> U[Build Gazzetta URL<br/>from GU date + code]
     U --> C{Page in cache?}
     C -->|no| F[GET page<br/>1 s pause] --> P
     C -->|yes| P[Parse RDFa,<br/>heading, GU issue]
@@ -139,7 +139,7 @@ flowchart LR
     M -->|no| MM[MISMATCH]
     P -->|no act on page| NF[NOT_FOUND]
     F -->|HTTP error| ER[ERROR<br/>retried next run]
-    OK & MM & NF & ER --> W[Dated GazzettaCheck<br/>written only if changed]
+    OK & MM & NF & ER --> W[gazzetta_check.tsv<br/>+ entry into force in RDF]
 ```
 
 Run: `mvn -B -q compile exec:java "-Dexec.mainClass=it.legislation.ingest.GazzettaCheckRunner"`
@@ -164,14 +164,28 @@ flowchart LR
     X --> D{Link already<br/>in the TSV?}
     D -->|no| AP[Append row]
     D -->|yes| SK[Skip]
-    AP --> IF[Derive in-force status<br/>InForceEnrichmentRunner]
-    SK --> IF
-    IF --> CM[Commit data changes]
+    AP --> DS[Discovery<br/>GazzettaDiscoveryRunner]
+    SK --> DS
+    DS --> CM[Commit data changes]
 ```
 
-The feed is a record of what Gazzetta publishes each day. Unlike Normattiva, Gazzetta does not
-block GitHub's servers, so this harvest runs in GitHub Actions. The acts themselves still come
-from Normattiva.
+Unlike Normattiva, the Gazzetta does not block GitHub's servers, so the harvest runs in GitHub
+Actions. The acts' texts still come from Normattiva.
+
+### 2.3 Discovery: the RSS feed drives the crawler
+
+| | |
+|---|---|
+| Code | `ingest/GazzettaDiscoveryRunner` |
+| Input | `data/clean/gazzetta_rss_updates.tsv`, Layer 1 (`data/rdf/layer1_acts.ttl`) |
+| Selects | entries titled `LEGGE …`, `DECRETO-LEGGE …`, `DECRETO LEGISLATIVO …` with a "G" codice (e.g. `26G00211`); "A" codes are notices about an act |
+| Reads | each new act's page, once (saved in `data/raw/gazzetta/`, as the check does) |
+| Output | `data/clean/gazzetta_discovery.tsv`: codice, GU date, type, number, date of the act, status `IN_NORMATTIVA` / `WAITING`, GU issue, entry into force, page URL |
+| Runs | in the GitHub workflow after the RSS harvest, and in the daily update after the Gazzetta check |
+
+`WAITING` = published in the Gazzetta, not yet delivered by Normattiva. The About & Help page
+lists them. Run: `mvn -B -q exec:java "-Dexec.mainClass=it.legislation.ingest.GazzettaDiscoveryRunner"`
+(`--offline` reads saved pages only).
 
 ---
 
@@ -181,12 +195,13 @@ Base: `http://localhost:8080` locally, the ELI base URI once deployed.
 
 | Method | Path | Returns |
 |---|---|---|
-| GET | `/` | Legal acts list. Query parameters: `q` (search), `type` (`LEGGE`, `DECRETO-LEGGE`, `DECRETO_LEGISLATIVO`), `year`, `status` (conversion status), `page` |
+| GET | `/` | Legal acts list. Query parameters: `q` (search; a number alone or `18/2020` finds the exact act), `type` (`LEGGE`, `DECRETO-LEGGE`, `DECRETO_LEGISLATIVO`), `year`, `status` (conversion status), `page` |
 | GET | `/eli/id/{yyyy}/{mm}/{dd}/{code}/sg` | Act details page (HTML) |
 | GET | same, with `Accept: text/turtle` or `?format=ttl` | The act as RDF (Turtle) |
 | GET | `/eli/id/…/sg/ita/original`, `…/vigente/{date}`, `…/akn` | Version and format pages, HTML or Turtle |
 | GET | any page, `?lang=it` or `?lang=en` | The same page in Italian or English; the choice is kept in the `lang` cookie |
 | GET | `/acts.csv` | The Legal acts list as CSV, with the same `q`, `type`, `year`, `status` parameters |
+| GET | `/about` | About & Help: sources, method, coverage (last update, acts waiting, acts not confirmed) and glossary |
 | GET | `/query` | SPARQL page; `?query=…` runs a query, `?example=05-converts` runs one of the example questions in `queries/` |
 | GET / POST | `/sparql` | SPARQL 1.1 Protocol: `?query=` (GET), form field `query` or body `application/sparql-query` (POST). SELECT/ASK: JSON, XML or CSV; CONSTRUCT/DESCRIBE: Turtle, RDF/XML, N-Triples or JSON-LD. Chosen by `Accept` or `?output=json|xml|csv|turtle|rdfxml|ntriples|jsonld`. Read-only, 30 s limit. A browser opening `/sparql` is sent to `/query` |
 | GET | `/api/health` | JSON: store size, loaded files, daily-update status |
