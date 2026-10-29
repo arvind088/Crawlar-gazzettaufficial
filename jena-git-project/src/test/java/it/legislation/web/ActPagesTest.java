@@ -18,8 +18,8 @@ import it.legislation.store.Tdb2DatasetService;
 /** The Legal acts and Act details pages, on a trimmed copy of real data. */
 class ActPagesTest {
 
-    private static final String DL_18 = "https://example.it/eli/id/2020/03/17/20G00034/sg";
-    private static final String L_27 = "https://example.it/eli/id/2020/04/29/20G00045/sg";
+    private static final String DL_18 = "http://www.gazzettaufficiale.it/eli/id/2020/03/17/20G00034/sg";
+    private static final String L_27 = "http://www.gazzettaufficiale.it/eli/id/2020/04/29/20G00045/sg";
 
     private final Tdb2DatasetService store =
             Tdb2DatasetService.inMemoryForRdfPaths(List.of(Path.of("src/test/resources/web/acts.ttl")));
@@ -102,7 +102,9 @@ class ActPagesTest {
         assertFalse(html.contains("<span class=\"trust"), "no trust levels any more");
         assertTrue(html.contains("<span class=\"rel converts\">converted into law by</span>"));
         assertTrue(html.contains("href=\"https://www.gazzettaufficiale.it/eli/id/2020/03/17/20G00034/sg\""),
-                "the Gazzetta Ufficiale page, from owl:sameAs");
+                "the Gazzetta Ufficiale page: the act's own identifier");
+        assertTrue(html.contains("<code class=\"mono\">http://www.gazzettaufficiale.it/eli/id/2020/03/17/20G00034/sg</code>"),
+                "the ELI shown is the official one");
         assertTrue(html.contains("Original text"));
         assertTrue(html.contains("changed by <a href=\"/eli/id/2020/04/29/20G00045/sg\">L. 24 aprile 2020, n. 27</a>"),
                 "each version names the act that produced it");
@@ -126,7 +128,7 @@ class ActPagesTest {
 
     @Test
     void unknownActHasNoDetails() throws IOException {
-        assertTrue(catalog.details("https://example.it/eli/id/1999/01/01/X/sg").isEmpty());
+        assertTrue(catalog.details("http://www.gazzettaufficiale.it/eli/id/1999/01/01/X/sg").isEmpty());
         assertTrue(catalog.isAct("https://example.it/eli/ext/decreto_legislativo/2001-03-30/165"),
                 "an act outside the corpus is an eli:LegalResource too");
         assertTrue(catalog.isAct(DL_18));

@@ -297,7 +297,9 @@ public class ActPages {
     public String details(ActDetails act, String path) {
         String title = act.fact(ELI + "title");
         String date = act.fact(ELI + "date_document");
-        String gazzettaPage = act.facts(OWL_SAME_AS).stream().filter(u -> u.contains("gazzettaufficiale.it/eli/id/"))
+        // The act's identifier is its Gazzetta Ufficiale ELI (older data: owl:sameAs to it).
+        String gazzettaPage = (act.uri().contains("gazzettaufficiale.it/eli/id/") ? java.util.stream.Stream.of(act.uri())
+                : act.facts(OWL_SAME_AS).stream().filter(u -> u.contains("gazzettaufficiale.it/eli/id/")))
                 .findFirst().map(u -> u.replaceFirst("^http://", "https://")).orElse(null);
         StringBuilder body = new StringBuilder();
         body.append("<nav class=\"crumbs\" aria-label=\"").append(escape(t("crumbs.aria"))).append("\"><a href=\"/\">")
@@ -313,7 +315,7 @@ public class ActPages {
                 .append("</div><h1>").append(escape(act.citation())).append("</h1>")
                 .append(title == null ? "" : "<p class=\"lead\">" + escape(title) + "</p>")
                 .append("<div class=\"eli-box\"><span class=\"k\">ELI</span><code class=\"mono\">")
-                .append(escape(uris.uriForPath(path))).append("</code><span class=\"links\"><a href=\"")
+                .append(escape(act.uri())).append("</code><span class=\"links\"><a href=\"")
                 .append(escape(path)).append("?format=ttl\">").append(escape(t("eli.turtle"))).append("</a>")
                 .append(blank(gazzettaPage) ? "" : "<a href=\"" + escape(gazzettaPage) + "\" rel=\"noreferrer\">Gazzetta Ufficiale</a>")
                 .append("</span></div></section>\n");

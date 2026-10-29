@@ -11,7 +11,6 @@ import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.Property;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.vocabulary.DCTerms;
-import org.apache.jena.vocabulary.OWL;
 import org.apache.jena.vocabulary.RDF;
 import org.apache.jena.vocabulary.RDFS;
 
@@ -22,16 +21,16 @@ import it.legislation.model.AknExpression;
  * Maps the versions of one act, read from Normattiva Akoma Ntoso, to ELI RDF.
  *
  * <pre>
- * Work           {base}/eli/id/{GU yyyy/mm/dd}/{codice}/sg
- *   Expression   .../sg/ita/original              (the text as first published)
- *   Expression   .../sg/ita/vigente/{yyyy-mm-dd}  (each later version)
- *     Format     .../akn                          (the Akoma Ntoso file)
+ * Work           http://www.gazzettaufficiale.it/eli/id/{GU yyyy/mm/dd}/{codice}/sg   (the official ELI)
+ *   Expression   {base}/eli/id/.../sg/ita/original              (the text as first published)
+ *   Expression   {base}/eli/id/.../sg/ita/vigente/{yyyy-mm-dd}  (each later version)
+ *     Format     .../akn                                        (the Akoma Ntoso file)
  * </pre>
  *
- * The Work URI follows the Gazzetta Ufficiale ELI pattern on the application's
- * own domain, so a Gazzetta record of the same act lands on the same Work
- * (linked with {@code owl:sameAs}). The Normattiva URN is kept only as a
- * literal {@code dcterms:identifier}.
+ * The act is identified by its official Gazzetta Ufficiale ELI, the identifier the
+ * publisher assigns. Gazzetta Ufficiale publishes the act, not Normattiva's versions
+ * or files, so those are identified on the application's own domain ({base}), with
+ * the same ELI path. The Normattiva URN is kept only as a literal {@code dcterms:identifier}.
  */
 public class AknToEli {
 
@@ -67,12 +66,11 @@ public class AknToEli {
         Model model = ModelFactory.createDefaultModel();
         model.setNsPrefix("eli", ELI);
         model.setNsPrefix("dcterms", DCTerms.NS);
-        model.setNsPrefix("owl", OWL.NS);
         model.setNsPrefix("rdfs", RDFS.uri);
         model.setNsPrefix("xsd", XSDDatatype.XSD + "#");
 
         String workPath = workPath(first);
-        Resource work = model.createResource(uris.uriForPath(workPath));
+        Resource work = model.createResource(uris.gazzettaUriForPath(workPath).orElseGet(() -> uris.uriForPath(workPath)));
         work.addProperty(RDF.type, eli(model, "LegalResource"));
         work.addProperty(RDFS.label, title, "it");
         work.addProperty(eliProperty(model, "title"), title, "it");
@@ -85,7 +83,6 @@ public class AknToEli {
             work.addProperty(DCTerms.identifier, first.urnNir());
         }
         work.addProperty(DCTerms.source, model.createResource(NORMATTIVA_OPEN_DATA));
-        uris.gazzettaUriForPath(workPath).ifPresent(gazzetta -> work.addProperty(OWL.sameAs, model.createResource(gazzetta)));
 
         for (AknExpression version : versions) {
             String expressionPath = workPath + (version.original()
