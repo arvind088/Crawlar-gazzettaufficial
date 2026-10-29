@@ -68,7 +68,7 @@ public class ScheduledDailyUpdateJob {
             DailyUpdateRunner runner = new DailyUpdateRunner(
                     DailyUpdateRunner.clientSource(new NormattivaClient()),
                     DailyUpdateRunner.defaultPipeline(root, baseUri),
-                    root, AknImportRunner.DEFAULT_OUT,
+                    root, AknImportRunner.LAYER1,
                     new IngestionWatermark(IngestionWatermark.DEFAULT_PATH), new IngestionRunLog());
             DailyUpdateRunner.Summary s = runner.run(IngestionWatermark.nowUtc(), Duration.ofDays(7), false, line -> { });
             lastResult = s.failures().isEmpty()

@@ -73,7 +73,12 @@ public class DailyUpdateRunner {
 
         /** The export that brings this act, all versions. */
         ExportRequest export() {
-            return ExportRequest.akn(ExportRequest.Mode.ALL_VERSIONS, type, documentDate.getYear(),
+            return export(ExportRequest.Mode.ALL_VERSIONS);
+        }
+
+        /** The export of this act in one mode: all versions, the original text or the current text. */
+        ExportRequest export(ExportRequest.Mode mode) {
+            return ExportRequest.akn(mode, type, documentDate.getYear(),
                     documentDate.getMonthValue(), documentDate.getDayOfMonth(), number);
         }
 
@@ -126,7 +131,15 @@ public class DailyUpdateRunner {
 
     /** What one run did. */
     public record Summary(IngestionWatermark.Window window, int updated, int outOfScope, int missing,
-                          int fetched, int notExportedYet, List<String> failures, String pipeline, boolean dryRun) {}
+                          int fetched, int fromSingleTextExports, int notExportedYet, List<String> failures,
+                          String pipeline, boolean dryRun) {}
+
+    /**
+     * When the all-versions export of an act comes back empty (Normattiva does this for some recent acts, though
+     * their text is on its site), the original text and the current text are asked for separately: the original
+     * gives the act (Layer 1) and its change list, the current text its history.
+     */
+    static final List<ExportRequest.Mode> FALLBACK = List.of(ExportRequest.Mode.ORIGINAL, ExportRequest.Mode.CURRENT);
 
     private final Source source;
     private final Pipeline pipeline;
@@ -155,7 +168,7 @@ public class DailyUpdateRunner {
         Duration lookback = Duration.ofDays(Long.parseLong(options.getOrDefault("--lookback-days", "7")));
         NormattivaClient client = new NormattivaClient();
         DailyUpdateRunner runner = new DailyUpdateRunner(clientSource(client), defaultPipeline(root),
-                root, AknImportRunner.DEFAULT_OUT, new IngestionWatermark(IngestionWatermark.DEFAULT_PATH),
+                root, AknImportRunner.LAYER1, new IngestionWatermark(IngestionWatermark.DEFAULT_PATH),
                 new IngestionRunLog());
         Summary s = runner.run(IngestionWatermark.nowUtc(), lookback, dryRun, DailyUpdateRunner::log);
 
@@ -163,7 +176,10 @@ public class DailyUpdateRunner {
         System.out.println("Window:            " + s.window().describe());
         System.out.println("Changed acts:      " + s.updated() + " in scope, " + s.outOfScope() + " outside the corpus scope");
         System.out.println("Listed, missing:   " + s.missing() + " (listed by Normattiva, not imported yet)");
-        System.out.println("Downloaded:        " + s.fetched() + " acts" + (s.notExportedYet() > 0
+        System.out.println("Downloaded:        " + s.fetched() + " acts"
+                + (s.fromSingleTextExports() > 0 ? " (" + s.fromSingleTextExports()
+                        + " from the original/current text, the all-versions export being empty)" : "")
+                + (s.notExportedYet() > 0
                 ? ", " + s.notExportedYet() + " still without text (retried next run)" : ""));
         s.failures().forEach(f -> System.out.println("  FAIL " + f));
         if (s.pipeline() != null) {
@@ -185,6 +201,7 @@ public class DailyUpdateRunner {
         int missing = 0;
         int fetched = 0;
         int notExported = 0;
+        int fromSingleText = 0;
         String pipelineReport = null;
         try {
             progress.accept("window " + window.describe());
@@ -221,19 +238,25 @@ public class DailyUpdateRunner {
                 RawStore store = new RawStore(root);
                 String day = window.end().toLocalDate().toString();
                 for (ActRef act : toFetch.values()) {
-                    ExportRequest request = act.export();
-                    String name = "updates/" + day + "/" + request.fileStem() + ".zip";
                     try {
-                        byte[] zip = source.export(request);
-                        RawStore.SavedFile saved = store.save(name, zip, "daily update " + day + " " + act.codice());
-                        int files = NormattivaSampleFetchRunner.unzip(zip,
-                                saved.path().getParent().resolve(request.fileStem()));
+                        int files = download(store, day, act, act.export());
+                        int single = 0;
                         if (files == 0) {
+                            for (ExportRequest.Mode mode : FALLBACK) {
+                                single += download(store, day, act, act.export(mode));
+                            }
+                        }
+                        if (files + single == 0) {
                             notExported++;
                             progress.accept("no text yet  " + act.codice() + "  " + act.label());
                         } else {
                             fetched++;
-                            progress.accept("downloaded   " + act.codice() + "  " + act.label() + " (" + files + " files)");
+                            if (single > 0) {
+                                fromSingleText++;
+                            }
+                            progress.accept("downloaded   " + act.codice() + "  " + act.label() + " (" + (files + single)
+                                    + " files" + (single > 0 ? ", original/current text: all-versions export empty" : "")
+                                    + ")");
                         }
                     } catch (IOException | RuntimeException e) {
                         failures.add(act.codice() + " " + act.label() + ": " + e.getMessage());
@@ -261,7 +284,16 @@ public class DailyUpdateRunner {
                         ? done.failed(finished, String.join("; ", failures)) : done);
             }
         }
-        return new Summary(window, updated, outOfScope, missing, fetched, notExported, failures, pipelineReport, dryRun);
+        return new Summary(window, updated, outOfScope, missing, fetched, fromSingleText, notExported, failures,
+                pipelineReport, dryRun);
+    }
+
+    /** Asks for one export, keeps the ZIP under {@code updates/<day>/} and unpacks it; returns the XML files found. */
+    private int download(RawStore store, String day, ActRef act, ExportRequest request) throws IOException {
+        byte[] zip = source.export(request);
+        RawStore.SavedFile saved = store.save("updates/" + day + "/" + request.fileStem() + ".zip", zip,
+                "daily update " + day + " " + act.codice());
+        return NormattivaSampleFetchRunner.unzip(zip, saved.path().getParent().resolve(request.fileStem()));
     }
 
     /** The current year, and also the previous one in January (acts of late December are published in January). */
@@ -328,12 +360,12 @@ public class DailyUpdateRunner {
     public static Pipeline defaultPipeline(Path root, String base) {
         return today -> {
             AknImportRunner.Summary imported = new AknImportRunner(new EliUriService(base))
-                    .run(root, AknImportRunner.DEFAULT_OUT);
+                    .run(root, AknImportRunner.LAYER1, AknImportRunner.LAYER2);
             GazzettaCheckRunner.Summary checked = new GazzettaCheckRunner(new HttpPageFetcher(1000, 2),
-                    GazzettaCheckRunner.DEFAULT_CACHE, false, today)
-                    .run(AknImportRunner.DEFAULT_OUT, GazzettaCheckRunner.DEFAULT_OUT, GazzettaCheckRunner.DEFAULT_REPORT,
+                    GazzettaCheckRunner.DEFAULT_CACHE, false)
+                    .run(AknImportRunner.LAYER1, GazzettaCheckRunner.DEFAULT_OUT, GazzettaCheckRunner.DEFAULT_REPORT,
                             Integer.MAX_VALUE, line -> { });
-            RelationRunner.Summary related = new RelationRunner().run(AknImportRunner.DEFAULT_OUT, root,
+            RelationRunner.Summary related = new RelationRunner().run(AknImportRunner.LAYERS, root,
                     RelationRunner.DEFAULT_OUT, RelationRunner.DEFAULT_CONVERSIONS, RelationRunner.DEFAULT_RELATIONS, today);
             return "Pipeline: " + imported.acts() + " acts, " + imported.expressions() + " versions; Gazzetta "
                     + checked.counts() + " (" + checked.fetched() + " pages fetched); "

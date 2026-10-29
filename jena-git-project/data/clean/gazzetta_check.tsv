@@ -1,6 +1,4 @@
 codice	gu_date	type	number	date_of_act	status	differences	title_differs	gu_number	entry_into_force	gazzetta_url
-003G0218	2003-07-29	DECRETO_LEGISLATIVO	196	2003-06-30	ERROR	HTTP 500 for https://www.gazzettaufficiale.it/eli/id/2003/07/29/003G0218/sg				https://www.gazzettaufficiale.it/eli/id/2003/07/29/003G0218/sg
-18G00129	2018-09-04	DECRETO_LEGISLATIVO	101	2018-08-10	MATCH			205	2018-09-19	https://www.gazzettaufficiale.it/eli/id/2018/09/04/18G00129/sg
 20G00004	2020-01-09	DECRETO-LEGGE	1	2020-01-09	MATCH			6	2020-01-10	https://www.gazzettaufficiale.it/eli/id/2020/01/09/20G00004/sg
 20G00009	2020-01-31	LEGGE	2	2020-01-30	MATCH			25	2020-02-01	https://www.gazzettaufficiale.it/eli/id/2020/01/31/20G00009/sg
 20G00013	2020-02-05	DECRETO-LEGGE	3	2020-02-05	MATCH			29	2020-02-06	https://www.gazzettaufficiale.it/eli/id/2020/02/05/20G00013/sg

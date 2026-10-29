@@ -1,22 +1,13 @@
-# Relations by kind and trust level
-# How many relations of each kind (amends, repeals, changes) are trust A (both acts record them) or B (only one does).
-# it: Relazioni per tipo e livello di affidabilità
-# it: Quante relazioni di ciascun tipo (modifica, abrogazione, altro) sono di livello A (entrambi gli atti le registrano) o B (solo uno).
-PREFIX ilg: <http://example.org/italian-legislation/ontology#>
+# Relations by kind
+# How many times one act amends, repeals or otherwise changes another act.
+# it: Relazioni per tipo
+# it: Quante volte un atto modifica, abroga o cambia in altro modo un altro atto.
+PREFIX eli: <http://data.europa.eu/eli/ontology#>
 
-SELECT ?property ?trust (COUNT(?relation) AS ?relations)
+SELECT ?property (COUNT(*) AS ?relations)
 WHERE {
-  ?relation a ilg:Relation ;
-            ilg:relationProperty ?property .
-  ?assessment a ilg:RelationAssessment ;
-              ilg:assesses ?relation ;
-              ilg:assessedOn ?date ;
-              ilg:status "FOUND" ;
-              ilg:trustLevel ?trust .
-  FILTER NOT EXISTS {
-    ?newer a ilg:RelationAssessment ; ilg:assesses ?relation ; ilg:assessedOn ?later .
-    FILTER (?later > ?date)
-  }
+  ?act ?property ?other .
+  FILTER (?property IN (eli:amends, eli:repeals, eli:changes))
 }
-GROUP BY ?property ?trust
-ORDER BY ?property ?trust
+GROUP BY ?property
+ORDER BY DESC(?relations)

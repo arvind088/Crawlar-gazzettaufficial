@@ -21,12 +21,9 @@ import org.apache.jena.rdf.model.Property;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.riot.RDFDataMgr;
 import org.apache.jena.riot.RDFFormat;
-import org.apache.jena.vocabulary.DCTerms;
-import org.apache.jena.vocabulary.OWL;
 import org.apache.jena.vocabulary.RDF;
 import org.apache.jena.vocabulary.RDFS;
 
-import it.legislation.mapping.AssessmentHistory;
 import it.legislation.relations.ActKey;
 import it.legislation.relations.AknRelationReader;
 import it.legislation.relations.AknRelationReader.Evidence;
@@ -39,23 +36,27 @@ import it.legislation.relations.RelationDetector.Relation;
 import it.legislation.relations.VersionHistory;
 
 /**
- * Finds the relations between the imported acts (R6): which law converts
- * which decree-law, and which act amends, repeals or changes which other act,
- * each with its evidence and trust level. See {@link RelationDetector} for the rules.
+ * Finds which act modifies which (R6). See {@link RelationDetector} for the rules
+ * and {@link VersionHistory} for the link between a version and the act that produced it.
  *
- * <p>Reads the imported acts from {@code data/rdf/normattiva_akn.ttl} and their
- * Akoma Ntoso files from {@code data/raw/normattiva}. Writes
- * {@code data/rdf/relations.ttl} (loaded into the store), and two reports:
- * {@code data/clean/conversions.tsv} (one line per decree-law) and
- * {@code data/clean/relations.tsv} (one line per relation). It also links each consolidated version
- * to the act that produced it ({@link VersionHistory}): {@code data/rdf/version_history.ttl} and
- * {@code data/clean/version_history.tsv}, next to the other outputs.
+ * <p>Reads the acts and versions from the two layers ({@code data/rdf/layer1_acts.ttl},
+ * {@code data/rdf/layer2_versions.ttl}) and their Akoma Ntoso files from
+ * {@code data/raw/normattiva}. Writes {@code data/rdf/relations.ttl}, ELI only:
+ * <ul>
+ *   <li>{@code X eli:amends | eli:repeals | eli:changes Y}: act X modifies act Y;</li>
+ *   <li>{@code version eli:consolidates X}: this consolidated version of Y contains the changes made by X;</li>
+ *   <li>acts outside the corpus that are named, as {@code eli:LegalResource} with type, date and number.</li>
+ * </ul>
+ * A conversion is the law's relation to its decree-law (its title says "Conversione in legge …").
+ * Reports for checking and for the thesis: {@code data/clean/relations.tsv} (one line per relation,
+ * with where it was found), {@code data/clean/conversions.tsv} (one line per decree-law) and
+ * {@code data/clean/version_history.tsv} (one line per version link, with its evidence).
  *
  * <pre>
  * mvn -B compile exec:java "-Dexec.mainClass=it.legislation.ingest.RelationRunner"
  * </pre>
  *
- * Options: {@code --acts}, {@code --in}, {@code --out}, {@code --conversions},
+ * Options: {@code --acts <layer1>,<layer2>}, {@code --in}, {@code --out}, {@code --conversions},
  * {@code --relations}, {@code --today yyyy-mm-dd} (reference date for the 60 days).
  */
 public class RelationRunner {
@@ -65,7 +66,6 @@ public class RelationRunner {
     public static final Path DEFAULT_RELATIONS = Path.of("data", "clean", "relations.tsv");
 
     static final String ELI = "http://data.europa.eu/eli/ontology#";
-    static final String ILG = "http://example.org/italian-legislation/ontology#";
     static final String RESOURCE_TYPE = "http://www.gazzettaufficiale.it/eli/tables/resource-type#";
 
     public record Summary(int acts, int filesRead, List<String> unreadable, RelationDetector.Result result,
@@ -76,7 +76,9 @@ public class RelationRunner {
         for (int i = 0; i + 1 < args.length; i += 2) {
             options.put(args[i], args[i + 1]);
         }
-        Path acts = Path.of(options.getOrDefault("--acts", AknImportRunner.DEFAULT_OUT.toString()));
+        List<Path> acts = options.containsKey("--acts")
+                ? java.util.Arrays.stream(options.get("--acts").split(",")).map(String::trim).map(Path::of).toList()
+                : AknImportRunner.LAYERS;
         Path in = Path.of(options.getOrDefault("--in", AknImportRunner.DEFAULT_IN.toString()));
         Path out = Path.of(options.getOrDefault("--out", DEFAULT_OUT.toString()));
         Path conversions = Path.of(options.getOrDefault("--conversions", DEFAULT_CONVERSIONS.toString()));
@@ -92,7 +94,7 @@ public class RelationRunner {
                 + "  (through a third act, not counted: " + r.indirectMods()
                 + "; destination not understood: " + r.unresolvedDestinations() + ")");
         Map<String, Integer> byProperty = new TreeMap<>();
-        r.relations().forEach(rel -> byProperty.merge(rel.property().eliName + " level " + rel.trust()
+        r.relations().forEach(rel -> byProperty.merge(rel.property().eliName + " (" + rel.sources() + ")"
                 + (rel.to() == null ? " (target outside corpus)" : rel.from() == null ? " (source outside corpus)" : ""),
                 1, Integer::sum));
         System.out.println("Relations between acts: " + r.relations().size());
@@ -101,13 +103,9 @@ public class RelationRunner {
         r.conversions().forEach(c -> byStatus.merge(c.status(), 1, Integer::sum));
         System.out.println("Decree-laws: " + r.conversions().size());
         byStatus.forEach((k, v) -> System.out.println("  " + pad(k.name(), 22) + v));
-        r.conversions().stream().filter(c -> c.status() == ConversionStatus.REVIEW
-                        || c.status() == ConversionStatus.CONVERTED_ONE_SOURCE
-                        || c.status() == ConversionStatus.NOT_CONVERTED
-                        || c.status() == ConversionStatus.AWAITING_LAW_TEXT)
-                .forEach(c -> System.out.println("  " + pad(c.status().name(), 22) + c.decree().key()
-                        + " -> " + (c.law() == null ? (c.decreeNoteNamesLaw() == null ? "-" : c.decreeNoteNamesLaw())
-                        : c.law().key()) + "  " + checks(c)));
+        r.conversions().stream().filter(c -> c.law() == null && c.listedLaw() != null)
+                .forEach(c -> System.out.println("  converted by a law not imported yet: " + c.decree().key()
+                        + " -> " + c.listedLaw()));
         VersionHistory.Result h = summary.history();
         long inForce = h.links().stream().filter(l -> Boolean.TRUE.equals(l.onEntryIntoForce())).count();
         long inForceKnown = h.links().stream().filter(l -> l.onEntryIntoForce() != null).count();
@@ -123,7 +121,7 @@ public class RelationRunner {
                 : "No change: " + out + " is already up to date");
     }
 
-    public Summary run(Path acts, Path in, Path out, Path conversionsReport, Path relationsReport, LocalDate today)
+    public Summary run(List<Path> acts, Path in, Path out, Path conversionsReport, Path relationsReport, LocalDate today)
             throws IOException {
         CorpusIndex corpus = CorpusIndex.read(acts);
         AknRelationReader reader = new AknRelationReader();
@@ -150,14 +148,11 @@ public class RelationRunner {
 
         RelationDetector.Result result = new RelationDetector(corpus)
                 .detect(original, latest, today, listedConversionLaws(in, corpus));
-        Model model = toRdf(corpus, result, AssessmentHistory.read(out), today);
-        boolean written = writeModelIfChanged(out, model);
+        VersionHistory.Result history = VersionHistory.link(corpus, latest, result.relations(),
+                entryIntoForce(acts.get(0).resolveSibling(GazzettaCheckRunner.DEFAULT_OUT.getFileName().toString())));
+        boolean written = writeModelIfChanged(out, toRdf(corpus, result, history));
         written |= writeIfChanged(conversionsReport, conversionsTsv(result).getBytes(StandardCharsets.UTF_8));
         written |= writeIfChanged(relationsReport, relationsTsv(result).getBytes(StandardCharsets.UTF_8));
-
-        VersionHistory.Result history = VersionHistory.link(corpus, latest, result.relations(),
-                entryIntoForce(acts.resolveSibling("gazzetta_check.ttl")));
-        written |= writeModelIfChanged(out.resolveSibling("version_history.ttl"), versionHistoryRdf(corpus, history));
         written |= writeIfChanged(relationsReport.resolveSibling("version_history.tsv"),
                 versionHistoryTsv(history).getBytes(StandardCharsets.UTF_8));
         return new Summary(corpus.acts().size(), files, unreadable, result, history, written);
@@ -207,96 +202,35 @@ public class RelationRunner {
     }
 
     /**
-     * The relations as RDF. Facts (the relation triple, the relation node with its evidence) are only
-     * added; trust level, counts and decree-law statuses are dated assessments (see
-     * {@link AssessmentHistory}): a new one is written only when it differs from the latest earlier one.
-     * Everything in the previous output is kept.
+     * The relations as RDF, ELI only: {@code X eli:amends|eli:repeals|eli:changes Y} for each relation,
+     * {@code version eli:consolidates X} for each version link, and the acts outside the corpus that are named
+     * (type, date, number). A converting law always has a relation to its decree-law: when nothing else links
+     * them (conversion "senza modificazioni"), {@code eli:changes}.
      */
-    static Model toRdf(CorpusIndex corpus, RelationDetector.Result result, AssessmentHistory history, LocalDate day) {
+    static Model toRdf(CorpusIndex corpus, RelationDetector.Result result, VersionHistory.Result history) {
         Model model = ModelFactory.createDefaultModel();
-        model.add(history.previous());
         model.setNsPrefix("eli", ELI);
-        model.setNsPrefix("ilg", ILG);
         model.setNsPrefix("rdfs", RDFS.uri);
-        model.setNsPrefix("owl", OWL.NS);
-        model.setNsPrefix("dcterms", DCTerms.NS);
         model.setNsPrefix("xsd", XSDDatatype.XSD + "#");
         String base = corpus.baseUri();
-
-        Property converts = model.createProperty(ILG, "converts");
-        converts.addProperty(RDF.type, OWL.ObjectProperty);
-        converts.addProperty(RDFS.subPropertyOf, model.createResource(ELI + "changes"));
-        converts.addProperty(RDFS.label, "converts", "en");
-        converts.addProperty(RDFS.comment, "A conversion law (legge di conversione, Constitution art. 77) converts a "
-                + "decree-law into law. ELI has no property for this; it is a kind of eli:changes.", "en");
-
-        Property from = model.createProperty(ILG, "fromAct");
-        Property to = model.createProperty(ILG, "toAct");
-        Property property = model.createProperty(ILG, "relationProperty");
-        Property trust = model.createProperty(ILG, "trustLevel");
-        Property modCount = model.createProperty(ILG, "textualModCount");
-        Property lifecycle = model.createProperty(ILG, "confirmedByLifecycle");
-        Property example = model.createProperty(ILG, "exampleNote");
-        Property status = model.createProperty(ILG, "status");
-
-        java.util.Set<String> found = new java.util.HashSet<>();
+        java.util.Set<String> linked = new java.util.HashSet<>();
         for (Relation r : result.relations()) {
             Resource source = r.from() != null ? model.createResource(r.from().workUri()) : external(model, base, r.fromKey());
             Resource target = r.to() != null ? model.createResource(r.to().workUri()) : external(model, base, r.toKey());
-            Property p = model.createProperty(ELI, r.property().eliName);
-            source.addProperty(p, target);
-            Resource node = model.createResource(base + "/relation/" + id(r.from(), r.fromKey()) + "/"
-                    + r.property().eliName + "/" + id(r.to(), r.toKey()));
-            found.add(node.getURI());
-            node.addProperty(RDF.type, model.createResource(ILG + "Relation"));
-            node.addProperty(from, source);
-            node.addProperty(to, target);
-            node.addProperty(property, p);
-            r.exampleNotes().forEach(n -> node.addProperty(example, n, "it"));
-            if (r.sourceFile() != null) {
-                node.addProperty(DCTerms.source, r.sourceFile());
-            }
-            history.record(model, node, "RelationAssessment", node.getURI(), day, new AssessmentHistory.Values()
-                    .put(status, model.createLiteral("FOUND"))
-                    .put(trust, model.createLiteral(r.trust()))
-                    .put(modCount, model.createTypedLiteral(r.textualMods()))
-                    .put(lifecycle, model.createTypedLiteral(r.confirmedByLifecycle()))
-                    .build());
+            source.addProperty(model.createProperty(ELI, r.property().eliName), target);
+            linked.add(source.getURI() + " " + target.getURI());
         }
-        // A relation found by an earlier run and not by this one is not deleted: it is marked WITHDRAWN.
-        for (String earlier : history.assessedSubjects("RelationAssessment")) {
-            if (!found.contains(earlier)) {
-                history.record(model, model.createResource(earlier), "RelationAssessment", earlier, day,
-                        new AssessmentHistory.Values().put(status, model.createLiteral("WITHDRAWN")).build());
-            }
-        }
-
-        Property conversionStatus = model.createProperty(ILG, "conversionStatus");
-        Property law = model.createProperty(ILG, "law");
-        Property days = model.createProperty(ILG, "daysToConversion");
-        Property repealedBy = model.createProperty(ILG, "repealedBy");
         for (Conversion c : result.conversions()) {
-            Resource d = model.createResource(c.decree().workUri());
-            AssessmentHistory.Values values = new AssessmentHistory.Values()
-                    .put(conversionStatus, model.createLiteral(c.status().name()));
-            if (c.law() != null) {
-                Resource l = model.createResource(c.law().workUri());
-                values.put(law, l).put(days, model.createTypedLiteral(c.checks().days()));
-                boolean[] checks = {c.checks().c1(), c.checks().c2(), c.checks().c3(),
-                        c.checks().c4(), c.checks().c5(), c.checks().c6()};
-                for (int i = 0; i < checks.length; i++) {
-                    values.put(model.createProperty(ILG, "checkC" + (i + 1)), model.createTypedLiteral(checks[i]));
-                }
-                if (c.status() == ConversionStatus.CONVERTED || c.status() == ConversionStatus.CONVERTED_ONE_SOURCE) {
-                    l.addProperty(converts, d);
-                    values.put(trust, model.createLiteral(c.status() == ConversionStatus.CONVERTED ? "A" : "B"));
-                }
+            if (c.law() != null && linked.add(c.law().workUri() + " " + c.decree().workUri())) {
+                model.createResource(c.law().workUri()).addProperty(model.createProperty(ELI, "changes"),
+                        model.createResource(c.decree().workUri()));
             }
-            for (String repealer : c.repealedBy()) {
-                corpus.acts().stream().filter(a -> a.codice().equals(repealer)).findFirst()
-                        .ifPresent(a -> values.put(repealedBy, model.createResource(a.workUri())));
-            }
-            history.record(model, d, "ConversionCheck", base + "/conversion/" + c.decree().codice(), day, values.build());
+        }
+        Property consolidates = model.createProperty(ELI, "consolidates");
+        for (VersionHistory.Link l : history.links()) {
+            Resource changer = l.modifier() != null ? model.createResource(l.modifier().workUri())
+                    : external(model, base, l.changedBy());
+            model.createResource(l.version().uri()).addProperty(consolidates, changer);
         }
         return model;
     }
@@ -324,51 +258,6 @@ public class RelationRunner {
         return dates;
     }
 
-    /**
-     * The version history as RDF: {@code version ilg:changedBy act}, and one {@code ilg:VersionChange}
-     * node per link with its evidence (event date, days to the version, entry into force, change list).
-     * These are facts read from the files: the history of a version that already exists does not change.
-     */
-    static Model versionHistoryRdf(CorpusIndex corpus, VersionHistory.Result history) {
-        Model model = ModelFactory.createDefaultModel();
-        model.setNsPrefix("eli", ELI);
-        model.setNsPrefix("ilg", ILG);
-        model.setNsPrefix("rdfs", RDFS.uri);
-        model.setNsPrefix("owl", OWL.NS);
-        model.setNsPrefix("xsd", XSDDatatype.XSD + "#");
-        String base = corpus.baseUri();
-        Property changedBy = model.createProperty(ILG, "changedBy");
-        changedBy.addProperty(RDF.type, OWL.ObjectProperty);
-        changedBy.addProperty(RDFS.label, "changed by", "en");
-        changedBy.addProperty(RDFS.comment, "This consolidated version (ELI Expression) contains the changes made by "
-                + "the given act. Read from the act's history (Akoma Ntoso lifecycle) and the version dates.", "en");
-        Resource change = model.createResource(ILG + "VersionChange");
-        Property version = model.createProperty(ILG, "version");
-        Property act = model.createProperty(ILG, "changingAct");
-        Property eventDate = model.createProperty(ILG, "eventDate");
-        Property days = model.createProperty(ILG, "daysAfterEvent");
-        Property inForce = model.createProperty(ILG, "startsOnEntryIntoForce");
-        Property confirmed = model.createProperty(ILG, "confirmedByChangeList");
-        for (VersionHistory.Link l : history.links()) {
-            Resource v = model.createResource(l.version().uri());
-            Resource changer = l.modifier() != null ? model.createResource(l.modifier().workUri())
-                    : external(model, base, l.changedBy());
-            v.addProperty(changedBy, changer);
-            Resource node = model.createResource(base + "/version-change/" + l.act().codice() + "/" + l.version().date()
-                    + "/" + id(l.modifier(), l.changedBy()));
-            node.addProperty(RDF.type, change);
-            node.addProperty(version, v);
-            node.addProperty(act, changer);
-            node.addLiteral(eventDate, model.createTypedLiteral(l.eventDate().toString(), XSDDatatype.XSDdate));
-            node.addLiteral(days, model.createTypedLiteral(l.daysAfterEvent()));
-            if (l.onEntryIntoForce() != null) {
-                node.addLiteral(inForce, model.createTypedLiteral(l.onEntryIntoForce()));
-            }
-            node.addLiteral(confirmed, model.createTypedLiteral(l.confirmedByChangeList()));
-        }
-        return model;
-    }
-
     static String versionHistoryTsv(VersionHistory.Result history) {
         StringBuilder sb = new StringBuilder("act_codice\tact\tversion_date\tchanged_by_codice\tchanged_by\tevent_date"
                 + "\tdays_after_event\tstarts_on_entry_into_force\tconfirmed_by_change_list\n");
@@ -382,12 +271,12 @@ public class RelationRunner {
         return sb.toString();
     }
 
-    /** URI for an act outside the corpus, from its citation key. */
+    /** URI for an act outside the corpus, from its citation key (type, date, number). */
     private static Resource external(Model model, String base, ActKey key) {
         Resource act = model.createResource(base + "/eli/ext/" + key.typeCode().toLowerCase(Locale.ROOT)
                 + "/" + key.date() + "/" + key.number());
         if (!act.hasProperty(RDF.type)) {
-            act.addProperty(RDF.type, model.createResource(ILG + "ExternalAct"));
+            act.addProperty(RDF.type, model.createResource(ELI + "LegalResource"));
             act.addProperty(RDFS.label, key.toString());
             act.addProperty(model.createProperty(ELI, "type_document"), model.createResource(RESOURCE_TYPE + key.typeCode()));
             act.addLiteral(model.createProperty(ELI, "date_document"),
@@ -403,47 +292,33 @@ public class RelationRunner {
     }
 
     static String conversionsTsv(RelationDetector.Result result) {
-        StringBuilder sb = new StringBuilder("decree_codice\tdecree\tdecree_gu\tstatus\tlaw_codice\tlaw\tlaw_gu\tdays"
-                + "\tC1\tC2\tC3\tC4\tC5\tC6\tother_candidates\tdecree_note_names_law\trepealed_by\n");
+        StringBuilder sb = new StringBuilder("decree_codice\tdecree\tdecree_gu\tstatus\tlaw_codice\tlaw\tlaw_gu\tdays\n");
         for (Conversion c : result.conversions()) {
             sb.append(c.decree().codice()).append('\t').append(c.decree().key()).append('\t')
                     .append(c.decree().publicationDate()).append('\t').append(c.status()).append('\t');
             if (c.law() != null) {
                 sb.append(c.law().codice()).append('\t').append(c.law().key()).append('\t')
-                        .append(c.law().publicationDate()).append('\t').append(c.checks().days()).append('\t')
-                        .append(c.checks().c1()).append('\t').append(c.checks().c2()).append('\t')
-                        .append(c.checks().c3()).append('\t').append(c.checks().c4()).append('\t')
-                        .append(c.checks().c5()).append('\t').append(c.checks().c6()).append('\t');
+                        .append(c.law().publicationDate()).append('\t').append(c.days());
             } else {
-                sb.append("\t\t\t\t\t\t\t\t\t\t");
+                sb.append('\t').append(c.listedLaw() == null ? "" : c.listedLaw()).append("\t\t");
             }
-            sb.append(c.otherCandidates()).append('\t')
-                    .append(c.decreeNoteNamesLaw() == null ? "" : c.decreeNoteNamesLaw()).append('\t')
-                    .append(String.join(" ", c.repealedBy())).append('\n');
+            sb.append('\n');
         }
         return sb.toString();
     }
 
     static String relationsTsv(RelationDetector.Result result) {
-        StringBuilder sb = new StringBuilder("from_codice\tfrom\tproperty\tto_codice\tto\ttrust\ttextual_mods"
+        StringBuilder sb = new StringBuilder("from_codice\tfrom\tproperty\tto_codice\tto\tsources\ttextual_mods"
                 + "\tconfirmed_by_lifecycle\tkinds\texample_note\n");
         for (Relation r : result.relations()) {
             sb.append(r.from() == null ? "" : r.from().codice()).append('\t').append(r.fromKey()).append('\t')
                     .append(r.property().eliName).append('\t')
                     .append(r.to() == null ? "" : r.to().codice()).append('\t').append(r.toKey()).append('\t')
-                    .append(r.trust()).append('\t').append(r.textualMods()).append('\t')
+                    .append(r.sources()).append('\t').append(r.textualMods()).append('\t')
                     .append(r.confirmedByLifecycle()).append('\t').append(new TreeMap<>(r.kinds())).append('\t')
                     .append(r.exampleNotes().isEmpty() ? "" : r.exampleNotes().get(0).replace('\t', ' ')).append('\n');
         }
         return sb.toString();
-    }
-
-    private static String checks(Conversion c) {
-        if (c.checks() == null) {
-            return "";
-        }
-        return "C1=" + c.checks().c1() + " C2=" + c.checks().c2() + " C3=" + c.checks().c3() + " C4=" + c.checks().c4()
-                + " C5=" + c.checks().c5() + " (" + c.checks().days() + " days) C6=" + c.checks().c6();
     }
 
     private static byte[] turtle(Model model) {

@@ -158,8 +158,20 @@ public class ReferenceSetRunner {
     }
 
     private static boolean is(Row r, String property, String trust, boolean targetInCorpus) {
-        return r.get("property").equals(property) && r.get("trust").equals(trust)
+        return r.get("property").equals(property) && trust(r).equals(trust)
                 && r.get("to_codice").isEmpty() != targetInCorpus;
+    }
+
+    /**
+     * The stratum of a relation as drawn for the reference set: "A" when both sources record it (change list
+     * and history), "B" otherwise. Read from the {@code trust} column of the reports used then, or from
+     * {@code sources} in the current ones.
+     */
+    static String trust(Row r) {
+        if (!r.get("trust").isEmpty()) {
+            return r.get("trust");
+        }
+        return "change list + history".equals(r.get("sources")) ? "A" : "B";
     }
 
     private static void draw(List<Row> rows, Predicate<Row> filter, Stratum stratum, Random random,
@@ -189,7 +201,7 @@ public class ReferenceSetRunner {
     }
 
     private static String[] relationLine(Row r, String check) {
-        return new String[] {r.get("from"), r.get("property"), r.get("to"), r.get("trust"), check};
+        return new String[] {r.get("from"), r.get("property"), r.get("to"), trust(r), check};
     }
 
     /** Normattiva link for "DECRETO-LEGGE 2020-03-17 n. 18"; empty when the text is not an act key. */

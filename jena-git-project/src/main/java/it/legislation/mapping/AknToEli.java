@@ -36,7 +36,6 @@ import it.legislation.model.AknExpression;
 public class AknToEli {
 
     public static final String ELI = "http://data.europa.eu/eli/ontology#";
-    public static final String ILG = "http://example.org/italian-legislation/ontology#";
     static final String RESOURCE_TYPE = "http://www.gazzettaufficiale.it/eli/tables/resource-type#";
     static final String ITALIAN = "http://publications.europa.eu/resource/authority/language/ITA";
     static final String AKN_FORMAT = "https://www.iana.org/assignments/media-types/application/akn+xml";
@@ -67,7 +66,6 @@ public class AknToEli {
         String title = cleanTitle(first.title(), first.codiceRedazionale());
         Model model = ModelFactory.createDefaultModel();
         model.setNsPrefix("eli", ELI);
-        model.setNsPrefix("ilg", ILG);
         model.setNsPrefix("dcterms", DCTerms.NS);
         model.setNsPrefix("owl", OWL.NS);
         model.setNsPrefix("rdfs", RDFS.uri);
@@ -112,7 +110,6 @@ public class AknToEli {
             format.addProperty(eliProperty(model, "embodies"), expression);
             expression.addProperty(eliProperty(model, "is_embodied_by"), format);
             format.addProperty(DCTerms.source, version.sourceFile());
-            format.addProperty(model.createProperty(ILG, "sha256"), version.sha256());
         }
         return model;
     }
