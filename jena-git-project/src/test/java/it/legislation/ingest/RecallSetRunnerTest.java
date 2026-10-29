@@ -43,7 +43,7 @@ class RecallSetRunnerTest {
                 """, StandardCharsets.UTF_8);
         Path out = temp.resolve("eval/recall_set.tsv");
 
-        assertTrue(RecallSetRunner.sample(acts, relations, akn, out));
+        assertTrue(RecallSetRunner.sample(acts, relations, List.of(akn), out));
         List<String> lines = Files.readAllLines(out);
         assertTrue(lines.get(0).startsWith("id\tgroup\tact\twe_found_count\twe_found"));
         String text = String.join("\n", lines);
@@ -54,7 +54,7 @@ class RecallSetRunnerTest {
         assertTrue(text.contains("https://gu/dl18"));
 
         Files.writeString(out, "changed by hand");
-        assertFalse(RecallSetRunner.sample(acts, relations, akn, out));
+        assertFalse(RecallSetRunner.sample(acts, relations, List.of(akn), out));
         assertEquals("changed by hand", Files.readString(out), "answers are never overwritten");
     }
 

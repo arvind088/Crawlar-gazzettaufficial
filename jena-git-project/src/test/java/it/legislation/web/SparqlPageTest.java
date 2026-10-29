@@ -45,7 +45,7 @@ class SparqlPageTest {
 
     @Test
     void showsVocabularyTermsByShortName() {
-        String html = page.page("SELECT ?p WHERE { ?r <http://example.org/italian-legislation/ontology#relationProperty> ?p }",
+        String html = page.page("SELECT ?p WHERE { ?a ?p ?b FILTER(?p = <http://data.europa.eu/eli/ontology#amends>) }",
                 null).getBody();
         assertTrue(html.contains(">eli:amends</span>"));
     }
@@ -67,9 +67,9 @@ class SparqlPageTest {
     @Test
     void runsAChosenExampleAndShowsItsDescription() {
         String html = page.page(null, "08-decree-law-status").getBody();
-        assertTrue(html.contains("aria-current=\"page\">8 &middot; Decree-laws by conversion status"));
-        assertTrue(html.contains("latest check of each"), "the description is shown above the query");
-        assertTrue(html.contains("CONVERTED"));
+        assertTrue(html.contains("aria-current=\"page\">8 &middot; Decree-laws: converted or not"));
+        assertTrue(html.contains("pending for 60 days"), "the description is shown above the query");
+        assertTrue(html.contains("CONVERTED"), "D.L. 18/2020 is converted by L. 27/2020");
     }
 
     @Test
@@ -77,7 +77,7 @@ class SparqlPageTest {
         LocaleContextHolder.setLocale(Locale.ITALIAN);
         try {
             String html = page.page(null, "08-decree-law-status").getBody();
-            assertTrue(html.contains("Decreti-legge per stato della conversione"), "the it: comment line is the title");
+            assertTrue(html.contains("Decreti-legge: convertiti o no"), "the it: comment line is the title");
             assertTrue(html.contains(">Esegui la query<"));
             assertTrue(html.contains(">Risultato <span"));
         } finally {

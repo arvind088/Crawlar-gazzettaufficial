@@ -1,20 +1,22 @@
-# Every decree-law with its current conversion status (latest assessment) and the
-# law that converts it. CONVERTED = checks C1-C6 pass (level A); CONVERTED_ONE_SOURCE
-# = level B; REPEALED, PENDING, AWAITING_LAW_TEXT, NOT_CONVERTED, REVIEW.
+# Every decree-law and the law that converts it, if any: a law whose title says
+# "Conversione in legge … del decreto-legge ⟨date⟩, n. ⟨number⟩" and that is linked to it.
 PREFIX eli: <http://data.europa.eu/eli/ontology#>
-PREFIX ilg: <http://example.org/italian-legislation/ontology#>
+PREFIX dcterms: <http://purl.org/dc/terms/>
+PREFIX rt: <http://www.gazzettaufficiale.it/eli/tables/resource-type#>
 
-SELECT ?decree ?decreeTitle ?status ?since ?law ?days
+SELECT ?decree ?decreeTitle ?published ?law
 WHERE {
-  ?check a ilg:ConversionCheck ;
-         ilg:assesses ?decree ;
-         ilg:assessedOn ?since ;
-         ilg:conversionStatus ?status .
-  FILTER NOT EXISTS {
-    ?newer a ilg:ConversionCheck ; ilg:assesses ?decree ; ilg:assessedOn ?later .
-    FILTER (?later > ?since)
+  ?decree eli:type_document rt:DECRETO-LEGGE ;
+          dcterms:source <https://dati.normattiva.it/> ;
+          eli:number ?number ;
+          eli:date_publication ?published .
+  OPTIONAL { ?decree eli:title ?decreeTitle }
+  OPTIONAL {
+    ?law eli:type_document rt:LEGGE ;
+         eli:title ?title ;
+         eli:amends|eli:changes|eli:repeals ?decree .
+    FILTER (STRSTARTS(LCASE(STR(?title)), "conversione in legge"))
+    FILTER (REGEX(STR(?title), CONCAT("n\\. ?", STR(?number), "([^0-9]|$)")))
   }
-  OPTIONAL { ?check ilg:law ?law ; ilg:daysToConversion ?days . }
-  OPTIONAL { ?decree eli:title ?decreeTitle . }
 }
-ORDER BY ?status ?decree
+ORDER BY DESC(?published)

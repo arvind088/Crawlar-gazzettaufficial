@@ -1,6 +1,8 @@
 package it.legislation.web;
 
 import java.io.IOException;
+import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -8,7 +10,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.TreeMap;
+import java.util.function.Supplier;
 
 import org.apache.jena.query.Dataset;
 import org.apache.jena.query.ParameterizedSparqlString;
@@ -17,43 +19,59 @@ import org.apache.jena.query.QueryExecutionFactory;
 import org.apache.jena.query.QuerySolution;
 import org.apache.jena.query.ResultSet;
 import org.apache.jena.rdf.model.RDFNode;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import it.legislation.mapping.AknActReader;
+import it.legislation.relations.ActKey;
+import it.legislation.relations.RelationDetector;
 import it.legislation.store.Tdb2DatasetService;
 
 /**
  * What the Legal acts and Act details pages show, read with SPARQL from the
- * store on every request.
+ * store on every request. The data is ELI only: acts and their original text
+ * (Layer 1), consolidated versions (Layer 2), and which act modifies which
+ * ({@code eli:amends}, {@code eli:repeals}, {@code eli:changes}, and
+ * {@code eli:consolidates} from a version to the act it contains).
  *
- * <p>Results that change over time are dated assessments
- * ({@code ilg:ConversionCheck}, {@code ilg:GazzettaCheck},
- * {@code ilg:RelationAssessment}); the pages show the latest one and keep the
- * earlier ones as history.
+ * <p>Conversion is read from the titles: a law whose title says "Conversione in
+ * legge … del decreto-legge ⟨date⟩, n. ⟨n⟩" converts that decree-law
+ * ({@link RelationDetector#convertedDecree}). A decree-law with no such law is
+ * pending for 60 days, then not converted.
  */
 @Service
 public class ActCatalog {
 
     static final String PREFIXES = """
             PREFIX eli: <http://data.europa.eu/eli/ontology#>
-            PREFIX ilg: <http://example.org/italian-legislation/ontology#>
             PREFIX dcterms: <http://purl.org/dc/terms/>
             PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
             PREFIX owl: <http://www.w3.org/2002/07/owl#>
+            PREFIX rt: <http://www.gazzettaufficiale.it/eli/tables/resource-type#>
             """;
-    static final String ILG = "http://example.org/italian-legislation/ontology#";
     static final String ELI = "http://data.europa.eu/eli/ontology#";
+    /** The relations between acts, as ELI names them. */
+    static final List<String> KINDS = List.of("amends", "repeals", "changes");
 
     private final Tdb2DatasetService store;
+    private final Supplier<LocalDate> today;
 
+    @Autowired
     public ActCatalog(Tdb2DatasetService store) {
+        this(store, LocalDate::now);
+    }
+
+    /** @param today the day that decides whether the 60 days for conversion are over */
+    ActCatalog(Tdb2DatasetService store, Supplier<LocalDate> today) {
         this.store = store;
+        this.today = today;
     }
 
     // ------------------------------------------------------------------ records
 
-    /** One row of the Legal acts list. */
+    /** One row of the Legal acts list; {@code conversionStatus} only for decree-laws. */
     public record ActRow(String uri, String localId, String typeCode, String date, String number, String title,
-                         int versions, String conversionStatus, String gazzettaStatus) {
+                         int versions, String conversionStatus) {
         public String citation() {
             return Html.citation(typeCode, date, number);
         }
@@ -63,17 +81,8 @@ public class ActCatalog {
         }
     }
 
-    /** One dated assessment: its type (ConversionCheck, GazzettaCheck, RelationAssessment), date and values. */
-    public record Assessment(String node, String type, String assessedOn, Map<String, List<String>> values) {
-        public String value(String localName) {
-            List<String> v = values.get(ILG + localName);
-            return v == null || v.isEmpty() ? null : v.get(0);
-        }
-    }
-
-    /** A version (ELI expression) with the file it was read from and the acts that produced it. */
-    public record Version(String uri, String date, String label, String source, String sha256,
-                          List<OtherAct> changedBy) {}
+    /** A version (ELI expression) with the file it was read from and the acts it consolidates. */
+    public record Version(String uri, String date, String label, String source, List<OtherAct> changedBy) {}
 
     /** The act at the other end of a relation. */
     public record OtherAct(String uri, String typeCode, String date, String number, String title, boolean inCorpus) {
@@ -82,25 +91,34 @@ public class ActCatalog {
         }
     }
 
-    /** A relation with its evidence and its latest assessment. */
-    public record Relation(String uri, boolean outgoing, String property, OtherAct other, String note, String source,
-                           Assessment latest) {
+    /**
+     * A relation: {@code outgoing} when this act modifies the other one. {@code property} is the ELI property
+     * (amends, repeals, changes), shown as "converts" when the pair is a conversion law and its decree-law.
+     */
+    public record Relation(boolean outgoing, String property, OtherAct other) {
         public String propertyName() {
             int hash = property.lastIndexOf('#');
             return hash >= 0 ? property.substring(hash + 1) : property;
         }
     }
 
-    /** A decree-law that this law converts, with the decree's latest conversion assessment. */
-    public record Converted(OtherAct decree, Assessment latest) {}
+    /** A decree-law's conversion: CONVERTED (with the law and the days), PENDING or NOT_CONVERTED. */
+    public record Conversion(String status, OtherAct law, Long days) {}
+
+    /** A decree-law this law converts, with the days from the decree to the law. */
+    public record Converted(OtherAct decree, Long days) {}
 
     /** Everything the Act details page shows. */
     public record ActDetails(String uri, Map<String, List<String>> facts, List<Version> versions,
-                             List<Assessment> conversionHistory, List<Assessment> gazzettaHistory,
-                             List<Relation> relations, List<Converted> converts) {
+                             Optional<Conversion> conversion, List<Relation> relations, List<Converted> converts) {
         public String fact(String property) {
             List<String> v = facts.get(property);
             return v == null || v.isEmpty() ? null : v.get(0);
+        }
+
+        /** Every value of a property (e.g. all {@code owl:sameAs}). */
+        public List<String> facts(String property) {
+            return facts.getOrDefault(property, List.of());
         }
 
         public String typeCode() {
@@ -110,17 +128,9 @@ public class ActCatalog {
         public String citation() {
             return Html.citation(typeCode(), fact(ELI + "date_document"), fact(ELI + "number"));
         }
-
-        public Optional<Assessment> conversion() {
-            return conversionHistory.isEmpty() ? Optional.empty() : Optional.of(conversionHistory.get(0));
-        }
-
-        public Optional<Assessment> gazzetta() {
-            return gazzettaHistory.isEmpty() ? Optional.empty() : Optional.of(gazzettaHistory.get(0));
-        }
     }
 
-    /** Totals for the head of the list page; relations by kind (amends, changes, repeals, converts). */
+    /** Totals for the head of the list page; relations by kind (amends, repeals, changes). */
     public record Totals(long acts, long versions, long relations, Map<String, Long> relationsByKind) {
         public long relations(String kind) {
             return relationsByKind.getOrDefault(kind, 0L);
@@ -129,14 +139,15 @@ public class ActCatalog {
 
     // ------------------------------------------------------------------ queries
 
-    /** The acts imported from Normattiva, newest first, with their current statuses. */
+    /** The acts imported from Normattiva, newest first; decree-laws with their conversion status. */
     public List<ActRow> acts() throws IOException {
         return store.read(dataset -> {
-            Map<String, String[]> latest = latestStatuses(dataset);
+            Map<String, ConversionFacts> conversions = conversions(dataset);
             List<ActRow> rows = new ArrayList<>();
             String query = PREFIXES + """
                     SELECT ?act (SAMPLE(?id) AS ?localId) (SAMPLE(?type) AS ?t) (SAMPLE(?date) AS ?d)
-                           (SAMPLE(?number) AS ?n) (SAMPLE(?title) AS ?ti) (COUNT(DISTINCT ?expression) AS ?versions)
+                           (SAMPLE(?number) AS ?n) (SAMPLE(?title) AS ?ti) (SAMPLE(?pub) AS ?p)
+                           (COUNT(DISTINCT ?expression) AS ?versions)
                     WHERE {
                       ?act a eli:LegalResource ;
                            dcterms:source <https://dati.normattiva.it/> ;
@@ -145,15 +156,17 @@ public class ActCatalog {
                            eli:date_document ?date .
                       OPTIONAL { ?act eli:number ?number }
                       OPTIONAL { ?act eli:title ?title }
+                      OPTIONAL { ?act eli:date_publication ?pub }
                       OPTIONAL { ?act eli:is_realized_by ?expression }
                     }
                     GROUP BY ?act
                     """;
             each(dataset, query, s -> {
                 String uri = s.getResource("act").getURI();
-                String[] status = latest.getOrDefault(uri, new String[4]);
-                rows.add(new ActRow(uri, text(s, "localId"), Html.typeCode(text(s, "t")), text(s, "d"),
-                        text(s, "n"), text(s, "ti"), s.getLiteral("versions").getInt(), status[1], status[3]));
+                String type = Html.typeCode(text(s, "t"));
+                rows.add(new ActRow(uri, text(s, "localId"), type, text(s, "d"), text(s, "n"), text(s, "ti"),
+                        s.getLiteral("versions").getInt(),
+                        "DECRETO-LEGGE".equals(type) ? status(conversions.get(uri), text(s, "p")) : null));
             });
             rows.sort(Comparator.comparing(ActRow::date, Comparator.nullsLast(Comparator.reverseOrder()))
                     .thenComparing(ActRow::localId, Comparator.nullsLast(Comparator.reverseOrder())));
@@ -175,40 +188,16 @@ public class ActCatalog {
             });
             Map<String, Long> byKind = new LinkedHashMap<>();
             each(dataset, PREFIXES + """
-                    SELECT ?property (COUNT(?r) AS ?n)
-                    WHERE { ?r a ilg:Relation ; ilg:relationProperty ?property }
+                    SELECT ?property (COUNT(*) AS ?n)
+                    WHERE { ?a ?property ?b . FILTER(?property IN (eli:amends, eli:repeals, eli:changes)) }
                     GROUP BY ?property ORDER BY DESC(?n)
                     """, s -> {
                 String property = s.getResource("property").getURI();
-                byKind.put(property.substring(Math.max(property.lastIndexOf('#'), property.lastIndexOf('/')) + 1),
-                        s.getLiteral("n").getLong());
+                byKind.put(property.substring(property.lastIndexOf('#') + 1), s.getLiteral("n").getLong());
                 t[2] += s.getLiteral("n").getLong();
             });
             return new Totals(t[0], t[1], t[2], byKind);
         });
-    }
-
-    /** Act URI → {conversion date, conversion status, gazzetta date, gazzetta status}, latest of each. */
-    private Map<String, String[]> latestStatuses(Dataset dataset) {
-        Map<String, String[]> latest = new HashMap<>();
-        each(dataset, PREFIXES + """
-                SELECT ?act ?on ?conversion ?gazzetta WHERE {
-                  { ?check a ilg:ConversionCheck ; ilg:assesses ?act ; ilg:assessedOn ?on ;
-                           ilg:conversionStatus ?conversion }
-                  UNION
-                  { ?check a ilg:GazzettaCheck ; ilg:assesses ?act ; ilg:assessedOn ?on ;
-                           ilg:gazzettaCheck ?gazzetta }
-                }
-                """, s -> {
-            String[] row = latest.computeIfAbsent(s.getResource("act").getURI(), k -> new String[4]);
-            String on = text(s, "on");
-            int slot = s.contains("conversion") ? 0 : 2;
-            if (row[slot] == null || on.compareTo(row[slot]) > 0) {
-                row[slot] = on;
-                row[slot + 1] = text(s, slot == 0 ? "conversion" : "gazzetta");
-            }
-        });
-        return latest;
     }
 
     /** True when the URI is an act (an {@code eli:LegalResource}). */
@@ -233,22 +222,22 @@ public class ActCatalog {
 
             List<Version> versions = new ArrayList<>();
             each(dataset, bind("""
-                    SELECT ?e (SAMPLE(?d) AS ?date) (SAMPLE(?l) AS ?label) (SAMPLE(?src) AS ?source) (SAMPLE(?h) AS ?sha)
+                    SELECT ?e (SAMPLE(?d) AS ?date) (SAMPLE(?l) AS ?label) (SAMPLE(?src) AS ?source)
                     WHERE {
                       ?act eli:is_realized_by ?e .
                       OPTIONAL { ?e eli:version_date ?d }
                       OPTIONAL { ?e rdfs:label ?l }
-                      OPTIONAL { ?e eli:is_embodied_by ?f . OPTIONAL { ?f dcterms:source ?src } OPTIONAL { ?f ilg:sha256 ?h } }
+                      OPTIONAL { ?e eli:is_embodied_by ?f . ?f dcterms:source ?src }
                     } GROUP BY ?e
                     """, actUri), s -> versions.add(new Version(s.getResource("e").getURI(), text(s, "date"),
-                    text(s, "label"), text(s, "source"), text(s, "sha"), new ArrayList<>())));
-            // Which act produced each version (ilg:changedBy, from the version history).
+                    text(s, "label"), text(s, "source"), new ArrayList<>())));
+            // Which act(s) each version consolidates.
             Map<String, Version> byUri = new HashMap<>();
             versions.forEach(v -> byUri.put(v.uri(), v));
             each(dataset, bind("""
                     SELECT ?e ?by (SAMPLE(?t) AS ?type) (SAMPLE(?d) AS ?date) (SAMPLE(?n) AS ?number)
                            (SAMPLE(?ti) AS ?title) (SAMPLE(?c) AS ?corpus) WHERE {
-                      ?act eli:is_realized_by ?e . ?e ilg:changedBy ?by .
+                      ?act eli:is_realized_by ?e . ?e eli:consolidates ?by .
                       OPTIONAL { ?by eli:type_document ?t }
                       OPTIONAL { ?by eli:date_document ?d }
                       OPTIONAL { ?by eli:number ?n }
@@ -267,50 +256,46 @@ public class ActCatalog {
             versions.sort(Comparator.comparing((Version v) -> !v.uri().endsWith("/original"))
                     .thenComparing(Version::date, Comparator.nullsFirst(Comparator.naturalOrder())));
 
-            Map<String, List<Assessment>> byType = assessments(dataset, bind("""
-                    SELECT ?node ?type ?on ?p ?o WHERE {
-                      ?node ilg:assesses ?act ; a ?type ; ilg:assessedOn ?on ; ?p ?o .
-                    }
-                    """, actUri));
-
-            return Optional.of(new ActDetails(actUri, facts, versions,
-                    byType.getOrDefault(ILG + "ConversionCheck", List.of()),
-                    byType.getOrDefault(ILG + "GazzettaCheck", List.of()),
-                    relations(dataset, actUri), converts(dataset, actUri)));
+            Map<String, ConversionFacts> conversions = conversions(dataset);
+            Optional<Conversion> conversion = Optional.empty();
+            if ("DECRETO-LEGGE".equals(Html.typeCode(first(facts, ELI + "type_document")))) {
+                ConversionFacts c = conversions.get(actUri);
+                conversion = Optional.of(new Conversion(status(c, first(facts, ELI + "date_publication")),
+                        c == null ? null : otherAct(dataset, c.law()), c == null ? null : c.days()));
+            }
+            List<Converted> converts = new ArrayList<>();
+            conversions.forEach((decree, c) -> {
+                if (actUri.equals(c.law())) {
+                    converts.add(new Converted(otherAct(dataset, decree), c.days()));
+                }
+            });
+            converts.sort(Comparator.comparing(c -> c.decree().date() == null ? "" : c.decree().date()));
+            return Optional.of(new ActDetails(actUri, facts, versions, conversion,
+                    relations(dataset, actUri, conversions), converts));
         });
     }
 
-    private List<Relation> relations(Dataset dataset, String actUri) {
-        Map<String, String[]> base = new LinkedHashMap<>();
+    private List<Relation> relations(Dataset dataset, String actUri, Map<String, ConversionFacts> conversions) {
+        List<String[]> base = new ArrayList<>();
         each(dataset, bind("""
-                SELECT ?r ?dir ?other ?property (SAMPLE(?n) AS ?note) (SAMPLE(?s) AS ?source) WHERE {
-                  { ?r ilg:fromAct ?act ; ilg:toAct ?other . BIND("out" AS ?dir) }
+                SELECT DISTINCT ?dir ?other ?property WHERE {
+                  { ?act ?property ?other . BIND("out" AS ?dir) }
                   UNION
-                  { ?r ilg:toAct ?act ; ilg:fromAct ?other . BIND("in" AS ?dir) }
-                  ?r a ilg:Relation ; ilg:relationProperty ?property .
-                  OPTIONAL { ?r ilg:exampleNote ?n }
-                  OPTIONAL { ?r dcterms:source ?s }
-                } GROUP BY ?r ?dir ?other ?property
-                """, actUri), s -> base.put(s.getResource("r").getURI(), new String[] {
-                text(s, "dir"), s.getResource("other").getURI(), s.getResource("property").getURI(),
-                text(s, "note"), text(s, "source")}));
+                  { ?other ?property ?act . BIND("in" AS ?dir) }
+                  FILTER(?property IN (eli:amends, eli:repeals, eli:changes))
+                }
+                """, actUri), s -> base.add(new String[] {text(s, "dir"), s.getResource("other").getURI(),
+                s.getResource("property").getURI()}));
         if (base.isEmpty()) {
             return List.of();
         }
-
-        Map<String, List<Assessment>> history = new HashMap<>();
-        assessmentsOf(dataset, bind("""
-                SELECT ?subject ?node ?type ?on ?p ?o WHERE {
-                  { ?subject ilg:fromAct ?act } UNION { ?subject ilg:toAct ?act }
-                  ?node ilg:assesses ?subject ; a ?type ; ilg:assessedOn ?on ; ?p ?o .
-                }
-                """, actUri), history);
 
         Map<String, OtherAct> others = new HashMap<>();
         each(dataset, bind("""
                 SELECT ?other (SAMPLE(?t) AS ?type) (SAMPLE(?d) AS ?date) (SAMPLE(?n) AS ?number)
                        (SAMPLE(?ti) AS ?title) (SAMPLE(?l) AS ?label) (SAMPLE(?c) AS ?corpus) WHERE {
-                  { ?r ilg:fromAct ?act ; ilg:toAct ?other } UNION { ?r ilg:toAct ?act ; ilg:fromAct ?other }
+                  { ?act ?p ?other } UNION { ?other ?p ?act }
+                  FILTER(?p IN (eli:amends, eli:repeals, eli:changes))
                   OPTIONAL { ?other eli:type_document ?t }
                   OPTIONAL { ?other eli:date_document ?d }
                   OPTIONAL { ?other eli:number ?n }
@@ -326,12 +311,15 @@ public class ActCatalog {
         });
 
         List<Relation> relations = new ArrayList<>();
-        base.forEach((uri, b) -> {
-            List<Assessment> h = history.getOrDefault(uri, List.of());
-            relations.add(new Relation(uri, "out".equals(b[0]), b[2],
-                    others.getOrDefault(b[1], new OtherAct(b[1], "", null, null, b[1], false)),
-                    b[3], b[4], h.isEmpty() ? null : h.get(0)));
-        });
+        for (String[] b : base) {
+            boolean outgoing = "out".equals(b[0]);
+            String law = outgoing ? actUri : b[1];
+            String decree = outgoing ? b[1] : actUri;
+            ConversionFacts c = conversions.get(decree);
+            String property = c != null && law.equals(c.law()) ? "converts" : b[2];
+            relations.add(new Relation(outgoing, property,
+                    others.getOrDefault(b[1], new OtherAct(b[1], "", null, null, b[1], false))));
+        }
         List<String> order = List.of("converts", "repeals", "amends", "changes");
         relations.sort(Comparator.comparing((Relation r) -> !r.outgoing())
                 .thenComparing(r -> order.indexOf(r.propertyName()) < 0 ? order.size() : order.indexOf(r.propertyName()))
@@ -339,27 +327,70 @@ public class ActCatalog {
         return relations;
     }
 
+    /** A decree-law's converting law and the days between their publications. */
+    record ConversionFacts(String law, Long days) {}
+
     /**
-     * Decree-laws whose conversion check names this act as the converting law. A
-     * decree is listed only while its latest check still names this law.
+     * Decree-law URI → its converting law, from the laws' titles ("Conversione in legge … del decreto-legge …").
+     * When two laws name the same decree-law, the earlier one.
      */
-    private List<Converted> converts(Dataset dataset, String actUri) {
-        Map<String, List<Assessment>> history = new HashMap<>();
-        assessmentsOf(dataset, bind("""
-                SELECT ?subject ?node ?type ?on ?p ?o WHERE {
-                  ?any a ilg:ConversionCheck ; ilg:law ?act ; ilg:assesses ?subject .
-                  ?node a ilg:ConversionCheck ; ilg:assesses ?subject ; a ?type ; ilg:assessedOn ?on ; ?p ?o .
+    private static Map<String, ConversionFacts> conversions(Dataset dataset) {
+        Map<ActKey, String[]> decrees = new HashMap<>();
+        each(dataset, PREFIXES + """
+                SELECT ?act ?d ?n ?pub WHERE {
+                  ?act eli:type_document rt:DECRETO-LEGGE ; dcterms:source <https://dati.normattiva.it/> ;
+                       eli:date_document ?d ; eli:number ?n ; eli:date_publication ?pub .
                 }
-                """, actUri), history);
-        List<Converted> converted = new ArrayList<>();
-        history.forEach((decree, checks) -> {
-            Assessment latest = checks.get(0);
-            if (actUri.equals(latest.value("law"))) {
-                converted.add(new Converted(otherAct(dataset, decree), latest));
+                """, s -> key("DECRETO-LEGGE", text(s, "d"), text(s, "n"))
+                .ifPresent(k -> decrees.put(k, new String[] {s.getResource("act").getURI(), text(s, "pub")})));
+        Map<String, ConversionFacts> result = new HashMap<>();
+        Map<String, String> lawDate = new HashMap<>();
+        each(dataset, PREFIXES + """
+                SELECT ?law ?title ?pub WHERE {
+                  ?law eli:type_document rt:LEGGE ; dcterms:source <https://dati.normattiva.it/> ;
+                       eli:title ?title ; eli:date_publication ?pub .
+                  FILTER(CONTAINS(LCASE(STR(?title)), "conversione in legge"))
+                }
+                """, s -> RelationDetector.convertedDecree(text(s, "title")).map(decrees::get).ifPresent(d -> {
+            String law = s.getResource("law").getURI();
+            String pub = text(s, "pub");
+            String earlier = lawDate.get(d[0]);
+            if (earlier == null || pub.compareTo(earlier) < 0) {
+                lawDate.put(d[0], pub);
+                result.put(d[0], new ConversionFacts(law, days(d[1], pub)));
             }
-        });
-        converted.sort(Comparator.comparing(c -> c.decree().date() == null ? "" : c.decree().date()));
-        return converted;
+        }));
+        return result;
+    }
+
+    /** CONVERTED, or PENDING within 60 days of publication, else NOT_CONVERTED. */
+    private String status(ConversionFacts conversion, String published) {
+        if (conversion != null) {
+            return "CONVERTED";
+        }
+        Long age = days(published, today.get().toString());
+        return age != null && age <= 60 ? "PENDING" : "NOT_CONVERTED";
+    }
+
+    private static Optional<ActKey> key(String type, String date, String number) {
+        try {
+            return Optional.of(new ActKey(type, LocalDate.parse(date.substring(0, 10)), AknActReader.actNumber(number)));
+        } catch (RuntimeException e) {
+            return Optional.empty();
+        }
+    }
+
+    private static Long days(String from, String to) {
+        try {
+            return ChronoUnit.DAYS.between(LocalDate.parse(from.substring(0, 10)), LocalDate.parse(to.substring(0, 10)));
+        } catch (RuntimeException e) {
+            return null;
+        }
+    }
+
+    private static String first(Map<String, List<String>> facts, String property) {
+        List<String> v = facts.get(property);
+        return v == null || v.isEmpty() ? null : v.get(0);
     }
 
     private static OtherAct otherAct(Dataset dataset, String uri) {
@@ -382,49 +413,6 @@ public class ActCatalog {
             }
         });
         return found[0];
-    }
-
-    /** Assessments of one subject, grouped by type, newest first. */
-    private Map<String, List<Assessment>> assessments(Dataset dataset, String query) {
-        Map<String, Map<String, Assessment>> nodes = new LinkedHashMap<>();
-        each(dataset, query, s -> collect(nodes, s));
-        Map<String, List<Assessment>> byType = new HashMap<>();
-        nodes.forEach((type, map) -> byType.put(type, newestFirst(map)));
-        return byType;
-    }
-
-    /** Assessments of many subjects (?subject), newest first per subject. */
-    private void assessmentsOf(Dataset dataset, String query, Map<String, List<Assessment>> into) {
-        Map<String, Map<String, Assessment>> nodes = new HashMap<>();
-        each(dataset, query, s -> collect(nodes, s, s.getResource("subject").getURI()));
-        nodes.forEach((subject, map) -> into.put(subject, newestFirst(map)));
-    }
-
-    private static void collect(Map<String, Map<String, Assessment>> groups, QuerySolution s) {
-        collect(groups, s, s.getResource("type").getURI());
-    }
-
-    private static void collect(Map<String, Map<String, Assessment>> groups, QuerySolution s, String groupKey) {
-        String type = s.getResource("type").getURI();
-        if (!type.startsWith(ILG)) {
-            return;
-        }
-        String node = s.getResource("node").getURI();
-        Assessment a = groups.computeIfAbsent(groupKey, k -> new LinkedHashMap<>())
-                .computeIfAbsent(node, k -> new Assessment(node, type.substring(ILG.length()), text(s, "on"),
-                        new TreeMap<>()));
-        String p = s.getResource("p").getURI();
-        String v = value(s.get("o"));
-        List<String> values = a.values().computeIfAbsent(p, k -> new ArrayList<>());
-        if (!values.contains(v)) {
-            values.add(v);
-        }
-    }
-
-    private static List<Assessment> newestFirst(Map<String, Assessment> nodes) {
-        List<Assessment> list = new ArrayList<>(nodes.values());
-        list.sort(Comparator.comparing(Assessment::assessedOn, Comparator.nullsLast(Comparator.reverseOrder())));
-        return list;
     }
 
     // ------------------------------------------------------------------ helpers

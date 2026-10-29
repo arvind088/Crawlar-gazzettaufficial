@@ -23,7 +23,6 @@ import org.springframework.web.bind.annotation.RestController;
 import it.legislation.eli.EliUriService;
 import it.legislation.web.ActCatalog.ActDetails;
 import it.legislation.web.ActCatalog.ActRow;
-import it.legislation.web.ActCatalog.Assessment;
 import it.legislation.web.ActCatalog.Relation;
 import it.legislation.web.ActCatalog.Version;
 
@@ -39,7 +38,7 @@ public class ActPages {
     /** Relations shown before "Show the other N". */
     private static final int RELATIONS_SHOWN = 15;
     private static final String ELI = ActCatalog.ELI;
-    private static final String ILG = ActCatalog.ILG;
+    private static final String OWL_SAME_AS = "http://www.w3.org/2002/07/owl#sameAs";
 
     private static final Map<String, String> TYPES = new LinkedHashMap<>();
 
@@ -120,7 +119,6 @@ public class ActPages {
                     .append(escape(link(row.uri()))).append("\">").append(escape(row.citation())).append("</a></div>")
                     .append(row.title() == null ? "" : "<p>" + escape(shorten(row.title(), 320)) + "</p>")
                     .append("<div class=\"labels\">").append(badge(row.conversionStatus()))
-                    .append(Html.gazzettaBadge(row.gazzettaStatus()))
                     .append("<span class=\"muted\">").append(I18n.count("versions.count", row.versions(), number(row.versions())))
                     .append("</span><span class=\"mono muted\">").append(escape(row.localId())).append("</span></div></article>\n");
         }
@@ -134,11 +132,11 @@ public class ActPages {
                                       @RequestParam(name = "type", required = false) String type,
                                       @RequestParam(name = "year", required = false) String year,
                                       @RequestParam(name = "status", required = false) String status) throws IOException {
-        StringBuilder csv = new StringBuilder("eli,code,type,date,number,citation,title,versions,conversion,gazzetta\r\n");
+        StringBuilder csv = new StringBuilder("eli,code,type,date,number,citation,title,versions,conversion\r\n");
         for (ActRow row : filter(catalog.acts(), q, type, year, status)) {
             csv.append(String.join(",", cell(row.uri()), cell(row.localId()), cell(row.typeCode()), cell(row.date()),
                     cell(row.number()), cell(row.citation()), cell(row.title()), String.valueOf(row.versions()),
-                    cell(row.conversionStatus()), cell(row.gazzettaStatus()))).append("\r\n");
+                    cell(row.conversionStatus()))).append("\r\n");
         }
         return ResponseEntity.ok().contentType(MediaType.parseMediaType("text/csv;charset=UTF-8"))
                 .header("Content-Disposition", "attachment; filename=\"legal-acts.csv\"").body(csv.toString());
@@ -166,27 +164,22 @@ public class ActPages {
         return shown;
     }
 
-    /** The four numbers at the head of the list: acts, Gazzetta check, relations, decree-laws. */
+    /** The four numbers at the head of the list: acts, versions, relations, decree-laws. */
     private static String tiles(List<ActRow> all, ActCatalog.Totals totals) {
-        long match = all.stream().filter(r -> "MATCH".equals(r.gazzettaStatus())).count();
-        long checked = all.stream().filter(r -> r.gazzettaStatus() != null).count();
         long decrees = all.stream().filter(r -> "DECRETO-LEGGE".equals(r.typeCode())).count();
         Map<String, Long> byStatus = new LinkedHashMap<>();
         all.stream().filter(r -> "DECRETO-LEGGE".equals(r.typeCode()) && r.conversionStatus() != null)
                 .forEach(r -> byStatus.merge(r.conversionStatus(), 1L, Long::sum));
-        long converted = byStatus.getOrDefault("CONVERTED", 0L) + byStatus.getOrDefault("CONVERTED_ONE_SOURCE", 0L);
-        long waiting = byStatus.getOrDefault("PENDING", 0L) + byStatus.getOrDefault("AWAITING_LAW_TEXT", 0L);
 
         StringBuilder html = new StringBuilder("<section class=\"tiles\" aria-label=\"")
                 .append(escape(t("tiles.aria"))).append("\">");
-        html.append(tile(t("tile.acts"), number(totals.acts()), "", t("tile.versions", number(totals.versions()))));
-        html.append(tile(t("tile.gazzetta"), number(match), "good", t("tile.gazzetta.of", number(totals.acts()))
-                + (checked > match ? " &middot; " + t("tile.gazzetta.retry", number(checked - match)) : "")));
+        html.append(tile(t("tile.acts"), number(totals.acts()), "", escape(t("tile.acts.sub"))));
+        html.append(tile(t("tile.versions.title"), number(totals.versions()), "", escape(t("tile.versions.sub"))));
 
         StringBuilder bar = new StringBuilder("<div class=\"bar\" role=\"img\" aria-label=\"");
         StringBuilder parts = new StringBuilder();
         StringBuilder spans = new StringBuilder();
-        for (String kind : List.of("amends", "changes", "repeals", "converts")) {
+        for (String kind : List.of("amends", "changes", "repeals")) {
             long n = totals.relations(kind);
             if (n > 0) {
                 parts.append(parts.length() > 0 ? " &middot; " : "").append(escape(t("kind." + kind))).append(' ')
@@ -200,8 +193,9 @@ public class ActPages {
                 .append(number(totals.relations())).append("</span>").append(bar)
                 .append("<span class=\"s\">").append(parts).append("</span></div>");
 
-        html.append(tile(t("tile.decrees"), number(decrees), "", escape(t("tile.decrees.sub", number(converted),
-                number(byStatus.getOrDefault("REPEALED", 0L)), number(waiting)))));
+        html.append(tile(t("tile.decrees"), number(decrees), "", escape(t("tile.decrees.sub",
+                number(byStatus.getOrDefault("CONVERTED", 0L)), number(byStatus.getOrDefault("NOT_CONVERTED", 0L)),
+                number(byStatus.getOrDefault("PENDING", 0L))))));
         return html.append("</section>\n").toString();
     }
 
@@ -303,7 +297,8 @@ public class ActPages {
     public String details(ActDetails act, String path) {
         String title = act.fact(ELI + "title");
         String date = act.fact(ELI + "date_document");
-        String gazzettaPage = act.fact(ILG + "identityConfirmedBy");
+        String gazzettaPage = act.facts(OWL_SAME_AS).stream().filter(u -> u.contains("gazzettaufficiale.it/eli/id/"))
+                .findFirst().map(u -> u.replaceFirst("^http://", "https://")).orElse(null);
         StringBuilder body = new StringBuilder();
         body.append("<nav class=\"crumbs\" aria-label=\"").append(escape(t("crumbs.aria"))).append("\"><a href=\"/\">")
                 .append(escape(t("nav.acts"))).append("</a> &rsaquo; ")
@@ -314,8 +309,7 @@ public class ActPages {
         // The answer first: what the act is, and its current statuses.
         body.append("<section class=\"card\"><div class=\"labels\"><span class=\"type\">")
                 .append(escape(Html.typeName(act.typeCode()))).append("</span>")
-                .append(act.conversion().map(c -> badge(c.value("conversionStatus"))).orElse(""))
-                .append(act.gazzetta().map(g -> Html.gazzettaBadge(g.value("gazzettaCheck"))).orElse(""))
+                .append(act.conversion().map(c -> badge(c.status())).orElse(""))
                 .append("</div><h1>").append(escape(act.citation())).append("</h1>")
                 .append(title == null ? "" : "<p class=\"lead\">" + escape(title) + "</p>")
                 .append("<div class=\"eli-box\"><span class=\"k\">ELI</span><code class=\"mono\">")
@@ -324,68 +318,44 @@ public class ActPages {
                 .append(blank(gazzettaPage) ? "" : "<a href=\"" + escape(gazzettaPage) + "\" rel=\"noreferrer\">Gazzetta Ufficiale</a>")
                 .append("</span></div></section>\n");
 
-        Map<String, ActCatalog.OtherAct> related = new LinkedHashMap<>();
-        act.relations().forEach(r -> related.putIfAbsent(r.other().uri(), r.other()));
-
         body.append("<div class=\"split\">\n<div class=\"side\">");
         body.append("<section class=\"card\"><h2>").append(escape(t("facts"))).append("</h2><dl class=\"facts\">")
                 .append(fact(t("fact.date"), Html.italianDate(date)))
                 .append(fact(t("fact.number"), act.fact(ELI + "number")))
-                .append(fact(t("fact.gu"), Html.italianDate(act.fact(ELI + "date_publication"))
-                        + (act.fact(ILG + "guNumber") == null ? "" : ", GU n. " + act.fact(ILG + "guNumber"))))
+                .append(fact(t("fact.gu"), Html.italianDate(act.fact(ELI + "date_publication"))))
                 .append(fact(t("fact.inforce"), Html.italianDate(act.fact(ELI + "first_date_entry_in_force"))))
                 .append(fact(t("fact.code"), act.fact(ELI + "id_local")))
                 .append(fact(t("fact.urn"), act.fact("http://purl.org/dc/terms/identifier")))
                 .append("</dl></section>\n");
-        act.conversion().ifPresent(c -> body.append(conversion(c, act.conversionHistory(), related,
-                act.fact(ELI + "date_publication"))));
-        act.gazzetta().ifPresent(check -> body.append("<section class=\"card\"><h2>").append(escape(t("gz.title")))
-                .append("</h2><div class=\"labels\">").append(Html.gazzettaBadge(check.value("gazzettaCheck")))
-                .append("<span class=\"muted\">").append(escape(t("gz.checked", Html.italianDate(check.assessedOn()))))
-                .append("</span></div><p class=\"muted\">").append(gazzettaMeaning(check.value("gazzettaCheck")))
-                .append("</p>").append(history(act.gazzettaHistory(), "gazzettaCheck")).append("</section>\n"));
+        act.conversion().ifPresent(c -> body.append(conversion(c, act.fact(ELI + "date_publication"))));
         body.append(converts(act.converts()));
         body.append("</div>\n<div class=\"mainc\">");
         body.append(versions(act.versions()));
         body.append(relationTable(t("rel.in"), act.relations(), false));
         body.append(relationTable(t("rel.out"), act.relations(), true));
-        body.append("<p class=\"muted\">").append(Html.trust("A")).append(' ').append(escape(t("trust.legend.a")))
-                .append(" &middot; ").append(Html.trust("B")).append(' ').append(escape(t("trust.legend.b"))).append("</p>");
         body.append("</div>\n</div>\n");
         return Html.page(act.citation(), "acts",
                 "<link rel=\"alternate\" type=\"text/turtle\" href=\"" + escape(path) + "?format=ttl\">\n",
                 body.toString());
     }
 
-    /** The six conversion checks, in order; their plain words are i18n keys check.C1 … check.C6. */
-    private static final List<String> CHECK_KEYS = List.of("checkC1", "checkC2", "checkC3", "checkC4", "checkC5", "checkC6");
-
-    /**
-     * The answer first (converted by which law, in how many days); the six checks
-     * behind "How was this verified?", open when the result is not a clean CONVERTED.
-     */
-    private String conversion(Assessment c, List<Assessment> history, Map<String, ActCatalog.OtherAct> related,
-                              String published) {
-        String status = c.value("conversionStatus");
+    /** The answer: converted by which law and in how many days, or the deadline, or not converted. */
+    private String conversion(ActCatalog.Conversion c, String published) {
+        String status = c.status();
         String tone = switch (status == null ? "" : status) {
-            case "CONVERTED", "CONVERTED_ONE_SOURCE" -> "good";
-            case "PENDING", "AWAITING_LAW_TEXT", "REVIEW" -> "warn";
-            case "REPEALED", "NOT_CONVERTED" -> "bad";
+            case "CONVERTED" -> "good";
+            case "PENDING" -> "warn";
+            case "NOT_CONVERTED" -> "bad";
             default -> "";
         };
         StringBuilder html = new StringBuilder("<section class=\"card conversion ").append(tone)
                 .append("\"><h2>").append(escape(t("conv.title"))).append("</h2><div class=\"labels\">").append(badge(status))
-                .append(Html.trust(c.value("trustLevel"))).append("</div>");
-        if (c.value("law") != null) {
-            String days = c.value("daysToConversion");
-            html.append("<p class=\"answer\">").append(escape(t("conv.by"))).append(' ').append(actLink(c.value("law"), related))
-                    .append(days == null ? "" : " " + escape(t("conv.in")) + " <b>" + escape(t("conv.days", days))
-                            + "</b> (" + escape(t("conv.of60", days)) + ")")
+                .append("</div>");
+        if (c.law() != null) {
+            html.append("<p class=\"answer\">").append(escape(t("conv.by"))).append(' ').append(actName(c.law()))
+                    .append(c.days() == null ? "" : " " + escape(t("conv.in")) + " <b>"
+                            + escape(t("conv.days", c.days())) + "</b> (" + escape(t("conv.of60", c.days())) + ")")
                     .append(".</p>");
-        }
-        if (c.value("repealedBy") != null) {
-            html.append("<p class=\"answer\">").append(escape(t("conv.repealedBy"))).append(' ')
-                    .append(actLink(c.value("repealedBy"), related)).append(".</p>");
         }
         if ("PENDING".equals(status) && published != null) {
             try {
@@ -396,46 +366,8 @@ public class ActPages {
                 // no deadline without a readable publication date
             }
         }
-        html.append("<p class=\"muted\">").append(status == null ? "" : escape(t("meaning." + status)))
-                .append(' ').append(escape(t("conv.assessed", Html.italianDate(c.assessedOn())))).append("</p>");
-        StringBuilder checks = new StringBuilder();
-        CHECK_KEYS.forEach(key -> {
-            String words = t("check." + key.substring("check".length()));
-            String v = c.value(key);
-            if (v != null) {
-                boolean ok = "true".equals(v);
-                checks.append("<li><span class=\"").append(ok ? "ok\">&#10003;" : "no\">&#10007;").append("</span><span>")
-                        .append(escape(words)).append(" <span class=\"code\">")
-                        .append(key.substring("check".length())).append("</span></span></li>");
-            }
-        });
-        if (checks.length() > 0) {
-            html.append("<details").append("CONVERTED".equals(status) ? "" : " open")
-                    .append("><summary>").append(escape(t("conv.verified"))).append("</summary><ul class=\"checks\">").append(checks)
-                    .append("</ul></details>");
-        }
-        return html.append(history(history, "conversionStatus")).append("</section>\n").toString();
-    }
-
-    /** Earlier assessments, when the result has changed over time. */
-    private static String history(List<Assessment> history, String key) {
-        if (history.size() < 2) {
-            return "";
-        }
-        StringBuilder html = new StringBuilder("<details><summary>").append(escape(t("history", history.size())))
-                .append("</summary><ul>");
-        for (Assessment a : history) {
-            html.append("<li>").append(escape(Html.italianDate(a.assessedOn()))).append(": ")
-                    .append(badge(a.value(key))).append("</li>");
-        }
-        return html.append("</ul></details>").toString();
-    }
-
-    private static String gazzettaMeaning(String status) {
-        return switch (status == null ? "" : status) {
-            case "MATCH", "MISMATCH", "NOT_FOUND", "ERROR" -> escape(t("gz.meaning." + status));
-            default -> "";
-        };
+        return html.append("<p class=\"muted\">").append(status == null ? "" : escape(t("meaning." + status)))
+                .append("</p></section>\n").toString();
     }
 
     /** For a conversion law: the decree-laws it converts. */
@@ -444,14 +376,11 @@ public class ActPages {
             return "";
         }
         StringBuilder html = new StringBuilder("<section class=\"card\"><h2>" + escape(t("converts.title")) + "</h2>"
-                + "<div class=\"table-wrap\"><table><thead><tr><th>" + escape(t("col.decree")) + "</th><th>"
-                + escape(t("col.status")) + "</th><th>" + escape(t("col.trust")) + "</th><th class=\"num\">"
+                + "<div class=\"table-wrap\"><table><thead><tr><th>" + escape(t("col.decree")) + "</th><th class=\"num\">"
                 + escape(t("col.days")) + "</th></tr></thead><tbody>");
         for (ActCatalog.Converted c : converted) {
-            html.append("<tr><td>").append(otherAct(c.decree())).append("</td><td>")
-                    .append(badge(c.latest().value("conversionStatus"))).append("</td><td>")
-                    .append(Html.trust(c.latest().value("trustLevel"))).append("</td><td class=\"num\">")
-                    .append(escape(c.latest().value("daysToConversion"))).append("</td></tr>");
+            html.append("<tr><td>").append(otherAct(c.decree())).append("</td><td class=\"num\">")
+                    .append(c.days() == null ? "" : escape(String.valueOf(c.days()))).append("</td></tr>");
         }
         return html.append("</tbody></table></div></section>\n").toString();
     }
@@ -520,16 +449,10 @@ public class ActPages {
 
     private String relationRows(List<Relation> rows, boolean outgoing) {
         StringBuilder html = new StringBuilder("<div class=\"table-wrap\"><table><thead><tr><th>" + escape(t("col.act"))
-                + "</th><th>" + escape(t("col.relation")) + "</th><th>" + escape(t("col.trust")) + "</th><th>"
-                + escape(t("col.evidence")) + "</th></tr></thead><tbody>");
+                + "</th><th>" + escape(t("col.relation")) + "</th></tr></thead><tbody>");
         for (Relation r : rows) {
-            Assessment a = r.latest();
-            String status = a == null ? null : a.value("status");
             html.append("<tr><td>").append(otherAct(r.other())).append("</td><td>")
-                    .append(Html.relation(r.propertyName(), verb(r.propertyName(), outgoing)))
-                    .append("WITHDRAWN".equals(status) ? " " + badge(status) : "")
-                    .append("</td><td>").append(a == null ? "" : Html.trust(a.value("trustLevel"))).append("</td><td>")
-                    .append(evidence(r, a)).append("</td></tr>");
+                    .append(Html.relation(r.propertyName(), verb(r.propertyName(), outgoing))).append("</td></tr>");
         }
         return html.append("</tbody></table></div>").toString();
     }
@@ -551,30 +474,11 @@ public class ActPages {
         return "<b>" + name + "</b><div class=\"muted\">" + escape(t("outside")) + "</div>";
     }
 
-    private static String evidence(Relation r, Assessment a) {
-        StringBuilder html = new StringBuilder();
-        if (a != null) {
-            String mods = a.value("textualModCount");
-            if (mods != null && !"0".equals(mods)) {
-                html.append(escape(I18n.count("evidence.mods", "1".equals(mods) ? 1 : 2, mods)));
-            }
-            if ("true".equals(a.value("confirmedByLifecycle"))) {
-                html.append(html.length() > 0 ? "; " : "").append(escape(t("evidence.lifecycle")));
-            }
-        }
-        if (r.note() != null) {
-            html.append("<details><summary>").append(escape(t("evidence.note"))).append("</summary><p>").append(escape(r.note())).append("</p></details>");
-        }
-        if (r.source() != null) {
-            html.append("<div class=\"mono muted\">").append(escape(fileName(r.source()))).append("</div>");
-        }
-        return html.toString();
-    }
-
-    private String actLink(String uri, Map<String, ActCatalog.OtherAct> related) {
-        ActCatalog.OtherAct other = related.get(uri);
-        String name = other != null ? other.citation() : uris.localIdOf(uri).orElse(uri);
-        return uris.pathOf(uri).map(p -> "<a href=\"" + escape(p) + "\">" + escape(name) + "</a>").orElse(escape(name));
+    /** The act's citation, linked when the act has a page here. */
+    private String actName(ActCatalog.OtherAct act) {
+        String name = escape(act.citation());
+        return act.inCorpus() ? uris.pathOf(act.uri()).map(p -> "<a href=\"" + escape(p) + "\">" + name + "</a>").orElse(name)
+                : name;
     }
 
     private static String fact(String label, String value) {
