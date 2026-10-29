@@ -98,6 +98,15 @@ public class IngestionWatermark {
         return parse(entry.lastSuccessfulEnd);
     }
 
+    /** The note of the last run when it succeeded (e.g. "0 downloaded, 29 without text, 0 failed"). */
+    public Optional<String> lastSuccessNote(String source) throws IOException {
+        Entry entry = read().get(source);
+        if (entry == null || !"SUCCESS".equals(entry.lastRunState) || entry.note.isBlank()) {
+            return Optional.empty();
+        }
+        return Optional.of(entry.note);
+    }
+
     /** Advances the cursor. Call only after the run has actually succeeded. */
     public void recordSuccess(String source, Window window, OffsetDateTime finishedAt, String note)
             throws IOException {

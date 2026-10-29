@@ -117,8 +117,11 @@ public class CorpusIndex {
                     latestFile = file;
                 }
             }
-            if (base == null && work.getURI().contains("/eli/id/")) {
-                base = work.getURI().substring(0, work.getURI().indexOf("/eli/id/"));
+            // The application's own domain, from a version: the act itself carries the Gazzetta Ufficiale ELI.
+            for (Version v : actVersions) {
+                if (base == null && v.uri().contains("/eli/id/")) {
+                    base = v.uri().substring(0, v.uri().indexOf("/eli/id/"));
+                }
             }
             actVersions.sort(Comparator.comparing(Version::date).thenComparing(v -> !v.original()));
             versionsByCodice.put(work.getProperty(idLocal).getString(), actVersions);

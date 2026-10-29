@@ -258,7 +258,8 @@ public class GazzettaCheckRunner {
 
         List<NormattivaAct> acts = new ArrayList<>();
         model.listSubjectsWithProperty(RDF.type, legalResource).forEachRemaining(work -> {
-            String gazzetta = null;
+            // The act is identified by its Gazzetta ELI; older data linked it with owl:sameAs.
+            String gazzetta = work.getURI().contains("gazzettaufficiale.it/eli/id/") ? work.getURI() : null;
             for (Statement s : work.listProperties(OWL.sameAs).toList()) {
                 if (s.getObject().isURIResource() && s.getResource().getURI().contains("gazzettaufficiale.it/eli/id/")) {
                     gazzetta = s.getResource().getURI();

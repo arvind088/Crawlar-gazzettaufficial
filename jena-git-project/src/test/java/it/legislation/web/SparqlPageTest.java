@@ -40,7 +40,7 @@ class SparqlPageTest {
         assertFalse(html.contains(">/eli/id/2020/03/17/20G00034/sg<"));
         assertFalse(html.contains(">http://www.gazzettaufficiale.it/eli/tables/resource-type#DECRETO-LEGGE<"));
         // The full IRI is kept in the tooltip.
-        assertTrue(html.contains("title=\"https://example.it/eli/id/2020/03/17/20G00034/sg\""));
+        assertTrue(html.contains("title=\"http://www.gazzettaufficiale.it/eli/id/2020/03/17/20G00034/sg\""));
     }
 
     @Test

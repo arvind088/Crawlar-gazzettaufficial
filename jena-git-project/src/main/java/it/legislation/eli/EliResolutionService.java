@@ -73,7 +73,7 @@ public class EliResolutionService {
             combined.add(incoming);
 
             return Optional.of(new ResolvedResource(
-                    uriService.uriForPath(path),
+                    storedUri,
                     storedUri,
                     path,
                     label(description, storedUri),
