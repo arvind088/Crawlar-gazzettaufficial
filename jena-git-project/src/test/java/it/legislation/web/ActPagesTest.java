@@ -114,7 +114,7 @@ class ActPagesTest {
                 "each version names the act that produced it");
         assertEquals(1, act.versions().get(1).changedBy().size());
         assertTrue(html.contains("D.Lgs. 30 marzo 2001, n. 165"));
-        assertTrue(html.contains("outside the imported corpus"));
+        assertTrue(html.contains("<td>D.Lgs. 30 marzo 2001, n. 165</td>"), "an act outside the corpus: its citation, no link");
         assertTrue(html.contains("?format=ttl"));
     }
 
@@ -314,12 +314,13 @@ class ActPagesTest {
         String row = decree.substring(decree.indexOf("<tbody>", changedBy), decree.indexOf("</tbody>", changedBy));
         assertTrue(row.indexOf("L. 24 aprile 2020, n. 27") < row.indexOf("converts into law"), "the modifying act first");
         assertTrue(row.indexOf("converts into law") < row.indexOf("<b>D.L. 17 marzo 2020, n. 18</b>"), "then this act");
-        assertTrue(row.contains("this act"));
-        assertTrue(row.contains("29 aprile 2020"), "when the change was published");
+        assertTrue(row.contains("<td class=\"nowrap\">2020-04-29</td>"), "when the change was published");
+        assertFalse(row.contains("Conversione in legge"), "citations only, no titles");
 
         int changes = decree.indexOf("What this act changes");
         String out = decree.substring(decree.indexOf("<tbody>", changes), decree.indexOf("</tbody>", changes));
         assertTrue(out.indexOf("<b>D.L. 17 marzo 2020, n. 18</b>") < out.indexOf("D.Lgs. 30 marzo 2001, n. 165"),
                 "this act first, then the act it changes");
+        assertTrue(out.contains("<td class=\"nowrap\">2020-03-17</td>"), "no history line: the modifying act's date");
     }
 }

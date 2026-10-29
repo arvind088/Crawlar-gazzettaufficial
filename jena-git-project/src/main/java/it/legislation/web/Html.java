@@ -383,7 +383,6 @@ public final class Html {
             ol.timeline li:last-child .tl-line{display:none}
             .tl-body{padding-bottom:14px;display:flex;flex-direction:column;min-width:0}
             .table-wrap{overflow-x:auto}
-            table.relations td:first-child,table.relations td:nth-child(3){min-width:180px}
             .nowrap{white-space:nowrap}
             table{width:100%;border-collapse:collapse;font-size:15.5px}
             th,td{text-align:left;padding:10px 8px;border-bottom:1px solid var(--line-soft);vertical-align:top}
