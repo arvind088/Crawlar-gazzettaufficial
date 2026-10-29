@@ -12,7 +12,7 @@ import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
 /**
- * The page frame shared by the three public views (Legal acts, Act details,
+ * The page frame shared by the public views (Legal acts, Act details, About &amp; Help,
  * SPARQL) and the generic resource page: header with navigation, one style
  * sheet, escaping, labels, and how acts are named.
  *
@@ -31,7 +31,7 @@ public final class Html {
     private Html() {
     }
 
-    /** A whole page. {@code active} is "acts" or "sparql" for the highlighted menu item. */
+    /** A whole page. {@code active} is "acts", "sparql" or "about" for the highlighted menu item. */
     public static String page(String title, String active, String head, String body) {
         String lang = I18n.lang();
         return "<!doctype html>\n<html lang=\"" + lang + "\">\n<head>\n<meta charset=\"utf-8\">\n"
@@ -51,11 +51,17 @@ public final class Html {
                 + "<span class=\"brand-sub\">" + escape(I18n.t("brand.sub")) + "</span></span></a>"
                 + "<nav class=\"tabs\" aria-label=\"" + escape(I18n.t("nav.aria")) + "\"><a href=\"/\""
                 + current(active, "acts") + ">" + escape(I18n.t("nav.acts")) + "</a>"
-                + "<a href=\"/query\"" + current(active, "sparql") + ">" + escape(I18n.t("nav.sparql")) + "</a></nav>"
+                + "<a href=\"/query\"" + current(active, "sparql") + ">" + escape(I18n.t("nav.sparql")) + "</a>"
+                + "<a href=\"/about\"" + current(active, "about") + ">" + escape(I18n.t("nav.about")) + "</a></nav>"
                 + "</div></header>\n<main id=\"main\" class=\"wrap\">\n" + body + "</main>\n"
                 + "<footer class=\"site\"><div class=\"wrap\"><span>" + escape(I18n.t("footer.text")) + "</span>"
-                + "<span class=\"footer-links\"><a href=\"/query\">SPARQL</a><a href=\"/api/health\">"
-                + escape(I18n.t("footer.status")) + "</a></span>"
+                + "<nav class=\"footer-links\" aria-label=\"" + escape(I18n.t("footer.aria")) + "\">"
+                + "<a href=\"/about\">" + escape(I18n.t("nav.about")) + "</a>"
+                + "<a href=\"/about#glossary\">" + escape(I18n.t("footer.glossary")) + "</a>"
+                + "<a href=\"/about#sources\">" + escape(I18n.t("footer.sources")) + "</a>"
+                + "<a href=\"/about#coverage\">" + escape(I18n.t("footer.updates")) + "</a>"
+                + "<a href=\"/query\">SPARQL</a><a href=\"/api/health\">"
+                + escape(I18n.t("footer.status")) + "</a></nav>"
                 + "</div></footer>\n</body>\n</html>\n";
     }
 
@@ -104,6 +110,15 @@ public final class Html {
             + "stroke=\"currentColor\" stroke-width=\"1.7\" stroke-linecap=\"round\" stroke-linejoin=\"round\">"
             + "<path d=\"M12 3v18M7 21h10M5 7h14\"/><path d=\"M5 7l-3 6a3 3 0 0 0 6 0z\"/>"
             + "<path d=\"M19 7l-3 6a3 3 0 0 0 6 0z\"/></svg>";
+
+    /**
+     * A short plain-language explanation under a heading, with a link to the term in the
+     * glossary of the About &amp; Help page. {@code text} is plain text (escaped here).
+     */
+    public static String hint(String text, String term) {
+        return "<p class=\"hint\">" + escape(text) + " <a class=\"q\" href=\"/about#" + escape(term) + "\" title=\""
+                + escape(I18n.t("hint.more")) + "\" aria-label=\"" + escape(I18n.t("hint.more")) + "\">?</a></p>";
+    }
 
     private static String current(String active, String item) {
         return item.equals(active) ? " aria-current=\"page\"" : "";
@@ -262,7 +277,22 @@ public final class Html {
             main.wrap{padding-top:28px;padding-bottom:56px;display:flex;flex-direction:column;gap:22px}
             footer.site{background:var(--ink);color:#fff;font-size:15px}
             footer.site .wrap{display:flex;flex-wrap:wrap;justify-content:space-between;gap:12px;padding-top:24px;padding-bottom:24px}
-            footer.site a{color:#fff}.footer-links{display:flex;gap:18px}
+            footer.site a{color:#fff}.footer-links{display:flex;flex-wrap:wrap;gap:6px 18px}
+            .hint{font-size:15px;color:var(--slate);max-width:900px}
+            .q{display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;border-radius:50%;
+            border:1.5px solid var(--blue);font-size:13px;font-weight:700;text-decoration:none;line-height:1;vertical-align:1px}
+            .q:hover{background:var(--blue);color:#fff}
+            .intro{display:flex;flex-direction:column;gap:8px}
+            .intro h1{font-size:30px}
+            .search-hint{font-size:15px;color:var(--slate)}
+            .about h2{font-size:23px}.about h3{font-size:18px;margin:6px 0 0}
+            .about ul,.about ol{margin:0;padding-left:22px;display:flex;flex-direction:column;gap:6px}
+            .about p,.about li{max-width:900px}
+            .toc{display:flex;flex-wrap:wrap;gap:8px 18px;font-weight:600}
+            dl.glossary{display:grid;grid-template-columns:minmax(140px,220px) 1fr;gap:10px 22px;margin:0}
+            dl.glossary dt{font-weight:700}dl.glossary dd{margin:0}
+            dl.glossary :target{background:var(--amber-bg)}
+            @media (max-width:640px){dl.glossary{grid-template-columns:1fr;gap:2px}dl.glossary dd{margin-bottom:10px}}
             h1{font-size:34px;line-height:1.15;margin:0}
             h2{font-size:21px;line-height:1.25;margin:0}
             p{margin:0}

@@ -5,6 +5,9 @@ import java.nio.file.Path;
 import java.time.LocalDate;
 import java.time.ZoneOffset;
 import java.util.Optional;
+import java.util.OptionalInt;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.springframework.stereotype.Component;
 
@@ -19,6 +22,8 @@ import it.legislation.ingest.IngestionWatermark;
  */
 @Component
 public class DataFreshness {
+
+    private static final Pattern WITHOUT_TEXT = Pattern.compile("(\\d+) without text");
 
     private final IngestionWatermark watermark;
 
@@ -37,6 +42,20 @@ public class DataFreshness {
                     .map(end -> end.atZoneSameInstant(ZoneOffset.UTC).toLocalDate());
         } catch (IOException | RuntimeException e) {
             return Optional.empty();
+        }
+    }
+
+    /**
+     * How many acts Normattiva lists but sends without text (an empty export), as the
+     * last successful daily update counted them. They are asked for again at every run.
+     */
+    public OptionalInt withoutText() {
+        try {
+            return watermark.lastSuccessNote(DailyUpdateRunner.SOURCE)
+                    .map(WITHOUT_TEXT::matcher).filter(Matcher::find)
+                    .map(m -> OptionalInt.of(Integer.parseInt(m.group(1)))).orElse(OptionalInt.empty());
+        } catch (IOException | RuntimeException e) {
+            return OptionalInt.empty();
         }
     }
 }
