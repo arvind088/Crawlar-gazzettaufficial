@@ -7,13 +7,17 @@ import static it.legislation.web.I18n.t;
 import java.io.IOException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.TreeSet;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -51,8 +55,16 @@ public class ActPages {
     private final ActCatalog catalog;
     private final EliUriService uris;
 
+    private final DataFreshness freshness;
+
     public ActPages(ActCatalog catalog, EliUriService uris) {
+        this(catalog, uris, new DataFreshness());
+    }
+
+    @Autowired
+    public ActPages(ActCatalog catalog, EliUriService uris, DataFreshness freshness) {
         this.catalog = catalog;
+        this.freshness = freshness;
         this.uris = uris;
     }
 
@@ -82,7 +94,7 @@ public class ActPages {
                 .append(hidden("type", type)).append(hidden("year", year)).append(hidden("status", status))
                 .append("<button type=\"submit\">").append(escape(t("search.button"))).append("</button></div></form>\n");
 
-        body.append(tiles(all, totals));
+        body.append(scope(all)).append(tiles(all, totals));
 
         TreeSet<String> years = new TreeSet<>(java.util.Comparator.reverseOrder());
         TreeSet<String> statuses = new TreeSet<>();
@@ -162,6 +174,22 @@ public class ActPages {
             shown.add(row);
         }
         return shown;
+    }
+
+    /**
+     * The line above the numbers: they cover the whole dataset (searching does not
+     * change them), how recent it is, and from which year the acts start.
+     */
+    private String scope(List<ActRow> all) {
+        StringBuilder line = new StringBuilder(escape(t("tiles.scope")));
+        freshness.updatedTo().ifPresent(day -> line.append(" &middot; ").append(escape(t("tiles.updated", longDate(day)))));
+        all.stream().map(ActRow::year).filter(y -> y != null && !y.isBlank()).min(String::compareTo)
+                .ifPresent(year -> line.append(" &middot; ").append(escape(t("tiles.from", year))));
+        return "<p class=\"scope muted\">" + line + "</p>\n";
+    }
+
+    private static String longDate(LocalDate day) {
+        return day.format(DateTimeFormatter.ofPattern("d MMMM yyyy", I18n.italian() ? Locale.ITALIAN : Locale.ENGLISH));
     }
 
     /** The four numbers at the head of the list: acts, versions, relations, decree-laws. */
@@ -387,14 +415,26 @@ public class ActPages {
         return html.append("</tbody></table></div></section>\n").toString();
     }
 
-    /** The versions as a timeline: the original text, then each consolidated text by date. */
-    private String versions(List<Version> versions) {
+    /**
+     * The versions as a timeline, newest first: the text in force today is what most
+     * visitors want. The original text is one click away in the heading, and at the
+     * end of the full history.
+     */
+    private String versions(List<Version> oldestFirst) {
         StringBuilder html = new StringBuilder("<section class=\"card\"><div class=\"results-head\"><h2>")
                 .append(escape(t("versions.title"))).append("</h2><span class=\"muted\">")
-                .append(I18n.count("versions.count", versions.size(), number(versions.size()))).append("</span></div>");
-        if (versions.isEmpty()) {
-            return html.append("<p class=\"muted\">").append(escape(t("versions.none"))).append("</p></section>\n").toString();
+                .append(I18n.count("versions.count", oldestFirst.size(), number(oldestFirst.size())));
+        if (oldestFirst.isEmpty()) {
+            return html.append("</span></div><p class=\"muted\">").append(escape(t("versions.none")))
+                    .append("</p></section>\n").toString();
         }
+        html.append(" &middot; ").append(escape(t("versions.order")));
+        oldestFirst.stream().filter(v -> v.uri().endsWith("/original")).findFirst()
+                .ifPresent(original -> html.append(" &middot; <a href=\"").append(escape(link(original.uri())))
+                        .append("\">").append(escape(t("version.original"))).append("</a>"));
+        html.append("</span></div>");
+        List<Version> versions = new ArrayList<>(oldestFirst);
+        Collections.reverse(versions);
         int shown = versions.size() > 12 ? 10 : versions.size();
         html.append(timeline(versions.subList(0, shown)));
         if (shown < versions.size()) {

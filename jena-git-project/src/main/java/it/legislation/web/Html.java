@@ -283,6 +283,7 @@ public final class Html {
             .search label{font-size:19px;font-weight:700}
             .search .row{display:flex;flex-wrap:wrap;gap:12px}
             .search input[type=search]{flex:1 1 420px;min-width:0;font-size:18px}
+            .scope{margin:0 0 8px;font-size:15px}
             .tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px}
             .tile{background:var(--surface);border-radius:8px;box-shadow:var(--shadow);padding:18px 20px;display:flex;flex-direction:column;gap:4px}
             .tile .k{font-size:13.5px;font-weight:700;color:var(--slate);text-transform:uppercase;letter-spacing:.04em}

@@ -5,11 +5,13 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Locale;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 import org.springframework.context.i18n.LocaleContextHolder;
 
 import it.legislation.eli.EliUriService;
@@ -181,5 +183,33 @@ class ActPagesTest {
         assertEquals("D.Lgs. 30 giugno 2003, n. 196", Html.citation("DECRETO_LEGISLATIVO", "2003-06-30", "196"));
         assertEquals("1 gennaio 2024", Html.italianDate("2024-01-01"));
         assertEquals("&lt;b&gt;", Html.escape("<b>"));
+    }
+
+    @Test
+    void numbersSayTheyCoverTheWholeDatasetAndHowRecentItIs(@TempDir Path dir) throws IOException {
+        Path watermarks = dir.resolve("ingestion_watermarks.tsv");
+        Files.writeString(watermarks, "source\tlastSuccessfulEnd\tlastRunStartedAt\tlastRunFinishedAt\tlastRunState\tnote\n"
+                + "normattiva-daily\t2026-10-28T21:44:04Z\t2026-10-21T13:55:55Z\t2026-10-28T22:58:06Z\tSUCCESS\t\n");
+        ActPages fresh = new ActPages(catalog, new EliUriService("https://example.it"), new DataFreshness(watermarks));
+
+        String html = fresh.list("sanitario", null, null, null, 1).getBody();
+        assertTrue(html.contains("<p class=\"scope muted\">Whole dataset &middot; data updated to 28 October 2026"
+                + " &middot; acts from 2020</p>"), "searching does not change the numbers, so they say so");
+
+        String never = new ActPages(catalog, new EliUriService("https://example.it"),
+                new DataFreshness(dir.resolve("missing.tsv"))).list(null, null, null, null, 1).getBody();
+        assertTrue(never.contains("<p class=\"scope muted\">Whole dataset &middot; acts from 2020</p>"),
+                "no date when the daily update has never run");
+    }
+
+    @Test
+    void versionsAreListedNewestFirstWithTheOriginalOneClickAway() throws IOException {
+        ActCatalog.ActDetails act = catalog.details(DL_18).orElseThrow();
+        String html = pages.details(act, "/eli/id/2020/03/17/20G00034/sg");
+        assertTrue(html.contains("newest first"));
+        assertTrue(html.indexOf("<b>30 aprile 2020</b>") < html.indexOf("<b>17 marzo 2020</b>"),
+                "the text in force comes before the original");
+        assertTrue(html.contains("newest first &middot; <a href=\"/eli/id/2020/03/17/20G00034/sg/"),
+                "a direct link to the original text in the heading");
     }
 }
