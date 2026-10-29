@@ -4,11 +4,11 @@
 @prefix rdfs:    <http://www.w3.org/2000/01/rdf-schema#> .
 @prefix xsd:     <http://www.w3.org/2001/XMLSchema#> .
 
-# A trimmed copy of real data, ELI only: D.L. 18/2020 (Cura Italia), the law that
+# A trimmed copy of real data, ELI only (acts identified by their Gazzetta Ufficiale ELI, versions on example.it): D.L. 18/2020 (Cura Italia), the law that
 # converted it (L. 27/2020) and one act outside the corpus.
 
 # Layer 1: the acts.
-<https://example.it/eli/id/2020/03/17/20G00034/sg>
+<http://www.gazzettaufficiale.it/eli/id/2020/03/17/20G00034/sg>
         a eli:LegalResource ;
         dcterms:source <https://dati.normattiva.it/> ;
         eli:id_local "20G00034" ;
@@ -18,7 +18,6 @@
         eli:first_date_entry_in_force "2020-03-17"^^xsd:date ;
         eli:number "18" ;
         eli:title "Misure di potenziamento del Servizio sanitario nazionale."@it ;
-        owl:sameAs <http://www.gazzettaufficiale.it/eli/id/2020/03/17/20G00034/sg> ;
         eli:is_realized_by <https://example.it/eli/id/2020/03/17/20G00034/sg/ita/original> .
 
 <https://example.it/eli/id/2020/03/17/20G00034/sg/ita/original>
@@ -27,7 +26,7 @@
 <https://example.it/eli/id/2020/03/17/20G00034/sg/ita/original/akn>
         a eli:Format ; dcterms:source "corpus/2020-03-17_20G00034_ORIGINALE_V0.xml" .
 
-<https://example.it/eli/id/2020/04/29/20G00045/sg>
+<http://www.gazzettaufficiale.it/eli/id/2020/04/29/20G00045/sg>
         a eli:LegalResource ;
         dcterms:source <https://dati.normattiva.it/> ;
         eli:id_local "20G00045" ;
@@ -39,18 +38,18 @@
         eli:is_realized_by <https://example.it/eli/id/2020/04/29/20G00045/sg/ita/original> .
 
 # Layer 2: a consolidated version of D.L. 18/2020.
-<https://example.it/eli/id/2020/03/17/20G00034/sg>
+<http://www.gazzettaufficiale.it/eli/id/2020/03/17/20G00034/sg>
         eli:is_realized_by <https://example.it/eli/id/2020/03/17/20G00034/sg/ita/vigente/2020-04-30> .
 <https://example.it/eli/id/2020/03/17/20G00034/sg/ita/vigente/2020-04-30>
         a eli:LegalExpression ; eli:version_date "2020-04-30"^^xsd:date .
 
 # Relations: L. 27/2020 amends (and converts) D.L. 18/2020, whose version of 30 April
 # consolidates it; D.L. 18/2020 changes an act outside the corpus.
-<https://example.it/eli/id/2020/04/29/20G00045/sg>
-        eli:amends <https://example.it/eli/id/2020/03/17/20G00034/sg> .
+<http://www.gazzettaufficiale.it/eli/id/2020/04/29/20G00045/sg>
+        eli:amends <http://www.gazzettaufficiale.it/eli/id/2020/03/17/20G00034/sg> .
 <https://example.it/eli/id/2020/03/17/20G00034/sg/ita/vigente/2020-04-30>
-        eli:consolidates <https://example.it/eli/id/2020/04/29/20G00045/sg> .
-<https://example.it/eli/id/2020/03/17/20G00034/sg>
+        eli:consolidates <http://www.gazzettaufficiale.it/eli/id/2020/04/29/20G00045/sg> .
+<http://www.gazzettaufficiale.it/eli/id/2020/03/17/20G00034/sg>
         eli:changes <https://example.it/eli/ext/decreto_legislativo/2001-03-30/165> .
 
 <https://example.it/eli/ext/decreto_legislativo/2001-03-30/165>

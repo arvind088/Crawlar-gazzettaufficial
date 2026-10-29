@@ -129,7 +129,7 @@ public class RelationDetector {
             if (evidence == null) {
                 continue;
             }
-            for (TextualMod mod : evidence.textualMods()) {
+            for (TextualMod mod : changeList(evidence, latest.get(from.codice()))) {
                 total++;
                 if (mod.destination() == null) {
                     unresolved++;
@@ -205,6 +205,27 @@ public class RelationDetector {
 
         List<Conversion> conversions = conversions(today);
         return new Result(relations, conversions, total, indirect, unresolved);
+    }
+
+    /**
+     * The act's list of changes: the original's, plus the entries that appear only in the latest
+     * version. A decree-law's conversion law can add articles to it ("art. 2-bis") that change
+     * other acts; those entries are legally the decree's but are not in its original text.
+     * Entries are the same when they name the same destination with the same note.
+     */
+    static List<TextualMod> changeList(Evidence original, Evidence latest) {
+        List<TextualMod> mods = new ArrayList<>(original.textualMods());
+        if (latest == null || latest == original) {
+            return mods;
+        }
+        Set<String> seen = new java.util.HashSet<>();
+        mods.forEach(m -> seen.add(m.destinationHref() + "|" + m.note()));
+        for (TextualMod m : latest.textualMods()) {
+            if (seen.add(m.destinationHref() + "|" + m.note())) {
+                mods.add(m);
+            }
+        }
+        return mods;
     }
 
     /**
@@ -295,8 +316,12 @@ public class RelationDetector {
             kinds.merge(kind, 1, Integer::sum);
             repeals |= property == Property.REPEALS;
             amends |= property == Property.AMENDS;
-            if (examples.size() < 2 && note != null && examples.stream().noneMatch(note::equals)) {
-                examples.add(note.length() > 300 ? note.substring(0, 300) + "…" : note);
+            // Every distinct editor's note (up to 30), so the pages can say what changed.
+            if (examples.size() < 30 && note != null && !note.isBlank()) {
+                String kept = note.length() > 600 ? note.substring(0, 600) + "…" : note;
+                if (examples.stream().noneMatch(kept::equals)) {
+                    examples.add(kept);
+                }
             }
         }
 

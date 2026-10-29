@@ -307,16 +307,21 @@ public class RelationRunner {
         return sb.toString();
     }
 
+    /** Between the editor's notes in the {@code notes} column of the relations report. */
+    public static final String NOTE_SEPARATOR = " ¶ ";
+
     static String relationsTsv(RelationDetector.Result result) {
         StringBuilder sb = new StringBuilder("from_codice\tfrom\tproperty\tto_codice\tto\tsources\ttextual_mods"
-                + "\tconfirmed_by_lifecycle\tkinds\texample_note\n");
+                + "\tconfirmed_by_lifecycle\tkinds\texample_note\tnotes\n");
         for (Relation r : result.relations()) {
             sb.append(r.from() == null ? "" : r.from().codice()).append('\t').append(r.fromKey()).append('\t')
                     .append(r.property().eliName).append('\t')
                     .append(r.to() == null ? "" : r.to().codice()).append('\t').append(r.toKey()).append('\t')
                     .append(r.sources()).append('\t').append(r.textualMods()).append('\t')
                     .append(r.confirmedByLifecycle()).append('\t').append(new TreeMap<>(r.kinds())).append('\t')
-                    .append(r.exampleNotes().isEmpty() ? "" : r.exampleNotes().get(0).replace('\t', ' ')).append('\n');
+                    .append(r.exampleNotes().isEmpty() ? "" : r.exampleNotes().get(0).replace('\t', ' ')).append('\t')
+                    .append(String.join(NOTE_SEPARATOR, r.exampleNotes().stream()
+                            .map(n -> n.replace('\t', ' ').replace('\n', ' ')).toList())).append('\n');
         }
         return sb.toString();
     }

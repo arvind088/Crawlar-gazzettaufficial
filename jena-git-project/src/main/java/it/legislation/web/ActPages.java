@@ -7,13 +7,17 @@ import static it.legislation.web.I18n.t;
 import java.io.IOException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.TreeSet;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -51,8 +55,21 @@ public class ActPages {
     private final ActCatalog catalog;
     private final EliUriService uris;
 
+    private final DataFreshness freshness;
+    private final GazzettaReport gazzetta;
+    private final RelationReport evidence;
+
     public ActPages(ActCatalog catalog, EliUriService uris) {
+        this(catalog, uris, new DataFreshness(), new GazzettaReport(), new RelationReport());
+    }
+
+    @Autowired
+    public ActPages(ActCatalog catalog, EliUriService uris, DataFreshness freshness, GazzettaReport gazzetta,
+                    RelationReport evidence) {
         this.catalog = catalog;
+        this.freshness = freshness;
+        this.gazzetta = gazzetta;
+        this.evidence = evidence;
         this.uris = uris;
     }
 
@@ -72,17 +89,21 @@ public class ActPages {
         List<ActRow> slice = shown.subList((current - 1) * PAGE_SIZE, Math.min(current * PAGE_SIZE, shown.size()));
 
         StringBuilder body = new StringBuilder();
-        body.append("<h1 class=\"sr-title\">").append(escape(t("nav.acts"))).append("</h1>\n");
+        // What the portal is, in two lines; the rest is on the About & Help page.
+        body.append("<section class=\"intro\"><h1>").append(escape(t("intro.title"))).append("</h1><p class=\"lead\">")
+                .append(escape(t("intro.text"))).append(" <a href=\"/about\">").append(escape(t("intro.more")))
+                .append("</a></p></section>\n");
 
         // Search first: it is what most visitors come for.
         body.append("<form class=\"card search\" method=\"get\" action=\"/\" role=\"search\">")
                 .append("<label for=\"q\">").append(escape(t("search.label"))).append("</label><div class=\"row\">")
                 .append("<input id=\"q\" type=\"search\" name=\"q\" value=\"").append(escape(q))
-                .append("\" placeholder=\"").append(escape(t("search.placeholder"))).append("\">")
+                .append("\" placeholder=\"").append(escape(t("search.placeholder"))).append("\" aria-describedby=\"search-hint\">")
                 .append(hidden("type", type)).append(hidden("year", year)).append(hidden("status", status))
-                .append("<button type=\"submit\">").append(escape(t("search.button"))).append("</button></div></form>\n");
+                .append("<button type=\"submit\">").append(escape(t("search.button"))).append("</button></div>")
+                .append("<p id=\"search-hint\" class=\"search-hint\">").append(escape(t("search.hint"))).append("</p></form>\n");
 
-        body.append(tiles(all, totals));
+        body.append(scope(all)).append(tiles(all, totals));
 
         TreeSet<String> years = new TreeSet<>(java.util.Comparator.reverseOrder());
         TreeSet<String> statuses = new TreeSet<>();
@@ -164,6 +185,22 @@ public class ActPages {
         return shown;
     }
 
+    /**
+     * The line above the numbers: they cover the whole dataset (searching does not
+     * change them), how recent it is, and from which year the acts start.
+     */
+    private String scope(List<ActRow> all) {
+        StringBuilder line = new StringBuilder(escape(t("tiles.scope")));
+        freshness.updatedTo().ifPresent(day -> line.append(" &middot; ").append(escape(t("tiles.updated", longDate(day)))));
+        all.stream().map(ActRow::year).filter(y -> y != null && !y.isBlank()).min(String::compareTo)
+                .ifPresent(year -> line.append(" &middot; ").append(escape(t("tiles.from", year))));
+        return "<p class=\"scope muted\">" + line + "</p>\n";
+    }
+
+    private static String longDate(LocalDate day) {
+        return day.format(DateTimeFormatter.ofPattern("d MMMM yyyy", I18n.italian() ? Locale.ITALIAN : Locale.ENGLISH));
+    }
+
     /** The four numbers at the head of the list: acts, versions, relations, decree-laws. */
     private static String tiles(List<ActRow> all, ActCatalog.Totals totals) {
         long decrees = all.stream().filter(r -> "DECRETO-LEGGE".equals(r.typeCode())).count();
@@ -212,7 +249,18 @@ public class ActPages {
         return blank(value) ? "" : "<input type=\"hidden\" name=\"" + name + "\" value=\"" + escape(value) + "\">";
     }
 
+    /** A number alone ("18") is an act number or a year; "18/2020" is number and year. */
+    private static final java.util.regex.Pattern NUMBER_YEAR = java.util.regex.Pattern.compile("(?:n\\.?\\s*)?(\\d+)(?:\\s*/\\s*(\\d{4}))?");
+
     private static boolean matches(ActRow row, String needle) {
+        java.util.regex.Matcher m = NUMBER_YEAR.matcher(needle);
+        if (m.matches()) {
+            String n = m.group(1).replaceFirst("^0+(?=\\d)", "");
+            if (m.group(2) != null) {
+                return n.equals(row.number()) && m.group(2).equals(row.year());
+            }
+            return n.equals(row.number()) || n.equals(row.year());
+        }
         return contains(row.title(), needle) || contains(row.localId(), needle) || needle.equals(row.number())
                 || contains(row.citation(), needle);
     }
@@ -297,7 +345,9 @@ public class ActPages {
     public String details(ActDetails act, String path) {
         String title = act.fact(ELI + "title");
         String date = act.fact(ELI + "date_document");
-        String gazzettaPage = act.facts(OWL_SAME_AS).stream().filter(u -> u.contains("gazzettaufficiale.it/eli/id/"))
+        // The act's identifier is its Gazzetta Ufficiale ELI (older data: owl:sameAs to it).
+        String gazzettaPage = (act.uri().contains("gazzettaufficiale.it/eli/id/") ? java.util.stream.Stream.of(act.uri())
+                : act.facts(OWL_SAME_AS).stream().filter(u -> u.contains("gazzettaufficiale.it/eli/id/")))
                 .findFirst().map(u -> u.replaceFirst("^http://", "https://")).orElse(null);
         StringBuilder body = new StringBuilder();
         body.append("<nav class=\"crumbs\" aria-label=\"").append(escape(t("crumbs.aria"))).append("\"><a href=\"/\">")
@@ -313,10 +363,10 @@ public class ActPages {
                 .append("</div><h1>").append(escape(act.citation())).append("</h1>")
                 .append(title == null ? "" : "<p class=\"lead\">" + escape(title) + "</p>")
                 .append("<div class=\"eli-box\"><span class=\"k\">ELI</span><code class=\"mono\">")
-                .append(escape(uris.uriForPath(path))).append("</code><span class=\"links\"><a href=\"")
+                .append(escape(act.uri())).append("</code><span class=\"links\"><a href=\"")
                 .append(escape(path)).append("?format=ttl\">").append(escape(t("eli.turtle"))).append("</a>")
                 .append(blank(gazzettaPage) ? "" : "<a href=\"" + escape(gazzettaPage) + "\" rel=\"noreferrer\">Gazzetta Ufficiale</a>")
-                .append("</span></div></section>\n");
+                .append("</span></div>").append(Html.hint(t("hint.eli"), "g-eli")).append("</section>\n");
 
         body.append("<div class=\"split\">\n<div class=\"side\">");
         body.append("<section class=\"card\"><h2>").append(escape(t("facts"))).append("</h2><dl class=\"facts\">")
@@ -327,16 +377,51 @@ public class ActPages {
                 .append(fact(t("fact.code"), act.fact(ELI + "id_local")))
                 .append(fact(t("fact.urn"), act.fact("http://purl.org/dc/terms/identifier")))
                 .append("</dl></section>\n");
+        body.append(gazzettaCheck(act.fact(ELI + "id_local"), gazzettaPage));
         act.conversion().ifPresent(c -> body.append(conversion(c, act.fact(ELI + "date_publication"))));
         body.append(converts(act.converts()));
         body.append("</div>\n<div class=\"mainc\">");
         body.append(versions(act.versions()));
-        body.append(relationTable(t("rel.in"), act.relations(), false));
-        body.append(relationTable(t("rel.out"), act.relations(), true));
+        String self = RelationReport.key(act.typeCode(), date, act.fact(ELI + "number"));
+        body.append(relationTable(t("rel.in"), t("hint.rel.in"), act.relations(), false, self, act.citation(), date));
+        body.append(relationTable(t("rel.out"), t("hint.rel.out"), act.relations(), true, self, act.citation(), date));
         body.append("</div>\n</div>\n");
         return Html.page(act.citation(), "acts",
                 "<link rel=\"alternate\" type=\"text/turtle\" href=\"" + escape(path) + "?format=ttl\">\n",
                 body.toString());
+    }
+
+    /**
+     * What the Gazzetta Ufficiale check found for this act, in words: which details were
+     * compared and in which issue the act was published. Read from the check's report.
+     */
+    private String gazzettaCheck(String codice, String gazzettaPage) {
+        java.util.Optional<GazzettaReport.Row> check = gazzetta.forCode(codice);
+        StringBuilder html = new StringBuilder("<section class=\"card\"><h2>").append(escape(t("gz.title"))).append("</h2>");
+        if (check.isEmpty()) {
+            html.append("<p>").append(escape(t("gz.none"))).append("</p>");
+        } else {
+            GazzettaReport.Row row = check.get();
+            if (row.matched()) {
+                html.append("<p><b>").append(escape(t("gz.match.short"))).append("</b> ")
+                        .append(escape(t("gz.meaning.MATCH"))).append("</p>");
+            } else {
+                html.append("<p><b>").append(escape(t("gz.notconfirmed"))).append("</b> ")
+                        .append(escape(t("gz.meaning." + (row.status().isBlank() ? "ERROR" : row.status())))).append("</p>");
+                if (!row.differences().isBlank() && "MISMATCH".equals(row.status())) {
+                    html.append("<p class=\"muted\">").append(escape(row.differences())).append("</p>");
+                }
+            }
+            if (!row.guNumber().isBlank()) {
+                html.append("<p>").append(escape(t("gz.issue", row.guNumber(), Html.italianDate(row.guDate()))));
+                if (!blank(gazzettaPage)) {
+                    html.append(" &middot; <a href=\"").append(escape(gazzettaPage)).append("\" rel=\"noreferrer\">")
+                            .append(escape(t("gz.open"))).append("</a>");
+                }
+                html.append("</p>");
+            }
+        }
+        return html.append(Html.hint(t("hint.gazzetta"), "g-gazzetta")).append("</section>\n").toString();
     }
 
     /** The answer: converted by which law and in how many days, or the deadline, or not converted. */
@@ -350,7 +435,7 @@ public class ActPages {
         };
         StringBuilder html = new StringBuilder("<section class=\"card conversion ").append(tone)
                 .append("\"><h2>").append(escape(t("conv.title"))).append("</h2><div class=\"labels\">").append(badge(status))
-                .append("</div>");
+                .append("</div>").append(Html.hint(t("hint.conversion"), "g-decree-law"));
         if (c.law() != null) {
             html.append("<p class=\"answer\">").append(escape(t("conv.by"))).append(' ').append(actName(c.law()))
                     .append(c.days() == null ? "" : " " + escape(t("conv.in")) + " <b>"
@@ -376,7 +461,7 @@ public class ActPages {
             return "";
         }
         StringBuilder html = new StringBuilder("<section class=\"card\"><h2>" + escape(t("converts.title")) + "</h2>"
-                + "<div class=\"table-wrap\"><table><thead><tr><th>" + escape(t("col.decree")) + "</th><th class=\"num\">"
+                + Html.hint(t("hint.converts"), "g-converts") + "<div class=\"table-wrap\"><table><thead><tr><th>" + escape(t("col.decree")) + "</th><th class=\"num\">"
                 + escape(t("col.days")) + "</th></tr></thead><tbody>");
         for (ActCatalog.Converted c : converted) {
             html.append("<tr><td>").append(otherAct(c.decree())).append("</td><td class=\"num\">")
@@ -385,14 +470,27 @@ public class ActPages {
         return html.append("</tbody></table></div></section>\n").toString();
     }
 
-    /** The versions as a timeline: the original text, then each consolidated text by date. */
-    private String versions(List<Version> versions) {
+    /**
+     * The versions as a timeline, newest first: the text in force today is what most
+     * visitors want. The original text is one click away in the heading, and at the
+     * end of the full history.
+     */
+    private String versions(List<Version> oldestFirst) {
         StringBuilder html = new StringBuilder("<section class=\"card\"><div class=\"results-head\"><h2>")
                 .append(escape(t("versions.title"))).append("</h2><span class=\"muted\">")
-                .append(I18n.count("versions.count", versions.size(), number(versions.size()))).append("</span></div>");
-        if (versions.isEmpty()) {
-            return html.append("<p class=\"muted\">").append(escape(t("versions.none"))).append("</p></section>\n").toString();
+                .append(I18n.count("versions.count", oldestFirst.size(), number(oldestFirst.size())));
+        if (oldestFirst.isEmpty()) {
+            return html.append("</span></div><p class=\"muted\">").append(escape(t("versions.none")))
+                    .append("</p></section>\n").toString();
         }
+        html.append(" &middot; ").append(escape(t("versions.order")));
+        String hint = Html.hint(t("hint.versions"), "g-version");
+        oldestFirst.stream().filter(v -> v.uri().endsWith("/original")).findFirst()
+                .ifPresent(original -> html.append(" &middot; <a href=\"").append(escape(link(original.uri())))
+                        .append("\">").append(escape(t("version.original"))).append("</a>"));
+        html.append("</span></div>").append(hint);
+        List<Version> versions = new ArrayList<>(oldestFirst);
+        Collections.reverse(versions);
         int shown = versions.size() > 12 ? 10 : versions.size();
         html.append(timeline(versions.subList(0, shown)));
         if (shown < versions.size()) {
@@ -431,28 +529,46 @@ public class ActPages {
         return html.append("</ol>").toString();
     }
 
-    private String relationTable(String heading, List<Relation> all, boolean outgoing) {
+    private String relationTable(String heading, String hint, List<Relation> all, boolean outgoing, String self,
+                                 String selfName, String selfDate) {
         List<Relation> rows = all.stream().filter(r -> r.outgoing() == outgoing).toList();
         StringBuilder html = new StringBuilder("<section class=\"card\"><h2>").append(heading).append(" (")
-                .append(rows.size()).append(")</h2>");
+                .append(rows.size()).append(")</h2>").append(Html.hint(hint, "g-relations"));
         if (rows.isEmpty()) {
             return html.append("<p class=\"muted\">").append(escape(t("rel.none"))).append("</p></section>\n").toString();
         }
         int shown = rows.size() > RELATIONS_SHOWN + 5 ? RELATIONS_SHOWN : rows.size();
-        html.append(relationRows(rows.subList(0, shown), outgoing));
+        html.append(relationRows(rows.subList(0, shown), outgoing, self, selfName, selfDate));
         if (shown < rows.size()) {
             html.append("<details><summary>").append(escape(t("rel.more", rows.size() - shown))).append("</summary>")
-                    .append(relationRows(rows.subList(shown, rows.size()), outgoing)).append("</details>");
+                    .append(relationRows(rows.subList(shown, rows.size()), outgoing, self, selfName, selfDate)).append("</details>");
         }
         return html.append("</section>\n").toString();
     }
 
-    private String relationRows(List<Relation> rows, boolean outgoing) {
-        StringBuilder html = new StringBuilder("<div class=\"table-wrap\"><table><thead><tr><th>" + escape(t("col.act"))
-                + "</th><th>" + escape(t("col.relation")) + "</th></tr></thead><tbody>");
+    /**
+     * Each relation as a sentence read left to right: the modifying act, what it did,
+     * the act it changed, and the date (ISO, as in the SPARQL results). Citations only;
+     * one of the two acts is this act, so it is always clear who changed whom.
+     */
+    private String relationRows(List<Relation> rows, boolean outgoing, String self, String selfName, String selfDate) {
+        StringBuilder html = new StringBuilder("<div class=\"table-wrap\"><table class=\"relations\"><thead><tr><th>"
+                + escape(t("col.modifying")) + "</th><th>" + escape(t("col.relation")) + "</th><th>"
+                + escape(t("col.modified")) + "</th><th>" + escape(t("col.date")) + "</th></tr></thead><tbody>");
+        String thisAct = "<b>" + escape(selfName) + "</b>";
         for (Relation r : rows) {
-            html.append("<tr><td>").append(otherAct(r.other())).append("</td><td>")
-                    .append(Html.relation(r.propertyName(), verb(r.propertyName(), outgoing))).append("</td></tr>");
+            ActCatalog.OtherAct other = r.other();
+            String otherKey = RelationReport.key(other.typeCode(), other.date(), other.number());
+            String from = outgoing ? self : otherKey;
+            String to = outgoing ? otherKey : self;
+            // The date of the change (the modifying act's publication), else the modifying act's date.
+            String when = evidence.versions(to, from).stream().map(RelationReport.Change::eventDate)
+                    .filter(d -> d != null && !d.isBlank()).findFirst()
+                    .orElse(outgoing ? selfDate : other.date() == null ? "" : other.date());
+            html.append("<tr><td>").append(outgoing ? thisAct : actName(other)).append("</td><td>")
+                    .append(Html.relation(r.propertyName(), verb(r.propertyName(), true))).append("</td><td>")
+                    .append(outgoing ? actName(other) : thisAct).append("</td><td class=\"nowrap\">")
+                    .append(escape(when.length() > 10 ? when.substring(0, 10) : when)).append("</td></tr>");
         }
         return html.append("</tbody></table></div>").toString();
     }

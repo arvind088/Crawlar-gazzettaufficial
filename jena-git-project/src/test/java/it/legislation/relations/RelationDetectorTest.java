@@ -102,4 +102,32 @@ class RelationDetectorTest {
         assertEquals(true, RelationDetector.impossibleInHistory(oldLaw.key(), decree.key()));
         assertEquals(false, RelationDetector.impossibleInHistory(olderDecree.key(), decree.key()));
     }
+
+    @Test
+    void changesAddedByTheConversionLawCountFromTheLatestVersion() {
+        // Real case: D.L. 172/2020; its conversion law added art. 2-bis, which amends D.L. 34/2020, art. 28.
+        // The entry is in the change list of the later versions, not of the original text.
+        Act decree = act("20G00196", "DECRETO-LEGGE", "2020-12-18", "172", "2020-12-18", "Misure");
+        Act target = act("20G00052", "DECRETO-LEGGE", "2020-05-19", "34", "2020-05-19", "Misure");
+        Act other = act("20G00035", "DECRETO-LEGGE", "2020-03-25", "19", "2020-03-25", "Misure");
+        CorpusIndex corpus = new CorpusIndex(List.of(decree, target, other), "https://example.test");
+        TextualMod inOriginal = new TextualMod("amod_0", "insertion", "urn:nir:stato:decreto.legge:2020-03-25;19#1",
+                other.key(), false, ", convertito con modificazioni dalla L. 29 gennaio 2021, n. 6, ha disposto "
+                        + "(con l'art. 1, comma 3-bis) la modifica dell'art. 1, comma 1.");
+        TextualMod onlyLater = new TextualMod("amod_2", "insertion", "urn:nir:stato:decreto.legge:2020-05-19;34#28",
+                target.key(), false, ", convertito con modificazioni dalla L. 29 gennaio 2021, n. 6, ha disposto "
+                        + "(con l'art. 2-bis, comma 1) la modifica dell'art. 28, comma 5.");
+        Map<String, Evidence> original = Map.of("20G00196", evidence(List.of(inOriginal), Set.of(), Set.of()));
+        Map<String, Evidence> latest = Map.of(
+                "20G00196", evidence(List.of(inOriginal, onlyLater), Set.of(), Set.of()),
+                "20G00052", new Evidence(List.of(), Set.of(), Set.of(decree.key()), Set.of()));
+
+        RelationDetector.Result result = new RelationDetector(corpus).detect(original, latest, LocalDate.of(2026, 10, 29));
+
+        Map<String, String> found = new LinkedHashMap<>();
+        result.relations().forEach(r -> found.put(r.to().codice(), r.property().eliName + " / " + r.sources()));
+        assertEquals("amends / change list + history", found.get("20G00052"), "amends, not just changes");
+        assertEquals("amends / change list", found.get("20G00035"));
+        assertEquals(2, result.relations().size(), "the entry in both versions is counted once");
+    }
 }
