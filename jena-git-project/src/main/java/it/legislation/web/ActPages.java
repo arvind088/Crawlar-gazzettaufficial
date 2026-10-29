@@ -383,8 +383,8 @@ public class ActPages {
         body.append("</div>\n<div class=\"mainc\">");
         body.append(versions(act.versions()));
         String self = RelationReport.key(act.typeCode(), date, act.fact(ELI + "number"));
-        body.append(relationTable(t("rel.in"), t("hint.rel.in"), act.relations(), false, self, act.citation()));
-        body.append(relationTable(t("rel.out"), t("hint.rel.out"), act.relations(), true, self, act.citation()));
+        body.append(relationTable(t("rel.in"), t("hint.rel.in"), act.relations(), false, self, act.citation(), date));
+        body.append(relationTable(t("rel.out"), t("hint.rel.out"), act.relations(), true, self, act.citation(), date));
         body.append("</div>\n</div>\n");
         return Html.page(act.citation(), "acts",
                 "<link rel=\"alternate\" type=\"text/turtle\" href=\"" + escape(path) + "?format=ttl\">\n",
@@ -530,7 +530,7 @@ public class ActPages {
     }
 
     private String relationTable(String heading, String hint, List<Relation> all, boolean outgoing, String self,
-                                 String selfName) {
+                                 String selfName, String selfDate) {
         List<Relation> rows = all.stream().filter(r -> r.outgoing() == outgoing).toList();
         StringBuilder html = new StringBuilder("<section class=\"card\"><h2>").append(heading).append(" (")
                 .append(rows.size()).append(")</h2>").append(Html.hint(hint, "g-relations"));
@@ -538,35 +538,37 @@ public class ActPages {
             return html.append("<p class=\"muted\">").append(escape(t("rel.none"))).append("</p></section>\n").toString();
         }
         int shown = rows.size() > RELATIONS_SHOWN + 5 ? RELATIONS_SHOWN : rows.size();
-        html.append(relationRows(rows.subList(0, shown), outgoing, self, selfName));
+        html.append(relationRows(rows.subList(0, shown), outgoing, self, selfName, selfDate));
         if (shown < rows.size()) {
             html.append("<details><summary>").append(escape(t("rel.more", rows.size() - shown))).append("</summary>")
-                    .append(relationRows(rows.subList(shown, rows.size()), outgoing, self, selfName)).append("</details>");
+                    .append(relationRows(rows.subList(shown, rows.size()), outgoing, self, selfName, selfDate)).append("</details>");
         }
         return html.append("</section>\n").toString();
     }
 
     /**
      * Each relation as a sentence read left to right: the modifying act, what it did,
-     * the act it changed, and when. One of the two acts is this act, so it is always
-     * clear who changed whom.
+     * the act it changed, and the date (ISO, as in the SPARQL results). Citations only;
+     * one of the two acts is this act, so it is always clear who changed whom.
      */
-    private String relationRows(List<Relation> rows, boolean outgoing, String self, String selfName) {
+    private String relationRows(List<Relation> rows, boolean outgoing, String self, String selfName, String selfDate) {
         StringBuilder html = new StringBuilder("<div class=\"table-wrap\"><table class=\"relations\"><thead><tr><th>"
                 + escape(t("col.modifying")) + "</th><th>" + escape(t("col.relation")) + "</th><th>"
                 + escape(t("col.modified")) + "</th><th>" + escape(t("col.date")) + "</th></tr></thead><tbody>");
-        String thisAct = "<b>" + escape(selfName) + "</b><div class=\"muted\">" + escape(t("rel.thisact")) + "</div>";
+        String thisAct = "<b>" + escape(selfName) + "</b>";
         for (Relation r : rows) {
             ActCatalog.OtherAct other = r.other();
             String otherKey = RelationReport.key(other.typeCode(), other.date(), other.number());
             String from = outgoing ? self : otherKey;
             String to = outgoing ? otherKey : self;
+            // The date of the change (the modifying act's publication), else the modifying act's date.
             String when = evidence.versions(to, from).stream().map(RelationReport.Change::eventDate)
-                    .filter(d -> d != null && !d.isBlank()).findFirst().map(Html::italianDate).orElse("");
-            html.append("<tr><td>").append(outgoing ? thisAct : otherAct(other)).append("</td><td>")
+                    .filter(d -> d != null && !d.isBlank()).findFirst()
+                    .orElse(outgoing ? selfDate : other.date() == null ? "" : other.date());
+            html.append("<tr><td>").append(outgoing ? thisAct : actName(other)).append("</td><td>")
                     .append(Html.relation(r.propertyName(), verb(r.propertyName(), true))).append("</td><td>")
-                    .append(outgoing ? otherAct(other) : thisAct).append("</td><td class=\"nowrap\">")
-                    .append(escape(when)).append("</td></tr>");
+                    .append(outgoing ? actName(other) : thisAct).append("</td><td class=\"nowrap\">")
+                    .append(escape(when.length() > 10 ? when.substring(0, 10) : when)).append("</td></tr>");
         }
         return html.append("</tbody></table></div>").toString();
     }
