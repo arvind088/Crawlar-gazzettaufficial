@@ -29,7 +29,7 @@ public class HttpNormattivaTransport implements NormattivaTransport {
     public static final String PRODUCTION_BASE =
             "https://api.normattiva.it/t/normattiva.api/bff-opendata/v1/api/v1";
     public static final String USER_AGENT =
-            "ItalianLegislationLinkedData/0.1 (thesis project; +https://github.com/arvind088/Crawlar-gazzettaufficial)";
+            "ItalianLegislationLinkedData/0.1 (thesis project; +https://github.com/arvind088/italian-legislative-knowledge-graph)";
 
     private final String baseUrl;
     private final HttpClient client;
