@@ -216,7 +216,7 @@ public class ActPages {
         StringBuilder bar = new StringBuilder("<div class=\"bar\" role=\"img\" aria-label=\"");
         StringBuilder parts = new StringBuilder();
         StringBuilder spans = new StringBuilder();
-        for (String kind : List.of("amends", "changes", "repeals")) {
+        for (String kind : List.of("amends", "repeals")) {
             long n = totals.relations(kind);
             if (n > 0) {
                 parts.append(parts.length() > 0 ? " &middot; " : "").append(escape(t("kind." + kind))).append(' ')
@@ -375,7 +375,7 @@ public class ActPages {
                 .append(fact(t("fact.gu"), Html.italianDate(act.fact(ELI + "date_publication"))))
                 .append(fact(t("fact.inforce"), Html.italianDate(act.fact(ELI + "first_date_entry_in_force"))))
                 .append(fact(t("fact.code"), act.fact(ELI + "id_local")))
-                .append(fact(t("fact.urn"), act.fact("http://purl.org/dc/terms/identifier")))
+                .append(urnFact(t("fact.urn"), act.fact("http://purl.org/dc/terms/identifier")))
                 .append("</dl></section>\n");
         body.append(gazzettaCheck(act.fact(ELI + "id_local"), gazzettaPage));
         act.conversion().ifPresent(c -> body.append(conversion(c, act.fact(ELI + "date_publication"))));
@@ -510,20 +510,6 @@ public class ActPages {
                     .append(escape(link(v.uri()))).append("\"><b>").append(escape(Html.italianDate(v.date())))
                     .append("</b> &middot; ").append(escape(t(original ? "version.original" : "version.inforce")))
                     .append("</a>");
-            if (!v.changedBy().isEmpty()) {
-                html.append("<span class=\"tl-by\">").append(escape(t("version.changedBy"))).append(' ');
-                for (int i = 0; i < v.changedBy().size(); i++) {
-                    ActCatalog.OtherAct by = v.changedBy().get(i);
-                    html.append(i == 0 ? "" : ", ");
-                    if (by.inCorpus() && uris.pathOf(by.uri()).isPresent()) {
-                        html.append("<a href=\"").append(escape(link(by.uri()))).append("\">")
-                                .append(escape(by.citation())).append("</a>");
-                    } else {
-                        html.append(escape(by.citation()));
-                    }
-                }
-                html.append("</span>");
-            }
             html.append("<span class=\"mono muted\">").append(escape(fileName(v.source()))).append("</span></span></li>");
         }
         return html.append("</ol>").toString();
@@ -575,7 +561,7 @@ public class ActPages {
 
     private static String verb(String property, boolean outgoing) {
         return switch (property) {
-            case "converts", "amends", "repeals", "changes" -> t("verb." + property + (outgoing ? ".out" : ".in"));
+            case "amends", "repeals" -> t("verb." + property + (outgoing ? ".out" : ".in"));
             default -> property;
         };
     }
@@ -602,6 +588,15 @@ public class ActPages {
             return "";
         }
         return "<dt>" + escape(label) + "</dt><dd>" + escape(value) + "</dd>";
+    }
+
+    /** The URN, linked to the act's page on Normattiva (its URN resolver). */
+    private static String urnFact(String label, String urn) {
+        if (urn == null || !urn.startsWith("urn:nir:")) {
+            return fact(label, urn);
+        }
+        return "<dt>" + escape(label) + "</dt><dd><a href=\"" + escape("https://www.normattiva.it/uri-res/N2Ls?" + urn)
+                + "\" rel=\"noreferrer\">" + escape(urn) + "</a></dd>";
     }
 
     private static String externalLink(String label, String url) {

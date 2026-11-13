@@ -67,7 +67,7 @@ class ActPagesTest {
         String html = pages.list(null, null, null, null, 1).getBody();
         assertTrue(html.contains("<span class=\"k\">Acts</span><span class=\"v\">2</span>"));
         assertTrue(html.contains("<span class=\"k\">Versions</span><span class=\"v\">3</span>"));
-        assertTrue(html.contains("amends 1 &middot; changes 1"));
+        assertTrue(html.contains("amends 2"));
         assertTrue(html.contains("1 converted · 0 not converted · 0 pending"));
         assertFalse(html.contains("Gazzetta &#10003;"), "no Gazzetta badge: the check is a report");
         assertTrue(html.contains("href=\"/acts.csv\""));
@@ -94,7 +94,7 @@ class ActPagesTest {
         assertEquals("/original", act.versions().get(0).uri().substring(act.versions().get(0).uri().lastIndexOf('/')));
 
         ActCatalog.Relation amended = act.relations().stream().filter(r -> !r.outgoing()).findFirst().orElseThrow();
-        assertEquals("converts", amended.propertyName(), "the converting law's relation is shown as a conversion");
+        assertEquals("amends", amended.propertyName(), "the relation shows the ELI property, not a conversion label");
         assertEquals(L_27, amended.other().uri());
 
         String html = pages.details(act, "/eli/id/2020/03/17/20G00034/sg");
@@ -104,15 +104,14 @@ class ActPagesTest {
         assertTrue(html.contains("43 of 60"));
         assertFalse(html.contains("How was this verified?"), "no C1-C6 checks any more");
         assertFalse(html.contains("<span class=\"trust"), "no trust levels any more");
-        assertTrue(html.contains("<span class=\"rel converts\">converts into law</span>"));
+        assertFalse(html.contains("<span class=\"rel converts\">"), "conversion is shown in its own card, not in the relation table");
         assertTrue(html.contains("href=\"https://www.gazzettaufficiale.it/eli/id/2020/03/17/20G00034/sg\""),
                 "the Gazzetta Ufficiale page: the act's own identifier");
         assertTrue(html.contains("<code class=\"mono\">http://www.gazzettaufficiale.it/eli/id/2020/03/17/20G00034/sg</code>"),
                 "the ELI shown is the official one");
         assertTrue(html.contains("Original text"));
-        assertTrue(html.contains("changed by <a href=\"/eli/id/2020/04/29/20G00045/sg\">L. 24 aprile 2020, n. 27</a>"),
-                "each version names the act that produced it");
-        assertEquals(1, act.versions().get(1).changedBy().size());
+        assertFalse(html.contains("2099"), "a version that starts in the future is not shown");
+        assertFalse(html.contains("changed by"), "versions no longer name the act that produced them");
         assertTrue(html.contains("D.Lgs. 30 marzo 2001, n. 165"));
         assertTrue(html.contains("<td>D.Lgs. 30 marzo 2001, n. 165</td>"), "an act outside the corpus: its citation, no link");
         assertTrue(html.contains("?format=ttl"));
@@ -153,7 +152,7 @@ class ActPagesTest {
             String details = pages.details(catalog.details(DL_18).orElseThrow(), "/eli/id/2020/03/17/20G00034/sg");
             assertTrue(details.contains("Convertito da <a href=\"/eli/id/2020/04/29/20G00045/sg\">"));
             assertTrue(details.contains("43 giorni"));
-            assertTrue(details.contains("modificato da"));
+            assertFalse(details.contains("modificato da"));
             assertTrue(details.contains("D.L. 17 marzo 2020, n. 18"), "citations are the same in both languages");
         } finally {
             LocaleContextHolder.resetLocaleContext();
@@ -322,8 +321,8 @@ class ActPagesTest {
         assertTrue(decree.contains("<th>Modifying act</th><th>Relation</th><th>Changed act</th><th>Date</th>"));
         int changedBy = decree.indexOf("Changed by other acts");
         String row = decree.substring(decree.indexOf("<tbody>", changedBy), decree.indexOf("</tbody>", changedBy));
-        assertTrue(row.indexOf("L. 24 aprile 2020, n. 27") < row.indexOf("converts into law"), "the modifying act first");
-        assertTrue(row.indexOf("converts into law") < row.indexOf("<b>D.L. 17 marzo 2020, n. 18</b>"), "then this act");
+        assertTrue(row.indexOf("L. 24 aprile 2020, n. 27") < row.indexOf(">amends<"), "the modifying act first");
+        assertTrue(row.indexOf(">amends<") < row.indexOf("<b>D.L. 17 marzo 2020, n. 18</b>"), "then this act");
         assertTrue(row.contains("<td class=\"nowrap\">2020-04-29</td>"), "when the change was published");
         assertFalse(row.contains("Conversione in legge"), "citations only, no titles");
 

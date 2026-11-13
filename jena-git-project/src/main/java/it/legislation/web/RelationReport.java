@@ -24,7 +24,7 @@ import it.legislation.ingest.RelationRunner;
  * and the versions each change produced, with their dates
  * ({@code data/clean/version_history.tsv}).
  *
- * <p>The RDF keeps only the ELI link ({@code eli:amends}, {@code eli:changes}…); the act
+ * <p>The RDF keeps only the ELI link ({@code eli:amends}, {@code eli:repeals}); the act
  * pages read this report to say what was changed, when, and where the relation was found.
  * Acts are matched by their key, type + date + number, so acts outside the corpus match too.
  */

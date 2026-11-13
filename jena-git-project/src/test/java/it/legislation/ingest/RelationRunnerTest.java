@@ -72,7 +72,8 @@ class RelationRunnerTest {
 
         String ttl = Files.readString(temp.resolve("relations.ttl"));
         assertTrue(ttl.contains("eli:amends") && ttl.contains("eli:repeals"), ttl);
-        assertTrue(ttl.contains("eli:consolidates"), "a version linked to the act it contains");
+        assertFalse(ttl.contains("eli:changes"), "merged into eli:amends");
+        assertTrue(ttl.contains("eli:commences"), "L. 27/2020 converts D.L. 18/2020: the law commences the decree-law");
         assertFalse(ttl.contains("example.org"), "ELI only, no custom vocabulary");
         assertTrue(Files.readString(temp.resolve("conversions.tsv"))
                 .contains("20G00034\tDECRETO-LEGGE 2020-03-17 n. 18\t2020-03-17\tCONVERTED\t20G00045"));

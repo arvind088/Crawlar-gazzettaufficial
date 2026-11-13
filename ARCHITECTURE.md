@@ -67,16 +67,19 @@ flowchart LR
     W -- eli:is_realized_by --> E1
     W -- eli:is_realized_by --> E2
     E2 -- eli:is_embodied_by --> F
-    E2 -- eli:consolidates --> M
+    E2 -- eli:consolidates --> E1
     M -- eli:amends --> W
 ```
+
+Each version is linked to the version before it with `eli:consolidates` (the original text first, then
+the versions by date). A conversion law is linked to its decree-law with `eli:commences`.
 
 | Layer | File | Contains |
 |---|---|---|
 | Layer 1 | `data/rdf/layer1_acts.ttl` | every act and its original text: the lookup table from type + date + number to the act's ELI |
 | | `data/rdf/layer1_gazzetta.ttl` | `eli:first_date_entry_in_force` for each act its Gazzetta page confirms |
 | Layer 2 | `data/rdf/layer2_versions.ttl` | every consolidated version, with its date and its file |
-| Relations | `data/rdf/relations.ttl` | `eli:amends` / `eli:repeals` / `eli:changes` between acts; `eli:consolidates` from each version to the act that produced it |
+| Relations | `data/rdf/relations.ttl` | `eli:amends` / `eli:repeals` between acts, `eli:commences` from a conversion law to its decree-law, `eli:consolidates` from each version to the one before it |
 
 **Identity.** An act is identified by its **Gazzetta Ufficiale ELI**
 (`http://www.gazzettaufficiale.it/eli/id/{yyyy}/{mm}/{dd}/{codice}/sg`): the official address,
@@ -138,9 +141,8 @@ flowchart TB
     K --> L1["Look up in Layer 1<br/>→ Gazzetta ELI …/2021/01/30/21G00008/sg"]
     TM --> P{Kind from the note}
     P -->|abrogazione dell'intero provvedimento| REP[eli:repeals]
-    P -->|modifica, introduzione,<br/>soppressione, sostituzione| AM[eli:amends]
-    P -->|other wording| CH[eli:changes]
-    LC -->|named only in the history| CH
+    P -->|any other note| AM[eli:amends]
+    LC -->|named only in the history| AM
 ```
 
 **AKN id → ELI.** Normattiva names a modifying act by its AKN id, which holds the type, the
@@ -154,13 +156,21 @@ Rules:
   can add articles to a decree-law ("art. 2-bis") that change other acts; they are legally the
   decree's but appear only in its later versions. An entry in both is counted once.
 - All changes from X to the same Y form **one relation**; the strongest kind wins
-  (repeals > amends > changes).
+  (repeals > amends).
 - A note that describes a change made through a third act is not counted for the destination.
-- A relation found only in Y's history becomes `eli:changes` (its kind is not recorded).
+- A relation found only in Y's history becomes `eli:amends`: ELI defines amends as introducing legal
+  changes in another act, and the report keeps that it was found only in the history.
 - A law or legislative decree cannot change an act published after it: such a history-only
   relation is dropped (R7). A decree-law can, through its conversion law.
-- Whole repeals stated only in the text ("Il decreto-legge … è abrogato") count as
-  `eli:repeals`.
+- Whole repeals stated only in the text ("Il decreto-legge … è abrogato", "è abrogata la legge …",
+  "la legge … e la legge … sono abrogate") count as `eli:repeals`; a sentence with an exception
+  ("ad eccezione di …", "salvo quanto …", "nelle parti incompatibili") does not. A sentence inside a
+  `<mod>` only confirms a repeal that the change list records.
+- `eli:repeals` needs **whole-act wording**: the note "l'abrogazione dell'intero provvedimento", a note
+  quoting "Il decreto-legge … e' abrogato", or such a sentence. A typed record (`type="repeal"` on the
+  whole act) alone is not enough: Normattiva also uses it when only a chapter is repealed. In the
+  manual check of all 213 earlier repeals, this rule keeps the 176 whole repeals and moves the 37
+  partial or unclear ones to `eli:amends`.
 
 Reports: `data/clean/relations.tsv` (one line per relation: where it was found, number of
 changes, kinds, every editor's note) and `data/clean/version_history.tsv` (which act produced
@@ -179,7 +189,9 @@ The title of each law in Layer 1 is matched against
 | NOT_CONVERTED | no law, more than 60 days |
 
 Reading the history alone is not enough: decrees merged into another decree's conversion law are
-repealed by it, not converted (e.g. D.L. 9/2020 by L. 27/2020). Output: `data/clean/conversions.tsv`.
+repealed by it, not converted (e.g. D.L. 9/2020 by L. 27/2020). Output: `data/clean/conversions.tsv`,
+and in the RDF `law eli:commences decree` for each converted decree-law (core ELI has no property for
+conversion; `eli:commences` says that one act sets another into force, without a date).
 
 ## 4. Store
 

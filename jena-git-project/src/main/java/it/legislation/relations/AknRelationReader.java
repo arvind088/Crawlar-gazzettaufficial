@@ -62,8 +62,17 @@ public class AknRelationReader {
     public record LifecycleEvent(LocalDate date, Optional<ActKey> act, String href) {}
 
     /** Everything relation-related in one file. */
+    /**
+     * {@code textRepeals}: whole repeals stated in the act's own text. {@code modTextRepeals}: those stated only inside
+     * a {@code <mod>} (newer files); they only confirm a repeal that the change list records.
+     */
     public record Evidence(List<TextualMod> textualMods, Set<ActKey> article1Converts, Set<ActKey> lifecycleChangedBy,
-                           Set<ActKey> textRepeals, List<LifecycleEvent> events) {
+                           Set<ActKey> textRepeals, List<LifecycleEvent> events, Set<ActKey> modTextRepeals) {
+
+        public Evidence(List<TextualMod> textualMods, Set<ActKey> article1Converts, Set<ActKey> lifecycleChangedBy,
+                        Set<ActKey> textRepeals, List<LifecycleEvent> events) {
+            this(textualMods, article1Converts, lifecycleChangedBy, textRepeals, events, Set.of());
+        }
 
         public Evidence(List<TextualMod> textualMods, Set<ActKey> article1Converts, Set<ActKey> lifecycleChangedBy,
                         Set<ActKey> textRepeals) {
@@ -77,11 +86,21 @@ public class AknRelationReader {
 
     /**
      * "Il decreto-legge 11 novembre 2021, n. 157, e' abrogato." / "I decreti-legge 2 marzo 2020, n. 9, … sono abrogati."
+     * / "…, la legge 21 aprile 1977, n. 164, e la legge 22 dicembre 1980, n. 927, sono abrogate."
      * The subject must be the act itself (no article, paragraph or letter before the date).
      */
     private static final Pattern WHOLE_REPEAL = Pattern.compile(
-            "(?:^|[.;:]\\s+)(?:Il|I|La|Le)\\s+(decret[oi][- ]legge|decreti[- ]legge|decret[oi] legislativ[oi]|legg[ei])\\s+"
-                    + "((?:(?!articol|comma|letter|allegat|[.;]\\s)[^:])*?)\\s*,?\\s+(?:e'|è|sono)\\s+abrogat[oi]\\b",
+            "(?:^|[.;:,]\\s+)(?:Il|I|La|Le)\\s+(decret[oi][- ]legge|decreti[- ]legge|decret[oi] legislativ[oi]|legg[ei])\\s+"
+                    + "((?:(?!articol|comma|letter|allegat|[.;]\\s)[^:])*?)\\s*,?\\s+(?:e'|è|sono)\\s+abrogat[oiae]\\b",
+            Pattern.CASE_INSENSITIVE);
+    /** Verb first: "… e' abrogata la legge 18 giugno 1973, n. 475." / "e' abrogato il decreto legislativo …". */
+    private static final Pattern WHOLE_REPEAL_VERB_FIRST = Pattern.compile(
+            "(?:e'|è)\\s+abrogat[oa]\\s+(?:il|la|lo)\\s+(decreto[- ]legge|decreto legislativo|legge)\\s+"
+                    + "(\\d{1,2}°?\\s+[a-z]+\\s+\\d{4},?\\s+n\\.~?\\d+)",
+            Pattern.CASE_INSENSITIVE);
+    /** A repeal with exceptions is not a whole repeal: "… e' abrogato, ad eccezione dell'articolo 3", "Salvo quanto …". */
+    private static final Pattern EXCEPTION = Pattern.compile(
+            "ad eccezione|salvo quanto|salvo che|eccetto|tranne|limitatamente|nelle parti|in quanto incompatibil",
             Pattern.CASE_INSENSITIVE);
     private static final Pattern DATE_NUMBER = Pattern.compile(
             "(\\d{1,2})\\s+([a-z]+)\\s+(\\d{4}),?\\s+n\\.\\s?(\\d+)", Pattern.CASE_INSENSITIVE);
@@ -96,7 +115,11 @@ public class AknRelationReader {
             throw new IOException("XML not readable: " + file + ": " + e.getMessage(), e);
         }
         Element root = document.getDocumentElement();
-        return new Evidence(textualMods(root), article1Converts(root), lifecycle(root), textRepeals(root), events(root));
+        Set<ActKey> textRepeals = textRepeals(root, true);
+        Set<ActKey> modTextRepeals = new LinkedHashSet<>(textRepeals(root, false));
+        modTextRepeals.removeAll(textRepeals);
+        return new Evidence(textualMods(root), article1Converts(root), lifecycle(root), textRepeals, events(root),
+                modTextRepeals);
     }
 
     private static List<TextualMod> textualMods(Element root) {
@@ -142,8 +165,11 @@ public class AknRelationReader {
         return decrees;
     }
 
-    /** Acts this act repeals in full, read from sentences of its text (some acts have no textualMod at all). */
-    private static Set<ActKey> textRepeals(Element root) {
+    /**
+     * Acts this act repeals in full, read from sentences of its text (some acts have no textualMod at all).
+     * {@code skipMods} false also reads the text inside {@code <mod>} (not its quotes).
+     */
+    private static Set<ActKey> textRepeals(Element root, boolean skipMods) {
         Set<ActKey> acts = new LinkedHashSet<>();
         Element body = first(root, "body");
         if (body == null) {
@@ -154,17 +180,25 @@ public class AknRelationReader {
             if (insideQuoteOrNote(paragraphs.item(i))) {
                 continue;
             }
-            String text = ownText(paragraphs.item(i));
+            // The text inside <mod> is this act speaking too (newer files wrap the repealing sentence in it);
+            // only the quoted new text inside it is not.
+            String text = ownText(paragraphs.item(i), skipMods);
             if (!text.contains("abrogat")) {
                 continue;
             }
             // "n. 157" must not end the sentence: write it "n.~157" while matching.
-            Matcher m = WHOLE_REPEAL.matcher(text.replaceAll("\\bn\\.\\s", "n.~"));
-            while (m.find()) {
-                String word = m.group(1).toLowerCase(java.util.Locale.ROOT);
-                String type = word.contains("legge") && word.startsWith("decret") ? "DECRETO-LEGGE"
-                        : word.contains("legislativ") ? "DECRETO_LEGISLATIVO" : "LEGGE";
-                acts.addAll(names(m.group(2).replace("n.~", "n. "), type));
+            String marked = text.replaceAll("\\bn\\.\\s", "n.~");
+            for (Pattern pattern : List.of(WHOLE_REPEAL, WHOLE_REPEAL_VERB_FIRST)) {
+                Matcher m = pattern.matcher(marked);
+                while (m.find()) {
+                    if (EXCEPTION.matcher(sentence(marked, m.start(), m.end())).find()) {
+                        continue;
+                    }
+                    String word = m.group(1).toLowerCase(java.util.Locale.ROOT);
+                    String type = word.contains("legge") && word.startsWith("decret") ? "DECRETO-LEGGE"
+                            : word.contains("legislativ") ? "DECRETO_LEGISLATIVO" : "LEGGE";
+                    acts.addAll(names(m.group(2).replace("n.~", "n. "), type));
+                }
             }
         }
         return acts;
@@ -188,16 +222,28 @@ public class AknRelationReader {
      * in «guillemets» (the notes of D.Lgs. 44/2020 quote L. 27/2020: «… I decreti-legge … sono abrogati»).
      */
     static String ownText(org.w3c.dom.Node node) {
+        return ownText(node, true);
+    }
+
+    /** As {@link #ownText(org.w3c.dom.Node)}; {@code skipMods} false keeps the text of {@code <mod>} (not its quotes). */
+    static String ownText(org.w3c.dom.Node node, boolean skipMods) {
         StringBuilder sb = new StringBuilder();
-        collect(node, sb);
+        collect(node, sb, skipMods);
         return clean(sb.toString().replaceAll("«[^»]*»", " "));
     }
 
-    private static void collect(org.w3c.dom.Node node, StringBuilder sb) {
+    /** The sentence around a match: from the previous ". " to the next one. */
+    private static String sentence(String text, int start, int end) {
+        int from = text.lastIndexOf(". ", start);
+        int to = text.indexOf(". ", end);
+        return text.substring(from < 0 ? 0 : from, to < 0 ? text.length() : to);
+    }
+
+    private static void collect(org.w3c.dom.Node node, StringBuilder sb, boolean skipMods) {
         for (org.w3c.dom.Node child = node.getFirstChild(); child != null; child = child.getNextSibling()) {
             if (child instanceof Element e) {
-                if (!NOT_OWN_TEXT.contains(e.getLocalName())) {
-                    collect(e, sb);
+                if (!NOT_OWN_TEXT.contains(e.getLocalName()) || !skipMods && "mod".equals(e.getLocalName())) {
+                    collect(e, sb, skipMods);
                 }
             } else if (child.getNodeType() == org.w3c.dom.Node.TEXT_NODE) {
                 sb.append(child.getNodeValue());

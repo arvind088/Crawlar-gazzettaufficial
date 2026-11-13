@@ -29,7 +29,7 @@ public class AboutPage {
 
     /** Glossary terms, in reading order; each has {@code glossary.<term>} and {@code glossary.<term>.text}. */
     static final List<String> TERMS = List.of("act", "decree-law", "version", "original", "consolidated", "relations",
-            "amends", "repeals", "converts", "changes", "normattiva", "gazzetta", "eli", "rdf", "sparql");
+            "amends", "repeals", "converts", "normattiva", "gazzetta", "eli", "rdf", "sparql");
 
     private static final List<String[]> SECTIONS = List.of(
             new String[] {"what", "about.what.title"},

@@ -149,10 +149,10 @@ public final class Html {
         return "<span class=\"badge " + tone + "\">" + escape(statusWords(status)) + "</span>";
     }
 
-    /** A relation kind as a coloured label: converts, amends, repeals, changes. */
+    /** A relation kind as a coloured label: amends, repeals (anything else in grey). */
     public static String relation(String property, String text) {
         String kind = switch (property == null ? "" : property) {
-            case "converts", "amends", "repeals" -> property;
+            case "amends", "repeals" -> property;
             default -> "changes";
         };
         return "<span class=\"rel " + kind + "\">" + escape(text) + "</span>";
@@ -378,7 +378,6 @@ public final class Html {
             .tl-mark{display:flex;flex-direction:column;align-items:center;flex:0 0 16px}
             .tl-dot{width:14px;height:14px;border-radius:50%;background:var(--blue);margin-top:5px}
             .tl-dot.first{background:var(--ink)}
-            .tl-by{font-size:15px}
             .tl-line{flex:1;width:2px;background:var(--line)}
             ol.timeline li:last-child .tl-line{display:none}
             .tl-body{padding-bottom:14px;display:flex;flex-direction:column;min-width:0}

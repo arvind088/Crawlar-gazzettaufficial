@@ -1,13 +1,13 @@
 # Relations by kind
-# How many times one act amends, repeals or otherwise changes another act.
+# How many times one act amends, repeals or converts (eli:commences) another act.
 # it: Relazioni per tipo
-# it: Quante volte un atto modifica, abroga o cambia in altro modo un altro atto.
+# it: Quante volte un atto modifica, abroga o converte (eli:commences) un altro atto.
 PREFIX eli: <http://data.europa.eu/eli/ontology#>
 
 SELECT ?property (COUNT(*) AS ?relations)
 WHERE {
   ?act ?property ?other .
-  FILTER (?property IN (eli:amends, eli:repeals, eli:changes))
+  FILTER (?property IN (eli:amends, eli:repeals, eli:commences))
 }
 GROUP BY ?property
 ORDER BY DESC(?relations)

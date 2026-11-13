@@ -31,8 +31,7 @@ import it.legislation.store.Tdb2DatasetService;
  * What the Legal acts and Act details pages show, read with SPARQL from the
  * store on every request. The data is ELI only: acts and their original text
  * (Layer 1), consolidated versions (Layer 2), and which act modifies which
- * ({@code eli:amends}, {@code eli:repeals}, {@code eli:changes}, and
- * {@code eli:consolidates} from a version to the act it contains).
+ * ({@code eli:amends}, {@code eli:repeals}).
  *
  * <p>Conversion is read from the titles: a law whose title says "Conversione in
  * legge … del decreto-legge ⟨date⟩, n. ⟨n⟩" converts that decree-law
@@ -51,7 +50,7 @@ public class ActCatalog {
             """;
     static final String ELI = "http://data.europa.eu/eli/ontology#";
     /** The relations between acts, as ELI names them. */
-    static final List<String> KINDS = List.of("amends", "repeals", "changes");
+    static final List<String> KINDS = List.of("amends", "repeals");
 
     private final Tdb2DatasetService store;
     private final Supplier<LocalDate> today;
@@ -81,8 +80,8 @@ public class ActCatalog {
         }
     }
 
-    /** A version (ELI expression) with the file it was read from and the acts it consolidates. */
-    public record Version(String uri, String date, String label, String source, List<OtherAct> changedBy) {}
+    /** A version (ELI expression) with the file it was read from. */
+    public record Version(String uri, String date, String label, String source) {}
 
     /** The act at the other end of a relation. */
     public record OtherAct(String uri, String typeCode, String date, String number, String title, boolean inCorpus) {
@@ -93,7 +92,7 @@ public class ActCatalog {
 
     /**
      * A relation: {@code outgoing} when this act modifies the other one. {@code property} is the ELI property
-     * (amends, repeals, changes), shown as "converts" when the pair is a conversion law and its decree-law.
+     * (amends, repeals).
      */
     public record Relation(boolean outgoing, String property, OtherAct other) {
         public String propertyName() {
@@ -130,7 +129,7 @@ public class ActCatalog {
         }
     }
 
-    /** Totals for the head of the list page; relations by kind (amends, repeals, changes). */
+    /** Totals for the head of the list page; relations by kind (amends, repeals). */
     public record Totals(long acts, long versions, long relations, Map<String, Long> relationsByKind) {
         public long relations(String kind) {
             return relationsByKind.getOrDefault(kind, 0L);
@@ -157,7 +156,9 @@ public class ActCatalog {
                       OPTIONAL { ?act eli:number ?number }
                       OPTIONAL { ?act eli:title ?title }
                       OPTIONAL { ?act eli:date_publication ?pub }
-                      OPTIONAL { ?act eli:is_realized_by ?expression }
+                      OPTIONAL { ?act eli:is_realized_by ?expression .
+                                 OPTIONAL { ?expression eli:version_date ?vd }
+                                 FILTER (!BOUND(?vd) || STR(?vd) <= SUBSTR(STR(NOW()), 1, 10)) }
                     }
                     GROUP BY ?act
                     """;
@@ -181,7 +182,9 @@ public class ActCatalog {
             each(dataset, PREFIXES + """
                     SELECT (COUNT(DISTINCT ?act) AS ?acts) (COUNT(DISTINCT ?expression) AS ?versions)
                     WHERE { ?act a eli:LegalResource ; dcterms:source <https://dati.normattiva.it/> .
-                            OPTIONAL { ?act eli:is_realized_by ?expression } }
+                            OPTIONAL { ?act eli:is_realized_by ?expression .
+                                       OPTIONAL { ?expression eli:version_date ?vd }
+                                       FILTER (!BOUND(?vd) || STR(?vd) <= SUBSTR(STR(NOW()), 1, 10)) } }
                     """, s -> {
                 t[0] = s.getLiteral("acts").getLong();
                 t[1] = s.getLiteral("versions").getLong();
@@ -189,7 +192,7 @@ public class ActCatalog {
             Map<String, Long> byKind = new LinkedHashMap<>();
             each(dataset, PREFIXES + """
                     SELECT ?property (COUNT(*) AS ?n)
-                    WHERE { ?a ?property ?b . FILTER(?property IN (eli:amends, eli:repeals, eli:changes)) }
+                    WHERE { ?a ?property ?b . FILTER(?property IN (eli:amends, eli:repeals)) }
                     GROUP BY ?property ORDER BY DESC(?n)
                     """, s -> {
                 String property = s.getResource("property").getURI();
@@ -230,28 +233,10 @@ public class ActCatalog {
                       OPTIONAL { ?e eli:is_embodied_by ?f . ?f dcterms:source ?src }
                     } GROUP BY ?e
                     """, actUri), s -> versions.add(new Version(s.getResource("e").getURI(), text(s, "date"),
-                    text(s, "label"), text(s, "source"), new ArrayList<>())));
-            // Which act(s) each version consolidates.
-            Map<String, Version> byUri = new HashMap<>();
-            versions.forEach(v -> byUri.put(v.uri(), v));
-            each(dataset, bind("""
-                    SELECT ?e ?by (SAMPLE(?t) AS ?type) (SAMPLE(?d) AS ?date) (SAMPLE(?n) AS ?number)
-                           (SAMPLE(?ti) AS ?title) (SAMPLE(?c) AS ?corpus) WHERE {
-                      ?act eli:is_realized_by ?e . ?e eli:consolidates ?by .
-                      OPTIONAL { ?by eli:type_document ?t }
-                      OPTIONAL { ?by eli:date_document ?d }
-                      OPTIONAL { ?by eli:number ?n }
-                      OPTIONAL { ?by eli:title ?ti }
-                      OPTIONAL { ?by eli:id_local ?c }
-                    } GROUP BY ?e ?by ORDER BY ?date
-                    """, actUri), s -> {
-                Version v = byUri.get(s.getResource("e").getURI());
-                if (v != null) {
-                    String by = s.getResource("by").getURI();
-                    v.changedBy().add(new OtherAct(by, Html.typeCode(text(s, "type")), text(s, "date"),
-                            text(s, "number"), text(s, "title") == null ? by : text(s, "title"), text(s, "corpus") != null));
-                }
-            });
+                    text(s, "label"), text(s, "source"))));
+            // Versions that start after today are not shown: the history ends at the text in force.
+            String today = java.time.LocalDate.now().toString();
+            versions.removeIf(v -> !v.uri().endsWith("/original") && v.date() != null && v.date().compareTo(today) > 0);
             // The original text first, then the consolidated versions by date.
             versions.sort(Comparator.comparing((Version v) -> !v.uri().endsWith("/original"))
                     .thenComparing(Version::date, Comparator.nullsFirst(Comparator.naturalOrder())));
@@ -271,18 +256,18 @@ public class ActCatalog {
             });
             converts.sort(Comparator.comparing(c -> c.decree().date() == null ? "" : c.decree().date()));
             return Optional.of(new ActDetails(actUri, facts, versions, conversion,
-                    relations(dataset, actUri, conversions), converts));
+                    relations(dataset, actUri), converts));
         });
     }
 
-    private List<Relation> relations(Dataset dataset, String actUri, Map<String, ConversionFacts> conversions) {
+    private List<Relation> relations(Dataset dataset, String actUri) {
         List<String[]> base = new ArrayList<>();
         each(dataset, bind("""
                 SELECT DISTINCT ?dir ?other ?property WHERE {
                   { ?act ?property ?other . BIND("out" AS ?dir) }
                   UNION
                   { ?other ?property ?act . BIND("in" AS ?dir) }
-                  FILTER(?property IN (eli:amends, eli:repeals, eli:changes))
+                  FILTER(?property IN (eli:amends, eli:repeals))
                 }
                 """, actUri), s -> base.add(new String[] {text(s, "dir"), s.getResource("other").getURI(),
                 s.getResource("property").getURI()}));
@@ -295,7 +280,7 @@ public class ActCatalog {
                 SELECT ?other (SAMPLE(?t) AS ?type) (SAMPLE(?d) AS ?date) (SAMPLE(?n) AS ?number)
                        (SAMPLE(?ti) AS ?title) (SAMPLE(?l) AS ?label) (SAMPLE(?c) AS ?corpus) WHERE {
                   { ?act ?p ?other } UNION { ?other ?p ?act }
-                  FILTER(?p IN (eli:amends, eli:repeals, eli:changes))
+                  FILTER(?p IN (eli:amends, eli:repeals))
                   OPTIONAL { ?other eli:type_document ?t }
                   OPTIONAL { ?other eli:date_document ?d }
                   OPTIONAL { ?other eli:number ?n }
@@ -313,14 +298,10 @@ public class ActCatalog {
         List<Relation> relations = new ArrayList<>();
         for (String[] b : base) {
             boolean outgoing = "out".equals(b[0]);
-            String law = outgoing ? actUri : b[1];
-            String decree = outgoing ? b[1] : actUri;
-            ConversionFacts c = conversions.get(decree);
-            String property = c != null && law.equals(c.law()) ? "converts" : b[2];
-            relations.add(new Relation(outgoing, property,
+            relations.add(new Relation(outgoing, b[2],
                     others.getOrDefault(b[1], new OtherAct(b[1], "", null, null, b[1], false))));
         }
-        List<String> order = List.of("converts", "repeals", "amends", "changes");
+        List<String> order = List.of("repeals", "amends");
         relations.sort(Comparator.comparing((Relation r) -> !r.outgoing())
                 .thenComparing(r -> order.indexOf(r.propertyName()) < 0 ? order.size() : order.indexOf(r.propertyName()))
                 .thenComparing(r -> r.other().date() == null ? "" : r.other().date()));

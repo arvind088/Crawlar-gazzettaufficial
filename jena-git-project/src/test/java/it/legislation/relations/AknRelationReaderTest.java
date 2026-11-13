@@ -72,6 +72,25 @@ class AknRelationReaderTest {
     }
 
     @Test
+    void wholeRepealWithTheVerbFirstOrAfterAComma() throws IOException {
+        // Real wordings: L. 38/2025, art. 4, and L. 199/2025, comma 409.
+        AknRelationReader.Evidence e = read("", """
+                <article><paragraph><content><p><mod eId="modNov_1">Dalla data di entrata in vigore della Convenzione, e'
+                abrogata la legge 18 giugno 1973, n. 475 .</mod></p></content></paragraph>
+                <paragraph><content><p>Dalla stessa data e' abrogata la legge 24 dicembre 2003, n. 363, ad eccezione
+                dell'articolo 5. Salvo quanto stabilito nel comma 2, il decreto legislativo 14 dicembre 1992, n. 507, e'
+                abrogato.</p></content></paragraph>
+                <paragraph><content><p>A decorrere dalla data di entrata in vigore della presente legge, la legge 21 aprile
+                1977, n. 164 , e la legge 22 dicembre 1980, n. 927 , sono abrogate.</p></content></paragraph>
+                <paragraph><content><p>All'articolo 5 della legge 3 agosto 2007, n. 124, il comma 2 e' abrogato.</p></content></paragraph></article>""");
+        assertEquals(Set.of(new ActKey("LEGGE", LocalDate.of(1977, 4, 21), "164"),
+                new ActKey("LEGGE", LocalDate.of(1980, 12, 22), "927")), e.textRepeals(),
+                "a paragraph of a law, or a repeal with exceptions, is not a repeal of the whole law");
+        assertEquals(Set.of(new ActKey("LEGGE", LocalDate.of(1973, 6, 18), "475")), e.modTextRepeals(),
+                "a sentence inside <mod> is kept apart: it only confirms the change list");
+    }
+
+    @Test
     void repealsQuotedInNotesOrGuillemetsAreNotThisActs() throws IOException {
         AknRelationReader.Evidence e = read("", """
                 <article><paragraph><content><p>Testo.<authorialNote><p>I decreti-legge 2 marzo 2020, n. 9, e 9 marzo

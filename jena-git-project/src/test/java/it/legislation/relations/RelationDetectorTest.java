@@ -79,7 +79,7 @@ class RelationDetectorTest {
 
         Map<String, String> sources = new LinkedHashMap<>();
         result.relations().forEach(r -> sources.put(r.from().codice() + " " + r.property().eliName, r.sources()));
-        assertEquals(Map.of("L1 amends", "change list + history", "D2 changes", "history"), sources);
+        assertEquals(Map.of("L1 amends", "change list + history", "D2 amends", "history"), sources);
     }
 
     @Test
@@ -101,6 +101,42 @@ class RelationDetectorTest {
         assertEquals(List.of("1/2022", "6/2023"), from);
         assertEquals(true, RelationDetector.impossibleInHistory(oldLaw.key(), decree.key()));
         assertEquals(false, RelationDetector.impossibleInHistory(olderDecree.key(), decree.key()));
+    }
+
+    @Test
+    void aWholeRepealNeedsWholeActWording() {
+        // Real cases: D.Lgs. 81/2025 repeals only Capo III of D.Lgs. 13/2024 (typed record on the whole act, no note);
+        // "l'abrogazione e la modifica dell'art. 21" repeals a part; "dell'intero provvedimento" repeals the act.
+        Act law = act("L1", "LEGGE", "2025-06-12", "81", "2025-06-12", "Disposizioni");
+        Act typed = act("T1", "DECRETO_LEGISLATIVO", "2024-02-12", "13", "2024-02-12", "Disposizioni");
+        Act partNote = act("P1", "DECRETO_LEGISLATIVO", "2015-09-14", "150", "2015-09-14", "Disposizioni");
+        Act whole = act("W1", "DECRETO-LEGGE", "2020-03-02", "9", "2020-03-02", "Misure");
+        Act sentence = act("S1", "LEGGE", "1973-06-18", "475", "1973-06-18", "Convenzione");
+        Act confirmed = act("C1", "LEGGE", "2020-01-01", "1", "2020-01-01", "Norme");
+        Act incompatible = act("I1", "DECRETO_LEGISLATIVO", "2015-09-15", "151", "2015-09-15", "Norme");
+        CorpusIndex corpus = new CorpusIndex(List.of(law, typed, partNote, whole, sentence, confirmed, incompatible),
+                "https://example.test");
+        Map<String, Evidence> original = Map.of("L1", evidence(List.of(
+                new TextualMod("m1", "repeal", "/akn/it/act/decretoLegislativo/stato/2024-02-12/13/!main", typed.key(), true, null),
+                new TextualMod("m2", "repeal", "urn:nir:stato:decreto.legislativo:2015-09-14;150", partNote.key(), false,
+                        "ha disposto (con l'art. 7, comma 1) l'abrogazione e la modifica dell'art. 21."),
+                new TextualMod("m3", "repeal", "urn:nir:stato:decreto.legge:2020-03-02;9", whole.key(), false,
+                        "ha disposto (con l'art. 1, comma 2) l'abrogazione dell'intero provvedimento e la modifica dell'art. 1."),
+                new TextualMod("m4", "repeal", "/akn/it/act/legge/stato/1973-06-18/475/!main", sentence.key(), true, null),
+                new TextualMod("m5", "repeal", "/akn/it/act/legge/stato/2020-01-01/1/!main", confirmed.key(), true, null),
+                new TextualMod("m6", null, "urn:nir:stato:legge:2020-01-01;1", confirmed.key(), false,
+                        "ha confermato (con l'art. 95, comma 1) l'abrogazione dell'intero provvedimento."),
+                new TextualMod("m7", "repeal", "/akn/it/act/decretoLegislativo/stato/2015-09-15/151/!main", incompatible.key(),
+                        true, "ha disposto (con l'art. 3, comma 1) che \"Il decreto legislativo 15 settembre 2015, n. 151, "
+                                + "e' abrogato nelle parti incompatibili con le disposizioni del presente decreto\".")),
+                Set.of(), Set.of(sentence.key())));
+
+        RelationDetector.Result result = new RelationDetector(corpus).detect(original, Map.of(), LocalDate.of(2026, 11, 13));
+
+        Map<String, String> found = new LinkedHashMap<>();
+        result.relations().forEach(r -> found.put(r.to().codice(), r.property().eliName));
+        assertEquals(Map.of("T1", "amends", "P1", "amends", "W1", "repeals", "S1", "repeals", "C1", "repeals", "I1", "amends"), found,
+                "the whole-act note may sit on another record than the typed repeal");
     }
 
     @Test

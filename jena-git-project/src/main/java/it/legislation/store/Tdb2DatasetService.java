@@ -60,7 +60,7 @@ public class Tdb2DatasetService {
     static final Path LAYER1_GAZZETTA = Path.of("data", "rdf", "layer1_gazzetta.ttl");
     /** Layer 2: the consolidated versions ({@code AknImportRunner}). */
     static final Path LAYER2_VERSIONS = Path.of("data", "rdf", "layer2_versions.ttl");
-    /** Which act modifies which, and which act each version consolidates ({@code RelationRunner}). */
+    /** Relations between acts, conversions and the version chain ({@code RelationRunner}). */
     static final Path RELATIONS = Path.of("data", "rdf", "relations.ttl");
 
     private static final String GRAPH_BASE = "http://example.org/italian-legislation/graph/";

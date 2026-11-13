@@ -43,14 +43,22 @@
 <https://example.it/eli/id/2020/03/17/20G00034/sg/ita/vigente/2020-04-30>
         a eli:LegalExpression ; eli:version_date "2020-04-30"^^xsd:date .
 
-# Relations: L. 27/2020 amends (and converts) D.L. 18/2020, whose version of 30 April
-# consolidates it; D.L. 18/2020 changes an act outside the corpus.
-<http://www.gazzettaufficiale.it/eli/id/2020/04/29/20G00045/sg>
-        eli:amends <http://www.gazzettaufficiale.it/eli/id/2020/03/17/20G00034/sg> .
-<https://example.it/eli/id/2020/03/17/20G00034/sg/ita/vigente/2020-04-30>
-        eli:consolidates <http://www.gazzettaufficiale.it/eli/id/2020/04/29/20G00045/sg> .
+# A version that starts in the future: not shown and not counted.
 <http://www.gazzettaufficiale.it/eli/id/2020/03/17/20G00034/sg>
-        eli:changes <https://example.it/eli/ext/decreto_legislativo/2001-03-30/165> .
+        eli:is_realized_by <https://example.it/eli/id/2020/03/17/20G00034/sg/ita/vigente/2099-01-01> .
+<https://example.it/eli/id/2020/03/17/20G00034/sg/ita/vigente/2099-01-01>
+        a eli:LegalExpression ; eli:version_date "2099-01-01"^^xsd:date ;
+        eli:consolidates <https://example.it/eli/id/2020/03/17/20G00034/sg/ita/vigente/2020-04-30> .
+
+# Relations: L. 27/2020 amends and converts (eli:commences) D.L. 18/2020; D.L. 18/2020 amends an act
+# outside the corpus; the version of 30 April follows the original text (eli:consolidates).
+<http://www.gazzettaufficiale.it/eli/id/2020/04/29/20G00045/sg>
+        eli:amends <http://www.gazzettaufficiale.it/eli/id/2020/03/17/20G00034/sg> ;
+        eli:commences <http://www.gazzettaufficiale.it/eli/id/2020/03/17/20G00034/sg> .
+<http://www.gazzettaufficiale.it/eli/id/2020/03/17/20G00034/sg>
+        eli:amends <https://example.it/eli/ext/decreto_legislativo/2001-03-30/165> .
+<https://example.it/eli/id/2020/03/17/20G00034/sg/ita/vigente/2020-04-30>
+        eli:consolidates <https://example.it/eli/id/2020/03/17/20G00034/sg/ita/original> .
 
 <https://example.it/eli/ext/decreto_legislativo/2001-03-30/165>
         a eli:LegalResource ;

@@ -1,0 +1,14 @@
+# Versions of an act, one after the other
+# Each version of D.L. 17 marzo 2020, n. 18 and the version before it (eli:consolidates), oldest first.
+# it: Versioni di un atto, una dopo l'altra
+# it: Ogni versione del D.L. 17 marzo 2020, n. 18 e la versione precedente (eli:consolidates), dalla più vecchia.
+PREFIX eli: <http://data.europa.eu/eli/ontology#>
+
+SELECT ?version ?date ?previous
+WHERE {
+  ?act eli:id_local "20G00034" ;
+       eli:is_realized_by ?version .
+  ?version eli:version_date ?date .
+  OPTIONAL { ?version eli:consolidates ?previous }
+}
+ORDER BY ?date

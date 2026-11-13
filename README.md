@@ -36,11 +36,10 @@ From these, the pipeline builds a knowledge graph in two layers:
 
 1. **Layer 1, the acts:** one entry per act with its original text. This layer also works as a
    lookup table, turning "law of 29 January 2021, n. 6" into that act's ELI.
-2. **Layer 2, the versions:** every consolidated text, with the date it came into force and the
-   act that produced it.
+2. **Layer 2, the versions:** every consolidated text, with the date it came into force and its file.
 
-On top of these sit the **relations**: amends, repeals, changes, and the conversion of
-decree-laws into law. They're all written using only the ELI vocabulary.
+On top of these sit the **relations**: amends, repeals, and the conversion of decree-laws into law
+(`eli:commences`); each version is linked to the one before it (`eli:consolidates`). They're all written using only the ELI vocabulary.
 
 ```mermaid
 flowchart LR
@@ -117,14 +116,13 @@ curl -H "Accept: text/turtle" http://localhost:8080/eli/id/2020/12/18/20G00196/s
 
 ### With SPARQL
 
-For example, every version of D.L. 172/2020 and the act that produced it:
+For example, every version of D.L. 172/2020 and its date:
 
 ```sparql
 PREFIX eli: <http://data.europa.eu/eli/ontology#>
-SELECT ?version ?date ?producedBy WHERE {
+SELECT ?version ?date WHERE {
   <http://www.gazzettaufficiale.it/eli/id/2020/12/18/20G00196/sg> eli:is_realized_by ?version .
   ?version eli:version_date ?date .
-  OPTIONAL { ?version eli:consolidates ?producedBy }
 } ORDER BY ?date
 ```
 
@@ -218,7 +216,7 @@ the box.
     ├── src/main/java/it/legislation/
     │   ├── source/               Talking to Normattiva and the Gazzetta (API client, act pages, RSS)
     │   ├── mapping/              Akoma Ntoso XML → ELI RDF (Layer 1 and Layer 2)
-    │   ├── relations/            Finding amends, repeals, changes and conversions
+    │   ├── relations/            Finding amends, repeals and conversions
     │   ├── ingest/               The pipeline steps you can run (import, check, discovery,
     │   │                         relations, daily update, evaluation)
     │   ├── store/                The Jena TDB2 triple store

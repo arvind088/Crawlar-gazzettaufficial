@@ -1,15 +1,13 @@
-# Which act(s) each version of an act consolidates (eli:consolidates): the changes it contains.
+# Every version of an act, with the date it came into force and its file.
 # Example: D.L. 17 marzo 2020, n. 18 (codice redazionale 20G00034).
 PREFIX eli: <http://data.europa.eu/eli/ontology#>
+PREFIX dcterms: <http://purl.org/dc/terms/>
 
-SELECT ?version ?versionDate ?changingAct ?type ?date ?number
+SELECT ?version ?versionDate ?file
 WHERE {
   ?act eli:id_local "20G00034" ;
        eli:is_realized_by ?version .
   ?version eli:version_date ?versionDate .
-  OPTIONAL {
-    ?version eli:consolidates ?changingAct .
-    OPTIONAL { ?changingAct eli:type_document ?type ; eli:date_document ?date ; eli:number ?number }
-  }
+  OPTIONAL { ?version eli:is_embodied_by ?format . ?format dcterms:source ?file }
 }
-ORDER BY ?versionDate ?changingAct
+ORDER BY ?versionDate

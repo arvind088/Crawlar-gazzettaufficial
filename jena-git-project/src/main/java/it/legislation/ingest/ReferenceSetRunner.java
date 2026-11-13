@@ -149,7 +149,9 @@ public class ReferenceSetRunner {
                 r -> relationLine(r, repealsCheck), lines, id);
         draw(rel, r -> is(r, "repeals", "B", false), new Stratum("repeals B (target outside corpus)", 3, repealsCheck),
                 random, r -> relationLine(r, repealsCheck), lines, id);
-        draw(rel, r -> is(r, "changes", "B", true) && !r.get("from_codice").isEmpty(),
+        // Relations found only in the history (eli:changes until they were merged into eli:amends).
+        draw(rel, r -> (is(r, "changes", "B", true) || is(r, "amends", "B", true) && "history".equals(r.get("sources")))
+                        && !r.get("from_codice").isEmpty(),
                 new Stratum("changes B", 6, changesCheck), random, r -> relationLine(r, changesCheck), lines, id);
 
         Files.createDirectories(out.getParent());

@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.regex.Pattern;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -21,15 +22,18 @@ import it.legislation.relations.ModificationNote.Kind;
 /**
  * Finds the relations between acts from the evidence in their Akoma Ntoso files.
  *
- * <p><b>Amends, repeals, changes.</b> Each {@code textualMod} of act X whose
- * destination is act Y gives "X changes Y". The editor's note decides which:
- * "l'abrogazione dell'intero provvedimento" → {@code eli:repeals}; any other
- * abrogazione, modifica, introduzione, soppressione or sostituzione →
- * {@code eli:amends}; a note that fits no rule → {@code eli:changes}. Notes
+ * <p><b>Amends, repeals.</b> Each {@code textualMod} of act X whose
+ * destination is act Y gives "X changes Y". {@code eli:repeals} (the whole act)
+ * needs whole-act wording: an editor's note "l'abrogazione dell'intero
+ * provvedimento", a note quoting "Il decreto-legge … e' abrogato", or a sentence
+ * of X's own text that says Y "è abrogato" ({@link #WHOLE_WORDING}). A typed
+ * record ({@code type="repeal"} on the whole act) without such wording is not
+ * enough: Normattiva also uses it when only a chapter is repealed. Anything else
+ * → {@code eli:amends} (ELI: "introduces legal changes in another resource"). Notes
  * that describe the change as made through a third act ("la conversione del
  * D.L. …", "l'abrogazione del D.L. …") are not counted for Y. The history of
  * Y (lifecycle of its latest version) also names the acts that changed it: an
- * act named there with no change-list entry for Y gives "X changes Y". Each
+ * act named there with no change-list entry for Y gives "X amends Y". Each
  * relation records where it was found ({@link Relation#sources()}).
  *
  * <p><b>Conversion</b>: law L converts decree-law D when L's title says
@@ -41,7 +45,7 @@ public class RelationDetector {
 
     /** Relation property, as ELI names it. */
     public enum Property {
-        AMENDS("amends"), REPEALS("repeals"), CHANGES("changes");
+        AMENDS("amends"), REPEALS("repeals");
 
         public final String eliName;
 
@@ -162,8 +166,7 @@ public class RelationDetector {
                     // "l'abrogazione del D.L. …" naming the destination itself repeals the whole act.
                     whole = note.wholeAct() || note.indirect();
                 }
-                Property property = kind == Kind.REPEAL && whole ? Property.REPEALS
-                        : kind == Kind.OTHER ? Property.CHANGES : Property.AMENDS;
+                Property property = kind == Kind.REPEAL && whole ? Property.REPEALS : Property.AMENDS;
                 Act to = corpus.resolve(mod.destination()).orElse(null);
                 String id = from.codice() + "|" + mod.destination();
                 Builder b = builders.computeIfAbsent(id, k -> new Builder(from, from.key(), to, mod.destination(),
@@ -179,6 +182,14 @@ public class RelationDetector {
                 Builder b = builders.computeIfAbsent(from.codice() + "|" + repealed,
                         k -> new Builder(from, from.key(), to, repealed, from.originalFile()));
                 b.add(Property.REPEALS, Kind.REPEAL, "testo: " + repealed + " è abrogato");
+            }
+            // The same, stated inside a <mod>: only confirms a repeal the change list records (the text may cite the
+            // act by its Gazzetta date, e.g. "decreto-legge 22 gennaio 2022, n. 2" for D.L. 21 gennaio 2022, n. 2).
+            for (ActKey repealed : evidence.modTextRepeals()) {
+                Builder b = builders.get(from.codice() + "|" + repealed);
+                if (b != null && b.repeals) {
+                    b.add(Property.REPEALS, Kind.REPEAL, "testo: " + repealed + " è abrogato");
+                }
             }
         }
 
@@ -198,7 +209,7 @@ public class RelationDetector {
                     continue;
                 }
                 Act from = corpus.resolve(fromKey).orElse(null);
-                relations.add(new Relation(from, fromKey, Property.CHANGES, to, to.key(), 0, true,
+                relations.add(new Relation(from, fromKey, Property.AMENDS, to, to.key(), 0, true,
                         Map.of(), List.of(), to.latestFile()));
             }
         }
@@ -291,6 +302,20 @@ public class RelationDetector {
     }
 
     /** Collects the textual modifications of one (from, to) pair. */
+    /**
+     * Wording that states the repeal of the whole act: Normattiva's note "l'abrogazione dell'intero provvedimento"
+     * (also "… e ha confermato …", "… e la modifica …"), a note quoting the act ("Il decreto-legge …, n. …, e'
+     * abrogato"), or a sentence of the act's own text ("testo: …", see {@code AknRelationReader}). In the manual
+     * check of all 213 repeals, every repeal with this wording was a whole repeal and every one without it was not.
+     */
+    static final Pattern WHOLE_WORDING = Pattern.compile("intero provvedimento|^testo: "
+            + "|che\\s*(?:&quot;|\"|“)\\s*(?:Il|I|La|Le|Lo)\\s+(?:decret[oi][- ]legge|decret[oi] legislativ[oi]|legg[ei]|decret[oi])\\b"
+            + "[^\"]{0,250}?\\b(?:e'|è|sono)\\s+abrogat", Pattern.CASE_INSENSITIVE);
+    /** A repeal with exceptions is not a whole repeal ("… e' abrogato nelle parti incompatibili"). */
+    static final Pattern EXCEPTION = Pattern.compile(
+            "ad eccezione|salvo quanto|salvo che|eccetto|tranne|limitatamente|nelle parti|in quanto incompatibil",
+            Pattern.CASE_INSENSITIVE);
+
     private static final class Builder {
         final Act from;
         final ActKey fromKey;
@@ -300,7 +325,7 @@ public class RelationDetector {
         final Map<Kind, Integer> kinds = new EnumMap<>(Kind.class);
         final List<String> examples = new ArrayList<>();
         boolean repeals;
-        boolean amends;
+        boolean wholeWording;
         int count;
 
         Builder(Act from, ActKey fromKey, Act to, ActKey toKey, String sourceFile) {
@@ -315,7 +340,9 @@ public class RelationDetector {
             count++;
             kinds.merge(kind, 1, Integer::sum);
             repeals |= property == Property.REPEALS;
-            amends |= property == Property.AMENDS;
+            // Any note of the pair counts: the note may sit on another record than the typed repeal
+            // ("ha confermato l'abrogazione dell'intero provvedimento" next to type="repeal").
+            wholeWording |= note != null && WHOLE_WORDING.matcher(note.strip()).find() && !EXCEPTION.matcher(note).find();
             // Every distinct editor's note (up to 30), so the pages can say what changed.
             if (examples.size() < 30 && note != null && !note.isBlank()) {
                 String kept = note.length() > 600 ? note.substring(0, 600) + "…" : note;
@@ -326,8 +353,9 @@ public class RelationDetector {
         }
 
         Relation build(boolean confirmed) {
-            // The strongest statement wins: a repeal of the whole act includes its amendments.
-            Property property = repeals ? Property.REPEALS : amends ? Property.AMENDS : Property.CHANGES;
+            // The strongest statement wins: a repeal of the whole act includes its amendments. A repeal needs
+            // whole-act wording; without it (e.g. a typed record only) the change is an amendment.
+            Property property = repeals && wholeWording ? Property.REPEALS : Property.AMENDS;
             return new Relation(from, fromKey, property, to, toKey, count, confirmed,
                     Map.copyOf(kinds), List.copyOf(examples), sourceFile);
         }

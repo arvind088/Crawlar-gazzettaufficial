@@ -43,8 +43,9 @@ import it.legislation.relations.VersionHistory;
  * {@code data/rdf/layer2_versions.ttl}) and their Akoma Ntoso files from
  * {@code data/raw/normattiva}. Writes {@code data/rdf/relations.ttl}, ELI only:
  * <ul>
- *   <li>{@code X eli:amends | eli:repeals | eli:changes Y}: act X modifies act Y;</li>
- *   <li>{@code version eli:consolidates X}: this consolidated version of Y contains the changes made by X;</li>
+ *   <li>{@code X eli:amends | eli:repeals Y}: act X modifies act Y;</li>
+ *   <li>{@code L eli:commences D}: conversion law L converts decree-law D;</li>
+ *   <li>{@code V2 eli:consolidates V1}: the versions of an act, each one linked to the one before it;</li>
  *   <li>acts outside the corpus that are named, as {@code eli:LegalResource} with type, date and number.</li>
  * </ul>
  * A conversion is the law's relation to its decree-law (its title says "Conversione in legge …").
@@ -150,7 +151,7 @@ public class RelationRunner {
                 .detect(original, latest, today, listedConversionLaws(in, corpus));
         VersionHistory.Result history = VersionHistory.link(corpus, latest, result.relations(),
                 entryIntoForce(acts.get(0).resolveSibling(GazzettaCheckRunner.DEFAULT_OUT.getFileName().toString())));
-        boolean written = writeModelIfChanged(out, toRdf(corpus, result, history));
+        boolean written = writeModelIfChanged(out, toRdf(corpus, result));
         written |= writeIfChanged(conversionsReport, conversionsTsv(result).getBytes(StandardCharsets.UTF_8));
         written |= writeIfChanged(relationsReport, relationsTsv(result).getBytes(StandardCharsets.UTF_8));
         written |= writeIfChanged(relationsReport.resolveSibling("version_history.tsv"),
@@ -202,35 +203,35 @@ public class RelationRunner {
     }
 
     /**
-     * The relations as RDF, ELI only: {@code X eli:amends|eli:repeals|eli:changes Y} for each relation,
-     * {@code version eli:consolidates X} for each version link, and the acts outside the corpus that are named
-     * (type, date, number). A converting law always has a relation to its decree-law: when nothing else links
-     * them (conversion "senza modificazioni"), {@code eli:changes}.
+     * The relations as RDF, ELI only: {@code X eli:amends|eli:repeals Y} for each relation, and the acts
+     * outside the corpus that are named (type, date, number); {@code L eli:commences D} for each conversion law L
+     * and its decree-law D (core ELI has no property for conversion, and cannot say when an act comes into force);
+     * {@code V(n) eli:consolidates V(n-1)} between the versions of each act, oldest first.
      */
-    static Model toRdf(CorpusIndex corpus, RelationDetector.Result result, VersionHistory.Result history) {
+    static Model toRdf(CorpusIndex corpus, RelationDetector.Result result) {
         Model model = ModelFactory.createDefaultModel();
         model.setNsPrefix("eli", ELI);
         model.setNsPrefix("rdfs", RDFS.uri);
         model.setNsPrefix("xsd", XSDDatatype.XSD + "#");
         String base = corpus.baseUri();
-        java.util.Set<String> linked = new java.util.HashSet<>();
         for (Relation r : result.relations()) {
             Resource source = r.from() != null ? model.createResource(r.from().workUri()) : external(model, base, r.fromKey());
             Resource target = r.to() != null ? model.createResource(r.to().workUri()) : external(model, base, r.toKey());
             source.addProperty(model.createProperty(ELI, r.property().eliName), target);
-            linked.add(source.getURI() + " " + target.getURI());
         }
+        Property commences = model.createProperty(ELI, "commences");
         for (Conversion c : result.conversions()) {
-            if (c.law() != null && linked.add(c.law().workUri() + " " + c.decree().workUri())) {
-                model.createResource(c.law().workUri()).addProperty(model.createProperty(ELI, "changes"),
-                        model.createResource(c.decree().workUri()));
+            if (c.law() != null) {
+                model.createResource(c.law().workUri()).addProperty(commences, model.createResource(c.decree().workUri()));
             }
         }
         Property consolidates = model.createProperty(ELI, "consolidates");
-        for (VersionHistory.Link l : history.links()) {
-            Resource changer = l.modifier() != null ? model.createResource(l.modifier().workUri())
-                    : external(model, base, l.changedBy());
-            model.createResource(l.version().uri()).addProperty(consolidates, changer);
+        for (Act act : corpus.acts()) {
+            List<CorpusIndex.Version> versions = corpus.versions(act.codice());
+            for (int i = 1; i < versions.size(); i++) {
+                model.createResource(versions.get(i).uri())
+                        .addProperty(consolidates, model.createResource(versions.get(i - 1).uri()));
+            }
         }
         return model;
     }

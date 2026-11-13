@@ -1,4 +1,4 @@
-# Which acts amended, repealed or changed one act.
+# Which acts amended or repealed one act.
 # Example: D.L. 17 marzo 2020, n. 18 (codice redazionale 20G00034).
 PREFIX eli: <http://data.europa.eu/eli/ontology#>
 PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
@@ -7,7 +7,7 @@ SELECT ?source ?property ?type ?date ?number
 WHERE {
   ?act eli:id_local "20G00034" .
   ?source ?property ?act .
-  FILTER (?property IN (eli:amends, eli:repeals, eli:changes))
+  FILTER (?property IN (eli:amends, eli:repeals))
   OPTIONAL { ?source eli:type_document ?type ; eli:date_document ?date ; eli:number ?number }
 }
 ORDER BY ?date ?source
