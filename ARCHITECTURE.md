@@ -225,7 +225,7 @@ sequenceDiagram
     participant G as Gazzetta Ufficiale
     GH->>G: RSS feed → gazzetta_rss_updates.tsv
     GH->>G: new act pages → gazzetta_discovery.tsv
-    U->>N: acts changed since the watermark; acts listed but not imported
+    U->>N: acts changed since the watermark, and acts listed but not imported
     loop each act
         U->>N: export all versions (fallback: original, current)
         N-->>U: ZIP (or empty: no text yet, retried next run)
